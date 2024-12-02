@@ -1,12 +1,15 @@
 import React from 'react';
 import {StyleSheet, Text} from 'react-native';
-import colors from '../../config/colors';
+import colors from '../config/colors';
 import Screen from './screen';
+import Wallet from './wallet';
+import TopBar from '../components/topbar';
 
-function home(props) {
+function Home(props) {
   return (
     <Screen style={styles.container}>
-      <Text style={styles.textStyle}>Home</Text>
+      <TopBar />
+      <Wallet />
     </Screen>
   );
 }
@@ -14,12 +17,10 @@ function home(props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   textStyle: {
     color: colors.white,
   },
 });
 
-export default home;
+export default Home;

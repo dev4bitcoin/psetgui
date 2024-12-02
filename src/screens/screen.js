@@ -7,9 +7,9 @@ import {
   useColorScheme,
 } from 'react-native';
 import {getStatusBarHeight} from 'react-native-status-bar-height';
-import colors from '../../config/colors';
+import colors from '../config/colors';
 
-function screen({children, style}) {
+function Screen({children, style}) {
   const isDarkMode = useColorScheme() === 'dark';
 
   const backgroundStyle = {
@@ -32,4 +32,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default screen;
+export default Screen;
