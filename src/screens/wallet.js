@@ -1,8 +1,9 @@
 import React from 'react';
 import {View, StyleSheet, Text} from 'react-native';
+import {Wollet, Client, Signer, Network} from 'lwk-rn';
 
-import colors from '../config/colors';
-import TransactionButtons from '../components/transactionbuttons';
+import colors from '../config/Colors';
+import TransactionButtons from '../components/TransactionButtons';
 
 function Wallet(props) {
   const balance = '0';
@@ -21,7 +22,11 @@ function Wallet(props) {
 }
 
 const styles = StyleSheet.create({
-  container: {},
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   wallet: {
     alignItems: 'center',
     justifyContent: 'center',

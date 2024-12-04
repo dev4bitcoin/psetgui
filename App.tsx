@@ -1,13 +1,20 @@
 import React from 'react';
-import {StyleSheet} from 'react-native';
+import {StyleSheet, Text, View} from 'react-native';
 
-import Home from './src/screens/home';
-import Screen from './src/screens/screen';
+import {NavigationContainer} from '@react-navigation/native';
+import BottomTabs from './src/components/BottomTabs';
+import TopBar from './src/components/TopBar';
+import Screen from './src/screens/Screen';
 
 function App(): React.JSX.Element {
   return (
     <Screen style={styles.container}>
-      <Home />
+      <NavigationContainer>
+        <TopBar />
+        <View style={styles.bottomTabsContainer}>
+          <BottomTabs />
+        </View>
+      </NavigationContainer>
     </Screen>
   );
 }
@@ -15,6 +22,11 @@ function App(): React.JSX.Element {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  bottomTabsContainer: {
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
   },
 });
 

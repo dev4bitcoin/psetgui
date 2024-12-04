@@ -1,15 +1,16 @@
 import React from 'react';
-import {StyleSheet, Text} from 'react-native';
-import colors from '../config/colors';
-import Screen from './screen';
-import Wallet from './wallet';
-import TopBar from '../components/topbar';
+import {StyleSheet, Text, View} from 'react-native';
+import colors from '../config/Colors';
+import Screen from './Screen';
+import Wallet from './Wallet';
+import TopBar from '../components/TopBar';
+import BottomTabs from '../components/BottomTabs';
 
 function Home(props) {
   return (
     <Screen style={styles.container}>
       <TopBar />
-      <Wallet />
+      <BottomTabs />
     </Screen>
   );
 }
@@ -18,6 +19,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  content: {
+    flex: 1,
+    // Add any additional styles for your main content here
+  },
+
   textStyle: {
     color: colors.white,
   },
