@@ -1,33 +1,17 @@
 import React from 'react';
-import {StyleSheet, Text, View} from 'react-native';
-
 import {NavigationContainer} from '@react-navigation/native';
+import {SafeAreaProvider} from 'react-native-safe-area-context';
+
 import BottomTabs from './src/components/BottomTabs';
-import TopBar from './src/components/TopBar';
-import Screen from './src/screens/Screen';
 
 function App(): React.JSX.Element {
   return (
-    <Screen style={styles.container}>
+    <SafeAreaProvider>
       <NavigationContainer>
-        <TopBar />
-        <View style={styles.bottomTabsContainer}>
-          <BottomTabs />
-        </View>
+        <BottomTabs />
       </NavigationContainer>
-    </Screen>
+    </SafeAreaProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  bottomTabsContainer: {
-    position: 'absolute',
-    bottom: 0,
-    width: '100%',
-  },
-});
 
 export default App;

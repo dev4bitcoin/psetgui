@@ -4,15 +4,16 @@ import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import Colors from '../config/Colors';
-import Wallet from '../screens/Wallet';
-import Broadcast from '../screens/Broadcast';
-import Settings from '../screens/Settings';
+import WalletScreen from '../screens/WalletScreen';
+import BroadcastScreen from '../screens/BroadcastScreen';
+import SettingsScreen from '../screens/SettingsScreen';
 
 function BottomTabs(props) {
   const Tab = createBottomTabNavigator();
 
   return (
     <Tab.Navigator
+      initialRouteName="Wallet"
       screenOptions={({route}) => ({
         tabBarHideOnKeyboard: true,
         tabBarStyle: styles.toolbar,
@@ -21,7 +22,7 @@ function BottomTabs(props) {
       })}>
       <Tab.Screen
         name="Broadcast"
-        component={Broadcast}
+        component={BroadcastScreen}
         options={{
           tabBarIcon: ({focused}) => (
             <View style={styles.tabItem}>
@@ -36,7 +37,7 @@ function BottomTabs(props) {
       />
       <Tab.Screen
         name="Wallet"
-        component={Wallet}
+        component={WalletScreen}
         options={{
           tabBarIcon: ({focused}) => (
             <View style={styles.mainTabItem}>
@@ -51,7 +52,7 @@ function BottomTabs(props) {
       />
       <Tab.Screen
         name="Settings"
-        component={Settings}
+        component={SettingsScreen}
         options={{
           tabBarIcon: ({focused}) => (
             <View style={styles.tabItem}>
@@ -70,14 +71,16 @@ function BottomTabs(props) {
 
 const styles = StyleSheet.create({
   toolbar: {
+    display: 'flex',
     position: 'absolute',
     bottom: 0,
-    elevation: 5,
     backgroundColor: Colors.appBackground,
-    height: 60,
+    height: 80,
   },
   tabItem: {
     top: 5,
+    width: 30,
+    height: 30,
   },
   mainTabItem: {
     top: 0,

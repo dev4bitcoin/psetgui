@@ -28,7 +28,6 @@ const styles = StyleSheet.create({
     paddingTop: Platform.os == 'ios' ? getStatusBarHeight() : 0,
     flex: 1,
     backgroundColor: colors.appBackground,
-    flex: 1,
   },
 });
 

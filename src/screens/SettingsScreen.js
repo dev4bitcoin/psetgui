@@ -1,7 +1,7 @@
 import React from 'react';
 import {View, StyleSheet, Text} from 'react-native';
 
-function Settings(props) {
+function SettingsScreen(props) {
   return (
     <View style={styles.container}>
       <Text>Settings</Text>
@@ -13,4 +13,4 @@ const styles = StyleSheet.create({
   container: {},
 });
 
-export default Settings;
+export default SettingsScreen;

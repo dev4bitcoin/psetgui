@@ -4,12 +4,15 @@ import {Wollet, Client, Signer, Network} from 'lwk-rn';
 
 import colors from '../config/Colors';
 import TransactionButtons from '../components/TransactionButtons';
+import Screen from './screen';
+import TopBar from '../components/TopBar';
 
-function Wallet(props) {
+function WalletScreen(props) {
   const balance = '0';
 
   return (
     <View style={styles.container}>
+      <TopBar title="Wallet" />
       <View style={styles.wallet}>
         <View style={styles.balanceContainer}>
           <Text style={styles.balance}>{balance}</Text>
@@ -24,16 +27,16 @@ function Wallet(props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: colors.appBackground,
+    paddingTop: 50,
   },
   wallet: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 40,
+    marginTop: 60,
   },
   balanceContainer: {
-    //flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -49,4 +52,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Wallet;
+export default WalletScreen;

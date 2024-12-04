@@ -8,18 +8,13 @@ import colors from '../config/Colors';
 import AppText from './Text';
 import routes from '../navigation/Routes';
 
-function TopBar() {
+function TopBar({title, showBackButton = false}) {
   //const navigation = useNavigation();
 
   return (
     <View style={styles.container}>
       <View style={styles.topBar}>
-        {/* <ActionButton
-          iconName="cog-outline"
-          //onPress={() => navigation.navigate(routes.SETTINGS)}
-        /> */}
-        <AppText style={styles.text}>Wallet</AppText>
-        {/* <View style={styles.placeholder} /> */}
+        <AppText style={styles.text}>{title}</AppText>
       </View>
     </View>
   );
@@ -28,11 +23,8 @@ function TopBar() {
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    //marginTop: 5,
   },
   topBar: {
-    //flexDirection: 'row',
-    //justifyContent: 'space-between',
     alignItems: 'center',
   },
   text: {
@@ -40,9 +32,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: colors.white,
     textAlign: 'center',
-  },
-  placeholder: {
-    width: 50, // Adjust this width to match the width of the ActionButton
   },
 });
 

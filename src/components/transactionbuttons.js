@@ -42,7 +42,7 @@ const styles = StyleSheet.create({
   transactionButtons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 30,
+    marginTop: 60,
   },
   iconContainer: {
     alignItems: 'center',
