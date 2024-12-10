@@ -4,11 +4,11 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import colors from '../config/Colors';
 
-function TransactionButtons(props) {
+function TransactionButtons({onSendPress, onReceivePress, onScanPress}) {
   return (
     <View style={styles.container}>
       <View style={styles.transactionButtons}>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={onSendPress}>
           <View style={styles.iconContainer}>
             <View style={styles.iconWrapper}>
               <Icon name="arrow-up" color={colors.white} size={35} />
@@ -16,7 +16,7 @@ function TransactionButtons(props) {
             <Text style={styles.iconText}>SEND</Text>
           </View>
         </TouchableOpacity>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={onScanPress}>
           <View style={styles.iconContainer}>
             <View style={styles.iconWrapper}>
               <Icon name="qrcode" color={colors.white} size={35} />
@@ -24,7 +24,7 @@ function TransactionButtons(props) {
             <Text style={styles.iconText}>SCAN</Text>
           </View>
         </TouchableOpacity>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={onReceivePress}>
           <View style={styles.iconContainer}>
             <View style={styles.iconWrapper}>
               <Icon name="arrow-down" color={colors.white} size={35} />

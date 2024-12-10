@@ -1,6 +1,6 @@
 import React from 'react';
 import {View, StyleSheet, Text} from 'react-native';
-import Screen from './screen';
+import Screen from './Screen';
 
 function BroadcastScreen(props) {
   return (

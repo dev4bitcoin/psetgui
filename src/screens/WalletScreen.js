@@ -1,14 +1,28 @@
 import React from 'react';
 import {View, StyleSheet, Text} from 'react-native';
-import {Wollet, Client, Signer, Network} from 'lwk-rn';
 
 import colors from '../config/Colors';
 import TransactionButtons from '../components/TransactionButtons';
-import Screen from './screen';
+//import Screen from './screen';
 import TopBar from '../components/TopBar';
+import Transactions from './Transactions';
+import {CreateNewWallet} from '../wallet/WalletFactory';
 
 function WalletScreen(props) {
   const balance = '0';
+
+  const onSend = () => {
+    console.log('Send');
+    try {
+      //const mnemonic = bip39.generateMnemonic();
+      //console.log(mnemonic);
+
+      CreateNewWallet();
+    } catch (error) {
+      console.error(error);
+    }
+    //const wallet = new Wallet();
+  };
 
   return (
     <View style={styles.container}>
@@ -18,7 +32,8 @@ function WalletScreen(props) {
           <Text style={styles.balance}>{balance}</Text>
           <Text style={styles.denomination}>tL-BTC</Text>
         </View>
-        <TransactionButtons />
+        <TransactionButtons onSendPress={onSend} />
+        <Transactions />
       </View>
     </View>
   );
