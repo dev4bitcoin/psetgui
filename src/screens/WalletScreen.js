@@ -1,10 +1,10 @@
 import React from 'react';
 import {View, StyleSheet, Text} from 'react-native';
 
-import colors from '../config/Colors1';
-import TransactionButtons from '../components/TransactionButtons1';
+import colors from '../config/Colors';
+import TransactionButtons from '../components/TransactionButtons';
 //import Screen from './screen';
-import TopBar from '../components/TopBar1';
+import TopBar from '../components/TopBar';
 import Transactions from './Transactions';
 import {CreateNewWallet} from '../wallet/WalletFactory';
 

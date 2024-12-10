@@ -2,7 +2,7 @@ import React from 'react';
 import {View, StyleSheet, Text, TouchableOpacity} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
-import colors from '../config/Colors1';
+import colors from '../config/Colors';
 
 function TransactionButtons({onSendPress, onReceivePress, onScanPress}) {
   return (

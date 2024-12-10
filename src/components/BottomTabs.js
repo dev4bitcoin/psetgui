@@ -6,7 +6,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import WalletScreen from '../screens/WalletScreen';
 import BroadcastScreen from '../screens/BroadcastScreen';
 import SettingsScreen from '../screens/SettingsScreen';
-import Colors from '../config/Colors1';
+import Colors from '../config/Colors';
 
 function BottomTabs(props) {
   const Tab = createBottomTabNavigator();
