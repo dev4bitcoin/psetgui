@@ -2,11 +2,11 @@ import React from 'react';
 import {useNavigation} from '@react-navigation/native';
 import {View, StyleSheet, TouchableOpacity} from 'react-native';
 
-import Localize from '../config/Localize';
-import ActionButton from './ActionButton';
-import colors from '../config/Colors';
-import AppText from './Text';
-import routes from '../navigation/Routes';
+import Localize from '../config/Localize1';
+import ActionButton from './ActionButton1';
+import colors from '../config/Colors1';
+import AppText from './Text1';
+import routes from '../navigation/Routes1';
 
 function TopBar({title, showBackButton = false}) {
   //const navigation = useNavigation();

@@ -7,7 +7,7 @@ import {
   useColorScheme,
 } from 'react-native';
 import {getStatusBarHeight} from 'react-native-status-bar-height';
-import colors from '../config/Colors';
+import colors from '../config/Colors1';
 
 function Screen({children, style}) {
   const isDarkMode = useColorScheme() === 'dark';

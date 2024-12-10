@@ -3,10 +3,10 @@ import {View, StyleSheet} from 'react-native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
-import Colors from '../config/Colors';
 import WalletScreen from '../screens/WalletScreen';
 import BroadcastScreen from '../screens/BroadcastScreen';
 import SettingsScreen from '../screens/SettingsScreen';
+import Colors from '../config/Colors1';
 
 function BottomTabs(props) {
   const Tab = createBottomTabNavigator();
