@@ -1,16 +1,18 @@
 import {Wollet, Client, Signer, Network} from 'lwk-rn';
-import bip39 from 'bip39';
+//import bip39 from 'bip39';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+//import {randomBytes} from 'react-native-crypto';
 
 const CreateNewWallet = async () => {
   try {
-    const mnemonic = bip39.generateMnemonic();
+    //const mnemonic = bip39.generateMnemonic();
     console.log('Creating new wallet');
-    // const mnemonic =
-    //   'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about';
+    const mnemonic =
+      'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about';
     const network = Network.Testnet;
+    console.log(network);
     console.log(mnemonic);
-    const signer = await new Signer().create(mnemonic, network);
+    //const signer = await new Signer().create(mnemonic, network);
     console.log('Signer created');
     // const descriptor = await signer.wpkhSlip77Descriptor();
     // console.log('Descriptor created');
