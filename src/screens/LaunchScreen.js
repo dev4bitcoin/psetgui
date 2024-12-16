@@ -2,6 +2,7 @@ import React, {useEffect, useState} from 'react';
 import {View, Text, ActivityIndicator, StyleSheet} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {CreateNewWallet} from '../wallet/WalletFactory';
+
 const LaunchScreen = ({navigation}) => {
   const [loading, setLoading] = useState(true);
 

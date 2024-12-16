@@ -1,47 +1,64 @@
 import {Wollet, Client, Signer, Network} from 'lwk-rn';
-//import bip39 from 'bip39';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-//import {randomBytes} from 'react-native-crypto';
+//import * as bip39 from 'bip39';
 
-const CreateNewWallet = async () => {
+import Constants from '../config/Constants';
+import {
+  isWalletExist,
+  createWallet,
+  getDefaultWallet,
+} from '../services/WalletService';
+
+//const WALLETS = global.useTestnet;
+// ? Constants.TESTNET_WALLETS
+// : Constants.WALLETS;
+
+const CreateWallet = async () => {
   try {
-    //const mnemonic = bip39.generateMnemonic();
-    console.log('Creating new wallet');
+    //const mnemonic = await Signer.generateMnemonic();
+    console.log('Generated mnemonic:', mnemonic);
     const mnemonic =
       'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about';
-    const network = Network.Testnet;
-    console.log(network);
     console.log(mnemonic);
-    //const signer = await new Signer().create(mnemonic, network);
-    console.log('Signer created');
-    // const descriptor = await signer.wpkhSlip77Descriptor();
-    // console.log('Descriptor created');
-    // console.log(await descriptor.asString());
+    const network = Network.Testnet;
+    const signer = await new Signer().create(mnemonic, network);
+    console.log('Signer created', signer);
+    // const xpub = await signer.xpub();
+    // console.log('xpub:', xpub);
 
-    // const wollet = await new Wollet().create(network, descriptor, null);
-    // console.log('Wollet created');
-    // const client = await new Client().defaultElectrumClient(network);
-    // console.log('Client created');
-    // const update = await client.fullScan(wollet);
-    // console.log('Update created');
-    // await wollet.applyUpdate(update);
-    // console.log('Update applied');
-    // await AsyncStorage.setItem(
-    //   'wallet',
-    //   JSON.stringify({mnemonic, descriptor: await descriptor.asString()}),
+    // if (await isWalletExist(xpub)) {
+    //   console.log('Wallet already exists');
+    //   return;
+    // }
+
+    const descriptor = await signer.wpkhSlip77Descriptor();
+    const descriptorString = await descriptor.asString();
+    console.log(descriptorString);
+
+    // await createWallet(
+    //   JSON.stringify({
+    //     mnemonic: mnemonic,
+    //     xpub: xpub,
+    //     descriptor: descriptorString,
+    //   }),
     // );
-    // console.log('Wallet saved');
+
+    console.log('Wallet saved');
   } catch (error) {
     console.error(error);
   }
 };
 
 const GetWollet = async () => {
-  const wallet = await AsyncStorage.getItem('wallet');
+  // For now, we will use the first wallet in the list
+  const wallet = await getDefaultWallet();
   if (!wallet) {
     return null;
   }
+  console.log(wallet);
+
   const {mnemonic, descriptor} = JSON.parse(wallet);
+  console.log(mnemonic);
+  console.log(descriptor);
   const network = Network.Testnet;
   const signer = await new Signer().create(mnemonic, network);
   const desc = await Signer.Slip77Descriptor.fromString(descriptor);
@@ -50,17 +67,17 @@ const GetWollet = async () => {
 
 const GetNewAddress = async () => {
   const address = await wollet.getAddress();
-  console.log(address);
+  return address;
 };
 
 const GetTransactions = async () => {
-  const address = await wollet.getTransactions();
-  console.log(address);
+  const transactions = await wollet.getTransactions();
+  return transactions;
 };
 
 const GetBalance = async () => {
   const balance = await wollet.getBalance();
-  console.log(balance);
+  return balance;
 };
 
-export {CreateNewWallet, GetNewAddress, GetTransactions, GetBalance, GetWollet};
+export {CreateWallet, GetNewAddress, GetTransactions, GetBalance, GetWollet};

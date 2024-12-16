@@ -6,18 +6,26 @@ import TransactionButtons from '../components/TransactionButtons';
 //import Screen from './screen';
 import TopBar from '../components/TopBar';
 import Transactions from './Transactions';
-import {CreateNewWallet} from '../wallet/WalletFactory';
+import {
+  CreateWallet,
+  GetWollet,
+  GetTransactions,
+} from '../wallet/WalletFactory';
 
 function WalletScreen(props) {
   const balance = '0';
 
-  const onSend = () => {
+  const onSend = async () => {
     console.log('Send');
     try {
       //const mnemonic = bip39.generateMnemonic();
       //console.log(mnemonic);
 
-      CreateNewWallet();
+      await CreateWallet();
+      console.log('Wallet created');
+      await GetWollet();
+      const transactions = await GetTransactions();
+      console.log(transactions);
     } catch (error) {
       console.error(error);
     }
