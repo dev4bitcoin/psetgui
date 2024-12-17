@@ -27,7 +27,10 @@ const deleteWallet = async wallet => {
 };
 
 const getDefaultWallet = async () => {
+  console.log('getDefault');
   const wallets = await getWallets();
+  console.log(wallets);
+
   if (wallets.length === 0) return null;
 
   return wallets[0];
@@ -43,11 +46,16 @@ const isWalletExist = async xpub => {
   return wallets.some(w => w.xpub === xpub);
 };
 
-export default {
+const resetWallets = async () => {
+  return await storage.storeItem(WALLETS, []);
+};
+
+export {
   getWallets,
   createWallet,
   deleteWallet,
   getWallet,
   getDefaultWallet,
   isWalletExist,
+  resetWallets,
 };

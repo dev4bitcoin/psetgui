@@ -11,7 +11,6 @@ const storeItem = async (key, item) => {
 const getItem = async key => {
   try {
     const item = await AsyncStorage.getItem(key);
-    //console.log(item);
     if (item) {
       return JSON.parse(item);
     }

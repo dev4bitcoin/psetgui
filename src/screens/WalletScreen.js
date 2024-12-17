@@ -3,7 +3,6 @@ import {View, StyleSheet, Text} from 'react-native';
 
 import colors from '../config/Colors';
 import TransactionButtons from '../components/TransactionButtons';
-//import Screen from './screen';
 import TopBar from '../components/TopBar';
 import Transactions from './Transactions';
 import {
@@ -16,20 +15,18 @@ function WalletScreen(props) {
   const balance = '0';
 
   const onSend = async () => {
-    console.log('Send');
     try {
-      //const mnemonic = bip39.generateMnemonic();
-      //console.log(mnemonic);
+      let wollet = await GetWollet();
 
-      await CreateWallet();
-      console.log('Wallet created');
-      await GetWollet();
-      const transactions = await GetTransactions();
+      if (!wollet) {
+        await CreateWallet();
+        wollet = await GetWollet();
+      }
+      const transactions = await GetTransactions(wollet);
       console.log(transactions);
     } catch (error) {
       console.error(error);
     }
-    //const wallet = new Wallet();
   };
 
   return (
