@@ -1,19 +1,25 @@
 import React from 'react';
 import {useNavigation} from '@react-navigation/native';
 import {View, StyleSheet, TouchableOpacity} from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import Localize from '../config/Localize';
-import ActionButton from './ActionButton';
 import colors from '../config/Colors';
 import AppText from './Text';
-import routes from '../navigation/Routes';
 
 function TopBar({title, showBackButton = false}) {
-  //const navigation = useNavigation();
+  const navigation = useNavigation();
 
   return (
     <View style={styles.container}>
       <View style={styles.topBar}>
+        <View style={styles.leftIcon}>
+          {showBackButton && (
+            <TouchableOpacity onPress={() => navigation.goBack()}>
+              <Icon name="chevron-left" size={35} color={colors.white} />
+            </TouchableOpacity>
+          )}
+        </View>
         <AppText style={styles.text}>{title}</AppText>
       </View>
     </View>
@@ -22,10 +28,18 @@ function TopBar({title, showBackButton = false}) {
 
 const styles = StyleSheet.create({
   container: {
+    marginTop: 20,
     width: '100%',
   },
   topBar: {
     alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  leftIcon: {
+    position: 'absolute',
+    left: 20,
   },
   text: {
     fontSize: 23,

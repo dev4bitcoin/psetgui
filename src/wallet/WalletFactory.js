@@ -67,8 +67,9 @@ const GetWollet = async () => {
 const IsWalletExist = async () => {
   const wallet = await getDefaultWallet();
   if (!wallet) {
-    return null;
+    return false;
   }
+  return true;
 };
 
 const GetNewAddress = async wollet => {

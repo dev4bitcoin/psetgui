@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {View, StyleSheet, Text} from 'react-native';
 
 import colors from '../config/Colors';
@@ -9,24 +9,39 @@ import {
   CreateWallet,
   GetWollet,
   GetTransactions,
+  GetNewAddress,
 } from '../wallet/WalletFactory';
 
 function WalletScreen(props) {
   const balance = '0';
+  const [wollet, setWollet] = useState(null);
+
+  const init = async () => {
+    try {
+      setWollet(await GetWollet());
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    init();
+  }, []);
 
   const onSend = async () => {
     try {
-      let wollet = await GetWollet();
-
-      if (!wollet) {
-        await CreateWallet();
-        wollet = await GetWollet();
-      }
       const transactions = await GetTransactions(wollet);
       console.log(transactions);
     } catch (error) {
       console.error(error);
     }
+  };
+
+  const onReceive = async () => {
+    const {description, qr_code_text, is_blinded} = await GetNewAddress(wollet);
+    console.log('description', description);
+    console.log('qr_code_text', qr_code_text);
+    props.navigation.navigate('Receive', {address: description});
   };
 
   return (
@@ -37,7 +52,7 @@ function WalletScreen(props) {
           <Text style={styles.balance}>{balance}</Text>
           <Text style={styles.denomination}>tL-BTC</Text>
         </View>
-        <TransactionButtons onSendPress={onSend} />
+        <TransactionButtons onSendPress={onSend} onReceivePress={onReceive} />
         <Transactions />
       </View>
     </View>
