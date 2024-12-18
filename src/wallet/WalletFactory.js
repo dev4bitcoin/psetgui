@@ -61,6 +61,9 @@ const GetWollet = async () => {
   const {descriptor} = JSON.parse(wallet);
   const desc = await new Descriptor().create(descriptor);
   const wollet = await new Wollet().create(Network.Testnet, desc, null);
+  const client = await new Client().defaultElectrumClient(Network.Testnet);
+  const update = await client.fullScan(wollet);
+  await wollet.applyUpdate(update);
   return wollet;
 };
 

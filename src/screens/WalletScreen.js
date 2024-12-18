@@ -6,32 +6,65 @@ import TransactionButtons from '../components/TransactionButtons';
 import TopBar from '../components/TopBar';
 import Transactions from './Transactions';
 import {
-  CreateWallet,
   GetWollet,
   GetTransactions,
   GetNewAddress,
+  GetBalance,
 } from '../wallet/WalletFactory';
+import Transaction from '../models/Transaction';
 
 function WalletScreen(props) {
-  const balance = '0';
+  const [balance, setBalance] = useState(0);
   const [wollet, setWollet] = useState(null);
+  const [transactions, setTransactions] = useState([]);
 
-  const init = async () => {
+  const getTransactions = async wallet => {
     try {
-      setWollet(await GetWollet());
+      const transactionsData = await GetTransactions(wallet);
+      const mappedTransactions = transactionsData.map(
+        tx => new Transaction(tx),
+      );
+
+      setTransactions(mappedTransactions);
+      console.log('transactions', transactions);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const getBalance = async wallet => {
+    try {
+      const walletBalances = await GetBalance(wallet);
+      const totalBalance = Object.values(walletBalances).reduce(
+        (sum, balance) => sum + balance,
+        0,
+      );
+      setBalance(totalBalance.toLocaleString());
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const loadData = async () => {
+    try {
+      const wallet = await GetWollet();
+      setWollet(wallet);
+      getBalance(wallet);
+      getTransactions(wallet);
     } catch (error) {
       console.error(error);
     }
   };
 
   useEffect(() => {
-    init();
+    loadData();
   }, []);
 
   const onSend = async () => {
     try {
       const transactions = await GetTransactions(wollet);
-      console.log(transactions);
+      setTransactions(transactions);
+      console.log('transactions', transactions);
     } catch (error) {
       console.error(error);
     }
@@ -53,7 +86,7 @@ function WalletScreen(props) {
           <Text style={styles.denomination}>tL-BTC</Text>
         </View>
         <TransactionButtons onSendPress={onSend} onReceivePress={onReceive} />
-        <Transactions />
+        <Transactions transactions={transactions} />
       </View>
     </View>
   );
