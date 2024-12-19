@@ -11,43 +11,49 @@ function Transactions({transactions, onScroll}) {
   );
 
   // Step 2: Group transactions by date
-  const groupByDate = transactions => {
-    return transactions.reduce((acc, transaction) => {
-      const date = new Date(transaction.timestamp * 1000)
-        .toISOString()
-        .split('T')[0]; // Convert timestamp to date string (YYYY-MM-DD)
-
-      if (!acc[date]) {
-        acc[date] = [];
+  const groupedTransactions = sortedTransactions.reduce(
+    (groups, transaction) => {
+      const date = new Date(transaction.timestamp * 1000).toLocaleDateString(
+        'en-US',
+      );
+      if (!groups[date]) {
+        groups[date] = [];
       }
-      acc[date].push(transaction);
+      groups[date].push(transaction);
+      return groups;
+    },
+    {},
+  );
 
-      return acc;
-    }, {});
-  };
+  // Convert groupedTransactions to an array of sections
+  const sections = Object.keys(groupedTransactions).map(date => ({
+    title: date,
+    data: groupedTransactions[date],
+  }));
 
-  const groupedTransactions = groupByDate(sortedTransactions);
-
-  const renderTransaction = ({item}) => {
-    const balance = Object.values(item.balance)[0];
-    const transactionDate = new Date(item.timestamp * 1000);
+  // Helper function to format date
+  const formatDate = dateString => {
+    const [month, day, year] = dateString.split('/').map(Number);
+    const date = new Date(year, month - 1, day);
     const today = new Date();
-    const tomorrow = new Date(today);
-    tomorrow.setDate(today.getDate() + 1);
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
 
-    let formattedDate;
-    if (transactionDate.toDateString() === today.toDateString()) {
-      formattedDate = 'Today';
-    } else if (transactionDate.toDateString() === tomorrow.toDateString()) {
-      formattedDate = 'Tomorrow';
+    if (date.toDateString() === today.toDateString()) {
+      return 'Today';
+    } else if (date.toDateString() === yesterday.toDateString()) {
+      return 'Yesterday';
     } else {
-      formattedDate = transactionDate.toLocaleDateString('en-US', {
-        weekday: 'long',
-        month: 'long',
+      return date.toLocaleDateString('en-US', {
+        weekday: 'short',
+        month: 'short',
         day: 'numeric',
         year: 'numeric',
       });
     }
+  };
+  const renderTransaction = ({item}) => {
+    const balance = Object.values(item.balance)[0];
 
     return (
       <View style={styles.transaction}>
@@ -83,26 +89,22 @@ function Transactions({transactions, onScroll}) {
     );
   };
 
-  const renderGroupedTransactions = ({item: date}) => (
-    <View>
-      <View style={styles.dateContainer}>
-        <Text style={styles.date}>{date}</Text>
-      </View>
-      <Animated.FlatList
-        data={groupedTransactions[date]}
-        keyExtractor={transaction => transaction.txid}
-        renderItem={renderTransaction}
-      />
+  const renderSectionHeader = ({section: {title}}) => (
+    <View style={styles.dateContainer}>
+      <Text style={styles.date}>{formatDate(title)}</Text>
     </View>
   );
 
   return (
-    <Animated.FlatList
-      data={Object.keys(groupedTransactions)}
-      keyExtractor={item => item}
-      renderItem={renderGroupedTransactions}
-      scrollEventThrottle={16}
+    <Animated.SectionList
+      style={styles.transactions}
+      sections={sections}
+      keyExtractor={item => item.txid}
+      renderItem={renderTransaction}
+      renderSectionHeader={renderSectionHeader}
+      stickySectionHeadersEnabled={true}
       onScroll={onScroll}
+      contentContainerStyle={styles.contentContainerStyle} // Add padding to the bottom
     />
   );
 }
@@ -117,13 +119,10 @@ const styles = StyleSheet.create({
   },
   dateContainer: {
     alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: colors.black,
     padding: 10,
-    borderRadius: 10,
-    marginBottom: 10,
     borderBottomWidth: 0.3,
-    borderColor: '#ccc',
-    position: 'relative',
+    borderColor: colors.textGray,
   },
   date: {
     color: colors.textGray,
@@ -164,6 +163,9 @@ const styles = StyleSheet.create({
   },
   red: {
     color: colors.priceRed,
+  },
+  contentContainerStyle: {
+    paddingBottom: 100,
   },
 });
 
