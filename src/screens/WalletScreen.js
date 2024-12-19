@@ -13,12 +13,14 @@ import {
 } from '../wallet/WalletFactory';
 import Transaction from '../models/Transaction';
 
+const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+
 function WalletScreen({navigation}) {
   const [balance, setBalance] = useState(0);
   const [wollet, setWollet] = useState(null);
   const [transactions, setTransactions] = useState([]);
   const [isScrolledUp, setIsScrolledUp] = useState(false);
-
+  const [refreshTransactions, setRefreshTransactions] = useState(false);
   const scrollY = useRef(new Animated.Value(0)).current;
 
   const getTransactions = async wallet => {
@@ -31,6 +33,20 @@ function WalletScreen({navigation}) {
       setTransactions(mappedTransactions);
     } catch (error) {
       console.error(error);
+    }
+  };
+
+  const onRefresh = async () => {
+    setRefreshTransactions(true);
+    await sleep(2000);
+
+    try {
+      await getBalance(wollet);
+      await getTransactions(wollet);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setRefreshTransactions(false);
     }
   };
 
@@ -120,13 +136,17 @@ function WalletScreen({navigation}) {
   );
 
   const onTransactionDetails = transaction => {
-    console.log('transaction', transaction);
     navigation.navigate('TransactionDetails', {transaction});
   };
 
   return (
     <View style={styles.container}>
-      <TopBar title="Wallet" />
+      <TopBar
+        title="Wallet"
+        showRefreshButton={true}
+        isRefreshing={refreshTransactions}
+        onRefresh={onRefresh}
+      />
       <Animated.View
         style={[
           styles.headerRow,

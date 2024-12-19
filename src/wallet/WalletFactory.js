@@ -51,6 +51,12 @@ const CreateWallet = async () => {
   }
 };
 
+const updateWallet = async wollet => {
+  const client = await new Client().defaultElectrumClient(Network.Testnet);
+  const update = await client.fullScan(wollet);
+  await wollet.applyUpdate(update);
+};
+
 const GetWollet = async () => {
   // For now, we will use the first wallet in the list
   const wallet = await getDefaultWallet();
@@ -61,9 +67,7 @@ const GetWollet = async () => {
   const {descriptor} = JSON.parse(wallet);
   const desc = await new Descriptor().create(descriptor);
   const wollet = await new Wollet().create(Network.Testnet, desc, null);
-  const client = await new Client().defaultElectrumClient(Network.Testnet);
-  const update = await client.fullScan(wollet);
-  await wollet.applyUpdate(update);
+  await updateWallet(wollet);
   return wollet;
 };
 
@@ -76,16 +80,19 @@ const IsWalletExist = async () => {
 };
 
 const GetNewAddress = async wollet => {
+  await updateWallet(wollet);
   const address = await wollet.getAddress();
   return address;
 };
 
 const GetTransactions = async wollet => {
+  await updateWallet(wollet);
   const transactions = await wollet.getTransactions();
   return transactions;
 };
 
 const GetBalance = async wollet => {
+  await updateWallet(wollet);
   const balance = await wollet.getBalance();
   return balance;
 };
