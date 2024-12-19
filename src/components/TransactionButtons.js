@@ -4,7 +4,12 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import colors from '../config/Colors';
 
-function TransactionButtons({onSendPress, onReceivePress, onScanPress}) {
+function TransactionButtons({
+  onSendPress,
+  onReceivePress,
+  onScanPress,
+  hideLabel = false,
+}) {
   return (
     <View style={styles.container}>
       <View style={styles.transactionButtons}>
@@ -13,7 +18,7 @@ function TransactionButtons({onSendPress, onReceivePress, onScanPress}) {
             <View style={styles.iconWrapper}>
               <Icon name="arrow-up" color={colors.white} size={35} />
             </View>
-            <Text style={styles.iconText}>SEND</Text>
+            {!hideLabel && <Text style={styles.iconText}>SEND</Text>}
           </View>
         </TouchableOpacity>
         <TouchableOpacity onPress={onScanPress}>
@@ -21,7 +26,7 @@ function TransactionButtons({onSendPress, onReceivePress, onScanPress}) {
             <View style={styles.iconWrapper}>
               <Icon name="qrcode" color={colors.white} size={35} />
             </View>
-            <Text style={styles.iconText}>SCAN</Text>
+            {!hideLabel && <Text style={styles.iconText}>SCAN</Text>}
           </View>
         </TouchableOpacity>
         <TouchableOpacity onPress={onReceivePress}>
@@ -29,7 +34,7 @@ function TransactionButtons({onSendPress, onReceivePress, onScanPress}) {
             <View style={styles.iconWrapper}>
               <Icon name="arrow-down" color={colors.white} size={35} />
             </View>
-            <Text style={styles.iconText}>RECEIVE</Text>
+            {!hideLabel && <Text style={styles.iconText}>RECEIVE</Text>}
           </View>
         </TouchableOpacity>
       </View>
@@ -42,7 +47,7 @@ const styles = StyleSheet.create({
   transactionButtons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 60,
+    //marginTop: 40,
   },
   iconContainer: {
     alignItems: 'center',

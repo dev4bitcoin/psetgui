@@ -1,5 +1,5 @@
-import React, {useEffect, useState} from 'react';
-import {View, StyleSheet, Text} from 'react-native';
+import React, {useEffect, useState, useRef} from 'react';
+import {View, StyleSheet, Text, Animated, ScrollView} from 'react-native';
 
 import colors from '../config/Colors';
 import TransactionButtons from '../components/TransactionButtons';
@@ -17,6 +17,9 @@ function WalletScreen(props) {
   const [balance, setBalance] = useState(0);
   const [wollet, setWollet] = useState(null);
   const [transactions, setTransactions] = useState([]);
+  const [isScrolledUp, setIsScrolledUp] = useState(false);
+
+  const scrollY = useRef(new Animated.Value(0)).current;
 
   const getTransactions = async wallet => {
     try {
@@ -26,7 +29,6 @@ function WalletScreen(props) {
       );
 
       setTransactions(mappedTransactions);
-      console.log('transactions', transactions);
     } catch (error) {
       console.error(error);
     }
@@ -64,7 +66,6 @@ function WalletScreen(props) {
     try {
       const transactions = await GetTransactions(wollet);
       setTransactions(transactions);
-      console.log('transactions', transactions);
     } catch (error) {
       console.error(error);
     }
@@ -77,17 +78,91 @@ function WalletScreen(props) {
     props.navigation.navigate('Receive', {address: description});
   };
 
+  const balanceContainerTranslateX = scrollY.interpolate({
+    inputRange: [0, 100],
+    outputRange: [0, 10],
+    extrapolate: 'clamp',
+  });
+
+  const transactionButtonsTranslateX = scrollY.interpolate({
+    inputRange: [0, 100],
+    outputRange: [0, 10],
+    extrapolate: 'clamp',
+  });
+
+  const headerRowTranslateY = scrollY.interpolate({
+    inputRange: [0, 100],
+    outputRange: [0, -20],
+    extrapolate: 'clamp',
+  });
+
+  const balanceContainerScale = scrollY.interpolate({
+    inputRange: [0, 100],
+    outputRange: [1, 0.7],
+    extrapolate: 'clamp',
+  });
+
+  const transactionButtonsScale = scrollY.interpolate({
+    inputRange: [0, 100],
+    outputRange: [1, 0.7],
+    extrapolate: 'clamp',
+  });
+
+  const handleScroll = Animated.event(
+    [{nativeEvent: {contentOffset: {y: scrollY}}}],
+    {
+      useNativeDriver: true,
+      listener: event => {
+        const offsetY = event.nativeEvent.contentOffset.y;
+        setIsScrolledUp(offsetY > 50);
+      },
+    },
+  );
+
   return (
     <View style={styles.container}>
       <TopBar title="Wallet" />
-      <View style={styles.wallet}>
-        <View style={styles.balanceContainer}>
+      <Animated.View
+        style={[
+          styles.headerRow,
+          {
+            flexDirection: isScrolledUp === true ? 'row' : 'column',
+            transform: [{translateY: headerRowTranslateY}],
+          },
+        ]}>
+        <Animated.View
+          style={[
+            styles.balanceContainer,
+            {
+              transform: [
+                {translateX: balanceContainerTranslateX},
+                {scale: balanceContainerScale},
+              ],
+              marginTop: isScrolledUp ? 20 : 0,
+              marginBottom: isScrolledUp ? 10 : 40,
+            },
+          ]}>
           <Text style={styles.balance}>{balance}</Text>
           <Text style={styles.denomination}>tL-BTC</Text>
-        </View>
-        <TransactionButtons onSendPress={onSend} onReceivePress={onReceive} />
-        <Transactions transactions={transactions} />
-      </View>
+        </Animated.View>
+        <Animated.View
+          style={[
+            styles.transactionButtonsContainer,
+            {
+              transform: [
+                {translateX: transactionButtonsTranslateX},
+                {scale: transactionButtonsScale},
+              ],
+            },
+          ]}>
+          <TransactionButtons
+            onSendPress={onSend}
+            onReceivePress={onReceive}
+            hideLabel={isScrolledUp}
+          />
+        </Animated.View>
+      </Animated.View>
+      <Transactions transactions={transactions} onScroll={handleScroll} />
     </View>
   );
 }
@@ -99,14 +174,12 @@ const styles = StyleSheet.create({
     backgroundColor: colors.appBackground,
     paddingTop: 50,
   },
-  wallet: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 60,
+  headerRow: {
+    paddingTop: 30,
+    paddingHorizontal: 20,
   },
   balanceContainer: {
     alignItems: 'center',
-    justifyContent: 'center',
   },
   balance: {
     fontSize: 45,
@@ -117,6 +190,13 @@ const styles = StyleSheet.create({
     color: colors.textGray,
     marginTop: 5,
     marginLeft: 10,
+  },
+  transactionButtonsContainer: {
+    //marginTop: 20,
+  },
+  scrollView: {
+    // flex: 1,
+    // width: '100%',
   },
 });
 

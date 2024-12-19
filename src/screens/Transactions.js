@@ -1,10 +1,33 @@
 import React from 'react';
-import {View, StyleSheet, FlatList, Text, TouchableOpacity} from 'react-native';
+import {View, StyleSheet, Text, TouchableOpacity, Animated} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import colors from '../config/Colors';
 
-function Transactions({transactions}) {
+function Transactions({transactions, onScroll}) {
+  // Step 1: Sort transactions by timestamp
+  const sortedTransactions = transactions.sort(
+    (a, b) => b.timestamp - a.timestamp,
+  );
+
+  // Step 2: Group transactions by date
+  const groupByDate = transactions => {
+    return transactions.reduce((acc, transaction) => {
+      const date = new Date(transaction.timestamp * 1000)
+        .toISOString()
+        .split('T')[0]; // Convert timestamp to date string (YYYY-MM-DD)
+
+      if (!acc[date]) {
+        acc[date] = [];
+      }
+      acc[date].push(transaction);
+
+      return acc;
+    }, {});
+  };
+
+  const groupedTransactions = groupByDate(sortedTransactions);
+
   const renderTransaction = ({item}) => {
     const balance = Object.values(item.balance)[0];
     const transactionDate = new Date(item.timestamp * 1000);
@@ -28,9 +51,6 @@ function Transactions({transactions}) {
 
     return (
       <View style={styles.transaction}>
-        <View style={styles.dateContainer}>
-          <Text style={styles.date}>{formattedDate}</Text>
-        </View>
         <TouchableOpacity>
           <View style={styles.transactionDetails}>
             <View style={styles.transactionIdContainer}>
@@ -59,21 +79,31 @@ function Transactions({transactions}) {
             </View>
           </View>
         </TouchableOpacity>
-        {/* <Text>Type: {item.type}</Text>
-        <Text>Fee: {item.fee}</Text>
-        <Text>Height: {item.height}</Text> */}
       </View>
     );
   };
 
-  return (
-    <View style={styles.container}>
-      <FlatList
-        style={styles.transactions}
-        data={transactions || []}
+  const renderGroupedTransactions = ({item: date}) => (
+    <View>
+      <View style={styles.dateContainer}>
+        <Text style={styles.date}>{date}</Text>
+      </View>
+      <Animated.FlatList
+        data={groupedTransactions[date]}
+        keyExtractor={transaction => transaction.txid}
         renderItem={renderTransaction}
       />
     </View>
+  );
+
+  return (
+    <Animated.FlatList
+      data={Object.keys(groupedTransactions)}
+      keyExtractor={item => item}
+      renderItem={renderGroupedTransactions}
+      scrollEventThrottle={16}
+      onScroll={onScroll}
+    />
   );
 }
 
@@ -82,7 +112,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   transactions: {
-    padding: 10,
+    paddingLeft: 10,
+    paddingRight: 10,
   },
   dateContainer: {
     alignItems: 'center',
@@ -113,7 +144,6 @@ const styles = StyleSheet.create({
   },
   balanceContainer: {
     width: '30%',
-    //alignItems: 'flex-end',
     flexDirection: 'row',
     justifyContent: 'flex-end',
   },
@@ -121,7 +151,6 @@ const styles = StyleSheet.create({
     color: colors.white,
   },
   balance: {
-    //color: colors.white,
     fontWeight: 'bold',
     paddingRight: 5,
     fontSize: 16,
