@@ -3,6 +3,7 @@ import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import LaunchScreen from '../screens/LaunchScreen';
 import App from '../../App';
 import ReceiveScreen from '../screens/ReceiveScreen';
+import TransactionDetail from '../screens/TransactionDetail';
 
 const Stack = createNativeStackNavigator();
 
@@ -23,6 +24,11 @@ const AppNavigator = () => {
         <Stack.Screen
           name="Receive"
           component={ReceiveScreen}
+          options={{headerShown: false}}
+        />
+        <Stack.Screen
+          name="TransactionDetail"
+          component={TransactionDetail}
           options={{headerShown: false}}
         />
       </Stack.Navigator>

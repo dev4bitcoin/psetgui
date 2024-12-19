@@ -1,5 +1,5 @@
 import React, {useEffect, useState, useRef} from 'react';
-import {View, StyleSheet, Text, Animated, ScrollView} from 'react-native';
+import {View, StyleSheet, Text, Animated} from 'react-native';
 
 import colors from '../config/Colors';
 import TransactionButtons from '../components/TransactionButtons';
@@ -13,7 +13,7 @@ import {
 } from '../wallet/WalletFactory';
 import Transaction from '../models/Transaction';
 
-function WalletScreen(props) {
+function WalletScreen({navigation}) {
   const [balance, setBalance] = useState(0);
   const [wollet, setWollet] = useState(null);
   const [transactions, setTransactions] = useState([]);
@@ -119,6 +119,11 @@ function WalletScreen(props) {
     },
   );
 
+  const onTransactionDetails = transaction => {
+    console.log('transaction', transaction);
+    navigation.navigate('TransactionDetails', {transaction});
+  };
+
   return (
     <View style={styles.container}>
       <TopBar title="Wallet" />
@@ -162,7 +167,11 @@ function WalletScreen(props) {
           />
         </Animated.View>
       </Animated.View>
-      <Transactions transactions={transactions} onScroll={handleScroll} />
+      <Transactions
+        transactions={transactions}
+        onScroll={handleScroll}
+        onTransactionDetail={onTransactionDetails}
+      />
     </View>
   );
 }

@@ -1,10 +1,13 @@
 import React from 'react';
 import {View, StyleSheet, Text, TouchableOpacity, Animated} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import {useNavigation} from '@react-navigation/native';
 
 import colors from '../config/Colors';
 
 function Transactions({transactions, onScroll}) {
+  const navigation = useNavigation();
+
   // Step 1: Sort transactions by timestamp
   const sortedTransactions = transactions.sort(
     (a, b) => b.timestamp - a.timestamp,
@@ -52,12 +55,17 @@ function Transactions({transactions, onScroll}) {
       });
     }
   };
+
+  const onTransactionDetail = transaction => {
+    navigation.navigate('TransactionDetail', {transaction: transaction});
+  };
+
   const renderTransaction = ({item}) => {
     const balance = Object.values(item.balance)[0];
 
     return (
       <View style={styles.transaction}>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => onTransactionDetail(item)}>
           <View style={styles.transactionDetails}>
             <View style={styles.transactionIdContainer}>
               <Text
