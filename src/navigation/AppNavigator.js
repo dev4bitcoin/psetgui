@@ -4,6 +4,7 @@ import LaunchScreen from '../screens/LaunchScreen';
 import App from '../../App';
 import ReceiveScreen from '../screens/ReceiveScreen';
 import TransactionDetail from '../screens/TransactionDetail';
+import ScanScreen from '../screens/ScanScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -29,6 +30,11 @@ const AppNavigator = () => {
         <Stack.Screen
           name="TransactionDetail"
           component={TransactionDetail}
+          options={{headerShown: false}}
+        />
+        <Stack.Screen
+          name="ScanScreen"
+          component={ScanScreen}
           options={{headerShown: false}}
         />
       </Stack.Navigator>

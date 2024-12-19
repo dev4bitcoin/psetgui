@@ -91,7 +91,7 @@ function WalletScreen({navigation}) {
     const {description, qr_code_text, is_blinded} = await GetNewAddress(wollet);
     console.log('description', description);
     console.log('qr_code_text', qr_code_text);
-    props.navigation.navigate('Receive', {address: description});
+    navigation.navigate('Receive', {address: description});
   };
 
   const balanceContainerTranslateX = scrollY.interpolate({
@@ -102,7 +102,7 @@ function WalletScreen({navigation}) {
 
   const transactionButtonsTranslateX = scrollY.interpolate({
     inputRange: [0, 100],
-    outputRange: [0, 10],
+    outputRange: [0, -20],
     extrapolate: 'clamp',
   });
 
@@ -139,6 +139,14 @@ function WalletScreen({navigation}) {
     navigation.navigate('TransactionDetails', {transaction});
   };
 
+  const onScanPress = () => {
+    navigation.navigate('ScanScreen', {onScanFinished});
+  };
+
+  const onScanFinished = address => {
+    console.log('Scanned address:', address);
+  };
+
   return (
     <View style={styles.container}>
       <TopBar
@@ -165,6 +173,7 @@ function WalletScreen({navigation}) {
               ],
               marginTop: isScrolledUp ? 20 : 0,
               marginBottom: isScrolledUp ? 10 : 40,
+              marginLeft: isScrolledUp ? 40 : 0,
             },
           ]}>
           <Text style={styles.balance}>{balance}</Text>
@@ -183,6 +192,7 @@ function WalletScreen({navigation}) {
           <TransactionButtons
             onSendPress={onSend}
             onReceivePress={onReceive}
+            onScanPress={onScanPress}
             hideLabel={isScrolledUp}
           />
         </Animated.View>
