@@ -80,7 +80,7 @@ const IsWalletExist = async () => {
 };
 
 const GetNewAddress = async wollet => {
-  await updateWallet(wollet);
+  //await updateWallet(wollet);
   const address = await wollet.getAddress();
   return address;
 };

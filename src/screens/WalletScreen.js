@@ -79,18 +79,11 @@ function WalletScreen({navigation}) {
   }, []);
 
   const onSend = async () => {
-    try {
-      const transactions = await GetTransactions(wollet);
-      setTransactions(transactions);
-    } catch (error) {
-      console.error(error);
-    }
+    navigation.navigate('SendScreen', {showScannerScreen: false});
   };
 
   const onReceive = async () => {
     const {description, qr_code_text, is_blinded} = await GetNewAddress(wollet);
-    console.log('description', description);
-    console.log('qr_code_text', qr_code_text);
     navigation.navigate('Receive', {address: description});
   };
 
@@ -140,7 +133,7 @@ function WalletScreen({navigation}) {
   };
 
   const onScanPress = () => {
-    navigation.navigate('ScanScreen', {onScanFinished});
+    navigation.navigate('SendScreen', {showScannerScreen: true});
   };
 
   const onScanFinished = address => {

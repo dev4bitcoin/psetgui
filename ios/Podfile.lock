@@ -1541,7 +1541,7 @@ PODS:
     - React-Core
   - RNCAsyncStorage (2.1.0):
     - React-Core
-  - RNCClipboard (1.5.1):
+  - RNCClipboard (1.15.0):
     - React-Core
   - RNGestureHandler (2.21.2):
     - DoubleConversion
@@ -1708,7 +1708,7 @@ DEPENDENCIES:
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - ReactNativeLocalization (from `../node_modules/react-native-localization`)
   - "RNCAsyncStorage (from `../node_modules/@react-native-async-storage/async-storage`)"
-  - "RNCClipboard (from `../node_modules/@react-native-community/clipboard`)"
+  - "RNCClipboard (from `../node_modules/@react-native-clipboard/clipboard`)"
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - RNReactNativeHapticFeedback (from `../node_modules/react-native-haptic-feedback`)
   - RNScreens (from `../node_modules/react-native-screens`)
@@ -1858,7 +1858,7 @@ EXTERNAL SOURCES:
   RNCAsyncStorage:
     :path: "../node_modules/@react-native-async-storage/async-storage"
   RNCClipboard:
-    :path: "../node_modules/@react-native-community/clipboard"
+    :path: "../node_modules/@react-native-clipboard/clipboard"
   RNGestureHandler:
     :path: "../node_modules/react-native-gesture-handler"
   RNReactNativeHapticFeedback:
@@ -1943,7 +1943,7 @@ SPEC CHECKSUMS:
   ReactCommon: 89c87b343deacc8610b099ac764848f0ce937e3e
   ReactNativeLocalization: fb171138cdc80d5d0d4f20243d2fc82c2b3cc48f
   RNCAsyncStorage: cc6479c4acd84cc7004946946c8afe30b018184d
-  RNCClipboard: 41d8d918092ae8e676f18adada19104fa3e68495
+  RNCClipboard: 69ab8e51324d5b351f6ba72bbdb72478087a2c64
   RNGestureHandler: aa9690789023c9be8f06aa90e10ce637ea788f4d
   RNReactNativeHapticFeedback: 0d591ea1e150f36cb96d868d4e8d77272243d78a
   RNScreens: b03d696c70cc5235ce4587fcc27ae1a93a48f98c

@@ -28,4 +28,5 @@ export default {
   walletTypeDefaultColor: '#89888f',
   walletTypeBGColor: '#2E2E2E',
   lightGray: '#222222',
+  yellow: '#ffff00',
 };

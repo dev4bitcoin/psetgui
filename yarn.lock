@@ -1650,6 +1650,11 @@
   dependencies:
     merge-options "^3.0.4"
 
+"@react-native-clipboard/clipboard@^1.15.0":
+  version "1.15.0"
+  resolved "https://registry.npmjs.org/@react-native-clipboard/clipboard/-/clipboard-1.15.0.tgz"
+  integrity sha512-YDMC3E956jn9zE11uKGcQDKS1SO9q72iNHxZyrKY5y9XYwZcA9vo3Xk74+zRnf7cM48drDO0s9lyAPUlOvyhrw==
+
 "@react-native-community/cli-clean@15.0.1":
   version "15.0.1"
   resolved "https://registry.npmjs.org/@react-native-community/cli-clean/-/cli-clean-15.0.1.tgz"
@@ -4340,6 +4345,11 @@ fs.realpath@^1.0.0:
   resolved "https://registry.npmjs.org/fs.realpath/-/fs.realpath-1.0.0.tgz"
   integrity sha512-OO0pH2lK6a0hZnAdau5ItzHPI6pUlvI7jMVnxUQRtw4owF2wk8lOSabtGDCTP4Ggrg2MbGnWO9X8K1t4+fGMDw==
 
+fsevents@^2.3.2:
+  version "2.3.3"
+  resolved "https://registry.npmjs.org/fsevents/-/fsevents-2.3.3.tgz"
+  integrity sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==
+
 function-bind@^1.1.2:
   version "1.1.2"
   resolved "https://registry.npmjs.org/function-bind/-/function-bind-1.1.2.tgz"
@@ -4745,6 +4755,11 @@ init-package-json@^7.0.2:
     semver "^7.3.5"
     validate-npm-package-license "^3.0.4"
     validate-npm-package-name "^6.0.0"
+
+install@^0.13.0:
+  version "0.13.0"
+  resolved "https://registry.npmjs.org/install/-/install-0.13.0.tgz"
+  integrity sha512-zDml/jzr2PKU9I8J/xyZBQn8rPCAY//UOYNmR01XwNwyfhEWObo2SWfSl1+0tm1u6PhxLwDnfsT/6jB7OUxqFA==
 
 internal-slot@^1.0.7, internal-slot@^1.1.0:
   version "1.1.0"
@@ -5981,10 +5996,10 @@ ltgt@^2.1.3:
   resolved "https://registry.npmjs.org/ltgt/-/ltgt-2.2.1.tgz"
   integrity sha512-AI2r85+4MquTw9ZYqabu4nMwy9Oftlfa/e/52t9IjtfG+mGBbTNdAoZ3RQKLHR6r0wQnwZnPIEh/Ya6XTWAKNA==
 
-lwk-rn@^0.8.2:
+"lwk-rn@github:Blockstream/lwk-rn#updates":
   version "0.8.2"
-  resolved "https://registry.npmjs.org/lwk-rn/-/lwk-rn-0.8.2.tgz"
-  integrity sha512-9Q2BVTUMLFC4KehpbGbf4MMs/DlL/stq+M3bZH8lAR6OTThxyNBkrfewjGhLBxm9qrV204xwnwDETinRzMirbQ==
+  resolved "git+ssh://git@github.com/Blockstream/lwk-rn.git"
+  integrity sha512-xUQh3d5Yvk1Xlk1kVJoK/uh98fk+hZ0XhyOxxalUPavDwmZ9GAHxwYvk9Zeo84Y2shwva5w5ws+WeqI8/Gkllw==
 
 make-dir@^2.0.0:
   version "2.1.0"
@@ -7404,7 +7419,7 @@ react-native-vision-camera@^4.6.3:
   resolved "https://registry.npmjs.org/react-native-vision-camera/-/react-native-vision-camera-4.6.3.tgz"
   integrity sha512-fVHww4cNFrxvMYOlUZcjl3iYmR3vcUtvLZKW9NHlKZ3o4zsspwYjbw2vheZvHrHtJ30OrE3N2NFqT6CxgPvRCw==
 
-react-native@*, "react-native@^0.0.0-0 || >=0.65 <1.0", react-native@>=0.57.0, react-native@>=0.60.0, react-native@>=0.63.4, react-native@>0.64, react-native@0.76.3:
+react-native@*, "react-native@^0.0.0-0 || >=0.65 <1.0", "react-native@>= 0.61.5", react-native@>=0.57.0, react-native@>=0.60.0, react-native@>=0.63.4, react-native@>0.64, react-native@0.76.3:
   version "0.76.3"
   resolved "https://registry.npmjs.org/react-native/-/react-native-0.76.3.tgz"
   integrity sha512-0TUhgmlouRNf6yuDIIAdbQl0g1VsONgCMsLs7Et64hjj5VLMCA7np+4dMrZvGZ3wRNqzgeyT9oWJsUm49AcwSQ==
@@ -7470,7 +7485,7 @@ react-test-renderer@18.3.1:
     react-shallow-renderer "^16.15.0"
     scheduler "^0.23.2"
 
-react@*, "react@^16.0.0 || ^17.0.0 || ^18.0.0", "react@^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0", "react@^18.0.0 || ^17.0.0 || ^16.0.0 || ^15.6.0", react@^18.2.0, react@^18.3.1, "react@>= 18.2.0", react@>=16.0, react@>=16.8, react@>=17.0.0, react@>15.6.0, react@18.3.1:
+react@*, "react@^16.0.0 || ^17.0.0 || ^18.0.0", "react@^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0", "react@^18.0.0 || ^17.0.0 || ^16.0.0 || ^15.6.0", react@^18.2.0, react@^18.3.1, "react@>= 16.9.0", "react@>= 18.2.0", react@>=16.0, react@>=16.8, react@>=17.0.0, react@>15.6.0, react@18.3.1:
   version "18.3.1"
   resolved "https://registry.npmjs.org/react/-/react-18.3.1.tgz"
   integrity sha512-wS+hAgJShR0KhEvPJArfuPVN1+Hz1t0Y6n5jLrGQbkb4urgPE/0Rve+1kMB1v/oWgHgm4WIcV+i7F2pTVj+2iQ==

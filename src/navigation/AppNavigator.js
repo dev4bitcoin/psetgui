@@ -4,7 +4,7 @@ import LaunchScreen from '../screens/LaunchScreen';
 import App from '../../App';
 import ReceiveScreen from '../screens/ReceiveScreen';
 import TransactionDetail from '../screens/TransactionDetail';
-import ScanScreen from '../screens/ScanScreen';
+import SendScreen from '../screens/SendScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -33,8 +33,8 @@ const AppNavigator = () => {
           options={{headerShown: false}}
         />
         <Stack.Screen
-          name="ScanScreen"
-          component={ScanScreen}
+          name="SendScreen"
+          component={SendScreen}
           options={{headerShown: false}}
         />
       </Stack.Navigator>

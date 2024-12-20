@@ -9,12 +9,11 @@ import {
 
 import colors from '../config/Colors';
 import Screen from './Screen';
-import TopBar from '../components/TopBar';
 
 const {width, height} = Dimensions.get('window');
-const cameraHeight = height * 0.6; // 70% of the screen height
+const cameraHeight = height * 0.7; // 70% of the screen height
 const marginHorizontal = 10; // Margin on left and right
-const cameraWidth = width - 4 * marginHorizontal; // Width minus margins
+const cameraWidth = width; // Width minus margins
 
 function ScanScreen({navigation, route}) {
   const device = useCameraDevice('back');
@@ -27,24 +26,20 @@ function ScanScreen({navigation, route}) {
   }, [hasPermission, requestPermission]);
 
   if (!hasPermission) {
-    console.log('No camera permission');
     return (
-      <Screen>
-        <TopBar title="Scan" showBackButton={true} />
+      <Screen style={styles.screen}>
         <View style={styles.container}>
-          <Text>No camera permission</Text>
+          <Text style={styles.text}>No camera permission</Text>
         </View>
       </Screen>
     );
   }
 
   if (device == null) {
-    console.log('No camera device');
     return (
-      <Screen>
-        <TopBar title="Scan" showBackButton={true} />
+      <Screen style={styles.screen}>
         <View style={styles.container}>
-          <Text>No camera device</Text>
+          <Text style={styles.text}>No camera device</Text>
         </View>
       </Screen>
     );
@@ -60,35 +55,73 @@ function ScanScreen({navigation, route}) {
   });
 
   return (
-    <Screen>
-      <TopBar title="Scan" showBackButton={true} />
-      <View style={styles.container}>
-        <Camera
-          style={[styles.camera]}
-          device={device}
-          isActive={true}
-          codeScanner={codeScanner}
-        />
+    <View style={styles.camera}>
+      <Camera
+        style={[styles.camera]}
+        device={device}
+        isActive={true}
+        codeScanner={codeScanner}
+      />
+
+      <View style={styles.rectangleContainer}>
+        <View style={styles.rectangle} />
       </View>
-      <Text style={styles.scanText}>Scan QR code to get the address</Text>
-    </Screen>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  screen: {
     flex: 1,
   },
-  camera: {
-    marginTop: 40,
-    width: cameraWidth, // Full width minus margins
-    height: cameraHeight, // 70% of the screen height
-    marginHorizontal: marginHorizontal, // Margin on left and right
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  scanText: {
+  camera: {
+    width: width, // Full width minus margins
+    height: cameraHeight, // 70% of the screen height
+  },
+  text: {
+    fontSize: 20,
     color: colors.white,
-    marginTop: 20,
-    textAlign: 'center', // Center the text horizontally
+  },
+  rectangleContainer: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: [{translateX: -100}, {translateY: -100}], // Center the rectangle
+  },
+  overlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  topOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  middleOverlay: {
+    flexDirection: 'row',
+  },
+  sideOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  bottomOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  rectangle: {
+    width: 200,
+    height: 200,
+    borderWidth: 2,
+    borderColor: colors.yellow,
+    borderStyle: 'solid',
+    backgroundColor: 'transparent', // Ensure the rectangle area is clear
   },
 });
 
