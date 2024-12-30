@@ -9,13 +9,15 @@ import {
 
 import colors from '../config/Colors';
 import Screen from './Screen';
+import TopBar from '../components/TopBar';
 
 const {width, height} = Dimensions.get('window');
-const cameraHeight = height * 0.7; // 70% of the screen height
+const cameraHeight = height; // 70% of the screen height
 const marginHorizontal = 10; // Margin on left and right
 const cameraWidth = width; // Width minus margins
 
 function ScanScreen({navigation, route}) {
+  const {amount} = route.params;
   const device = useCameraDevice('back');
   const {hasPermission, requestPermission} = useCameraPermission();
 
@@ -28,6 +30,7 @@ function ScanScreen({navigation, route}) {
   if (!hasPermission) {
     return (
       <Screen style={styles.screen}>
+        <TopBar title="Scan" showBackButton={true} />
         <View style={styles.container}>
           <Text style={styles.text}>No camera permission</Text>
         </View>
@@ -38,6 +41,8 @@ function ScanScreen({navigation, route}) {
   if (device == null) {
     return (
       <Screen style={styles.screen}>
+        <TopBar title="Scan" showBackButton={true} />
+
         <View style={styles.container}>
           <Text style={styles.text}>No camera device</Text>
         </View>
@@ -47,26 +52,37 @@ function ScanScreen({navigation, route}) {
   const codeScanner = useCodeScanner({
     codeTypes: ['qr', 'ean-13'],
     onCodeScanned: codes => {
-      console.log(`Scanned ${codes.length} codes!`);
-      console.log(codes);
-      //route.params.onScanFinished(codes);
-      navigation.goBack();
+      if (codes) {
+        // Parse the JSON string
+        const parsedData = JSON.parse(codes);
+
+        // Access the value property
+        const qrValue = parsedData[0].value;
+        //route.params.onScanFinished(codes);
+        navigation.navigate('SendTransactionReview', {
+          address: qrValue,
+          amount: amount,
+        });
+      }
     },
   });
 
   return (
-    <View style={styles.camera}>
-      <Camera
-        style={[styles.camera]}
-        device={device}
-        isActive={true}
-        codeScanner={codeScanner}
-      />
+    <Screen style={styles.screen}>
+      <TopBar title="Scan" showBackButton={true} />
+      <View style={styles.camera}>
+        <Camera
+          style={[styles.camera]}
+          device={device}
+          isActive={true}
+          codeScanner={codeScanner}
+        />
 
-      <View style={styles.rectangleContainer}>
-        <View style={styles.rectangle} />
+        <View style={styles.rectangleContainer}>
+          <View style={styles.rectangle} />
+        </View>
       </View>
-    </View>
+    </Screen>
   );
 }
 

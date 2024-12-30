@@ -8,12 +8,12 @@ import {
   TextInput,
 } from 'react-native';
 import Clipboard from '@react-native-clipboard/clipboard';
-import {useNavigation} from '@react-navigation/native';
 
 import colors from '../config/Colors';
+import Screen from './Screen';
 
-function SendToAddress({}) {
-  const navigation = useNavigation();
+function SendToAddress({navigation, route}) {
+  const {amount} = route.params;
   const [address, setAddress] = useState('');
   const textInputRef = useRef(null);
 
@@ -27,7 +27,10 @@ function SendToAddress({}) {
   };
 
   const onSend = () => {
-    navigation.navigate('SendTransactionReview', {address: address});
+    navigation.navigate('SendTransactionReview', {
+      address: address,
+      amount: amount,
+    });
   };
 
   const onCancel = () => {
@@ -35,52 +38,57 @@ function SendToAddress({}) {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={80}>
-      <View style={styles.addressText}>
-        <Text style={styles.text}>Enter recipient's address</Text>
-      </View>
-      <View style={styles.inputAndIconContainer}>
-        <View style={styles.inputContainer}>
-          <TextInput
-            ref={textInputRef}
-            style={styles.textInput}
-            value={address}
-            onChangeText={setAddress}
-          />
+    <Screen style={styles.screen}>
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={80}>
+        <View style={styles.addressText}>
+          <Text style={styles.text}>Enter recipient's address</Text>
         </View>
-      </View>
-      <View style={styles.button}>
-        <TouchableOpacity onPress={onPasteFromClipboard}>
-          <Text style={styles.buttonText}>Paste</Text>
-        </TouchableOpacity>
-      </View>
-      <View style={styles.flexSpacer} />
-      <View style={styles.bottomButtonContainer}>
-        {address.length > 0 && (
-          <TouchableOpacity onPress={onSend}>
+        <View style={styles.inputAndIconContainer}>
+          <View style={styles.inputContainer}>
+            <TextInput
+              ref={textInputRef}
+              style={styles.textInput}
+              value={address}
+              onChangeText={setAddress}
+            />
+          </View>
+        </View>
+        <View style={styles.button}>
+          <TouchableOpacity onPress={onPasteFromClipboard}>
+            <Text style={styles.buttonText}>Paste</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.flexSpacer} />
+        <View style={styles.bottomButtonContainer}>
+          {address.length > 0 && (
+            <TouchableOpacity onPress={onSend}>
+              <View style={styles.bottomButton}>
+                <View style={styles.buttonWrapper}>
+                  <Text style={styles.sendButtonText}>Send</Text>
+                </View>
+              </View>
+            </TouchableOpacity>
+          )}
+          <TouchableOpacity onPress={onCancel}>
             <View style={styles.bottomButton}>
               <View style={styles.buttonWrapper}>
-                <Text style={styles.sendButtonText}>Send</Text>
+                <Text style={styles.sendButtonText}>Cancel</Text>
               </View>
             </View>
           </TouchableOpacity>
-        )}
-        <TouchableOpacity onPress={onCancel}>
-          <View style={styles.bottomButton}>
-            <View style={styles.buttonWrapper}>
-              <Text style={styles.sendButtonText}>Cancel</Text>
-            </View>
-          </View>
-        </TouchableOpacity>
-      </View>
-    </KeyboardAvoidingView>
+        </View>
+      </KeyboardAvoidingView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+  },
   container: {
     flex: 1,
   },

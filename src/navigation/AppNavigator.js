@@ -6,6 +6,10 @@ import ReceiveScreen from '../screens/ReceiveScreen';
 import TransactionDetail from '../screens/TransactionDetail';
 import SendScreen from '../screens/SendScreen';
 import SendTransactionReview from '../screens/SendTransactionReview';
+import SelectRecipient from '../screens/SelectRecipient';
+import ScanScreen from '../screens/ScanScreen';
+import SendToAddress from '../screens/SendToAddress';
+import SuccessScreen from '../screens/SuccessScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -41,6 +45,26 @@ const AppNavigator = () => {
         <Stack.Screen
           name="SendTransactionReview"
           component={SendTransactionReview}
+          options={{headerShown: false}}
+        />
+        <Stack.Screen
+          name="SelectRecipient"
+          component={SelectRecipient}
+          options={{headerShown: false}}
+        />
+        <Stack.Screen
+          name="ScanScreen"
+          component={ScanScreen}
+          options={{headerShown: false}}
+        />
+        <Stack.Screen
+          name="SendToAddress"
+          component={SendToAddress}
+          options={{headerShown: false}}
+        />
+        <Stack.Screen
+          name="Success"
+          component={SuccessScreen}
           options={{headerShown: false}}
         />
       </Stack.Navigator>
