@@ -1,11 +1,9 @@
 import React, {useState} from 'react';
-import {View, StyleSheet, TouchableOpacity, SafeAreaView} from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import {View, StyleSheet} from 'react-native';
 
 import colors from '../config/Colors';
 import ScanScreen from './ScanScreen';
 import SendToAddress from './SendToAddress';
-import TopBar from '../components/TopBar';
 import Screen from './Screen';
 
 function SendScreen(props) {
@@ -13,39 +11,14 @@ function SendScreen(props) {
   const {showScannerScreen} = props.route.params;
   const [showScanner, setShowScanner] = useState(showScannerScreen);
 
-  const onScan = () => {
-    setShowScanner(true);
-  };
-
-  const onSendToAddress = () => {
-    setShowScanner(false);
-  };
-
   return (
-    <SafeAreaView style={[styles.screen]}>
+    <Screen style={[styles.screen]}>
       <View style={styles.container}>
-        <TopBar title={showScanner ? 'Scan' : 'Send'} showBackButton={true} />
         <View style={styles.pageContainer}>
           {showScanner ? <ScanScreen /> : <SendToAddress />}
         </View>
-        <View style={[styles.buttons, {borderTopWidth: showScanner ? 0 : 0.5}]}>
-          <TouchableOpacity onPress={onScan}>
-            <View style={styles.iconContainer}>
-              <View style={styles.iconWrapper}>
-                <Icon name="qrcode" color={colors.white} size={35} />
-              </View>
-            </View>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={onSendToAddress}>
-            <View style={styles.iconContainer}>
-              <View style={styles.iconWrapper}>
-                <Icon name="keyboard" color={colors.white} size={35} />
-              </View>
-            </View>
-          </TouchableOpacity>
-        </View>
       </View>
-    </SafeAreaView>
+    </Screen>
   );
 }
 

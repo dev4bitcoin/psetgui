@@ -1,80 +1,133 @@
-import React, {useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
   View,
   StyleSheet,
   Text,
   TouchableOpacity,
+  KeyboardAvoidingView,
   TextInput,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Clipboard from '@react-native-clipboard/clipboard';
+import {useNavigation} from '@react-navigation/native';
 
 import colors from '../config/Colors';
 
-function SendToAddress(props) {
+function SendToAddress({}) {
+  const navigation = useNavigation();
   const [address, setAddress] = useState('');
+  const textInputRef = useRef(null);
+
+  useEffect(() => {
+    textInputRef.current.focus();
+  }, []);
 
   const onPasteFromClipboard = async () => {
     const text = await Clipboard.getString();
     setAddress(text);
   };
 
+  const onSend = () => {
+    navigation.navigate('SendTransactionReview', {address: address});
+  };
+
+  const onCancel = () => {
+    navigation.goBack();
+  };
+
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={80}>
+      <View style={styles.addressText}>
+        <Text style={styles.text}>Enter recipient's address</Text>
+      </View>
       <View style={styles.inputAndIconContainer}>
         <View style={styles.inputContainer}>
-          <TextInput style={styles.textInput} />
-        </View>
-        <View style={styles.icon}>
-          <TouchableOpacity onPress={onPasteFromClipboard}>
-            <Icon name="content-copy" size={30} color={colors.white} />
-          </TouchableOpacity>
+          <TextInput
+            ref={textInputRef}
+            style={styles.textInput}
+            value={address}
+            onChangeText={setAddress}
+          />
         </View>
       </View>
       <View style={styles.button}>
         <TouchableOpacity onPress={onPasteFromClipboard}>
-          <Text style={styles.buttonText}>Send</Text>
+          <Text style={styles.buttonText}>Paste</Text>
         </TouchableOpacity>
       </View>
-    </View>
+      <View style={styles.flexSpacer} />
+      <View style={styles.bottomButtonContainer}>
+        {address.length > 0 && (
+          <TouchableOpacity onPress={onSend}>
+            <View style={styles.bottomButton}>
+              <View style={styles.buttonWrapper}>
+                <Text style={styles.sendButtonText}>Send</Text>
+              </View>
+            </View>
+          </TouchableOpacity>
+        )}
+        <TouchableOpacity onPress={onCancel}>
+          <View style={styles.bottomButton}>
+            <View style={styles.buttonWrapper}>
+              <Text style={styles.sendButtonText}>Cancel</Text>
+            </View>
+          </View>
+        </TouchableOpacity>
+      </View>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  addressText: {
+    marginTop: 20,
     alignItems: 'center',
+  },
+  keyboardAvoidingContainer: {
+    flex: 1,
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   inputAndIconContainer: {
     marginTop: 50,
+    marginLeft: 30,
+    marginRight: 30,
     flexDirection: 'row',
   },
   inputContainer: {
-    borderWidth: 1,
-    borderColor: colors.textGray,
     borderRadius: 5,
-    padding: 10,
-    marginBottom: 20,
-    marginLeft: 30,
-    width: '70%',
+    width: '100%',
     height: 50,
   },
   textInput: {
-    flex: 1,
-    fontSize: 16,
+    fontSize: 30,
+    color: colors.white,
+    textAlign: 'center',
+    height: 50,
   },
   icon: {
     backgroundColor: colors.lightGray,
     borderRadius: 50,
-    padding: 10,
-    paddingTop: 12,
-    height: 55,
-    marginLeft: 20,
-    marginRight: 10,
   },
   text: {
-    fontSize: 20,
+    fontSize: 25,
+    width: 250,
+    textAlign: 'center',
     color: colors.white,
+  },
+  sendButtonText: {
+    fontSize: 20,
+    //marginTop: 3,
+    //marginRight: 10,
+    fontWeight: 'bold',
+    color: colors.white,
+    textAlign: 'center',
   },
   button: {
     backgroundColor: colors.lightGray,
@@ -82,9 +135,33 @@ const styles = StyleSheet.create({
     width: 150,
     borderRadius: 20,
     marginTop: 30,
+    marginBottom: 10,
+    alignSelf: 'center',
+  },
+  flexSpacer: {
+    flex: 1,
+  },
+  bottomButtonContainer: {
+    paddingHorizontal: 30,
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+  },
+  bottomButton: {
+    backgroundColor: colors.lightGray,
+    borderColor: colors.white,
+    borderWidth: 2,
+    padding: 15,
+    borderRadius: 20,
+    alignItems: 'center',
+    marginHorizontal: 10,
+    marginBottom: 10,
+    marginTop: 10,
+  },
+  buttonWrapper: {
+    alignItems: 'center',
   },
   buttonText: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
     color: colors.white,
     textAlign: 'center',
