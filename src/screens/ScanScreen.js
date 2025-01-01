@@ -42,7 +42,6 @@ function ScanScreen({navigation, route}) {
     return (
       <Screen style={styles.screen}>
         <TopBar title="Scan" showBackButton={true} />
-
         <View style={styles.container}>
           <Text style={styles.text}>No camera device</Text>
         </View>

@@ -21,7 +21,7 @@
     "@react-navigation/stack": "^7.0.18",
     "bip39": "^3.1.0",
     "install": "^0.13.0",
-    "lwk-rn": "github:Blockstream/lwk-rn#updates",
+    "lwk-rn": "^0.8.2",
     "npm": "^10.9.2",
     "react": "18.3.1",
     "react-native": "0.76.3",

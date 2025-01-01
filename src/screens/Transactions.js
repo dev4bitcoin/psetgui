@@ -1,11 +1,18 @@
 import React from 'react';
-import {View, StyleSheet, Text, TouchableOpacity, Animated} from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  Animated,
+  RefreshControl,
+} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {useNavigation} from '@react-navigation/native';
 
 import colors from '../config/Colors';
 
-function Transactions({transactions, onScroll}) {
+function Transactions({transactions, onScroll, refreshing, onRefresh}) {
   const navigation = useNavigation();
 
   // Step 1: Sort transactions by timestamp
@@ -113,6 +120,9 @@ function Transactions({transactions, onScroll}) {
       stickySectionHeadersEnabled={true}
       onScroll={onScroll}
       contentContainerStyle={styles.contentContainerStyle} // Add padding to the bottom
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
     />
   );
 }

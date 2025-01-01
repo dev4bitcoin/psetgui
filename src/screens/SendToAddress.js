@@ -6,8 +6,10 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   TextInput,
+  Alert,
 } from 'react-native';
 import Clipboard from '@react-native-clipboard/clipboard';
+import {ValidateAddress} from '../wallet/WalletFactory';
 
 import colors from '../config/Colors';
 import Screen from './Screen';
@@ -23,10 +25,23 @@ function SendToAddress({navigation, route}) {
 
   const onPasteFromClipboard = async () => {
     const text = await Clipboard.getString();
+    const isValid = await ValidateAddress(address);
+    if (!isValid) {
+      console.log('Invalid address');
+      Alert.alert('Invalid address', 'The invoice contains am invalid address');
+      return;
+    }
+
     setAddress(text);
   };
 
-  const onSend = () => {
+  const onSend = async () => {
+    const isValid = await ValidateAddress(address);
+    if (!isValid) {
+      console.log('Invalid address');
+      Alert.alert('Invalid address', 'The invoice contains am invalid address');
+      return;
+    }
     navigation.navigate('SendTransactionReview', {
       address: address,
       amount: amount,
@@ -67,7 +82,7 @@ function SendToAddress({navigation, route}) {
             <TouchableOpacity onPress={onSend}>
               <View style={styles.bottomButton}>
                 <View style={styles.buttonWrapper}>
-                  <Text style={styles.sendButtonText}>Send</Text>
+                  <Text style={styles.sendButtonText}>Confirm</Text>
                 </View>
               </View>
             </TouchableOpacity>

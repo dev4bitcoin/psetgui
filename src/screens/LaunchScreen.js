@@ -1,6 +1,10 @@
 import React, {useEffect, useState} from 'react';
 import {View, Text, ActivityIndicator, StyleSheet} from 'react-native';
-import {IsWalletExist, CreateWallet} from '../wallet/WalletFactory';
+import {
+  IsWalletExist,
+  CreateWallet,
+  ResetWallets,
+} from '../wallet/WalletFactory';
 import colors from '../config/Colors';
 
 const LaunchScreen = ({navigation}) => {
@@ -10,6 +14,8 @@ const LaunchScreen = ({navigation}) => {
   const checkWallet = async () => {
     try {
       setLoadingText('Fetching wallet');
+      await ResetWallets();
+
       // delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       const isExist = await IsWalletExist();
@@ -37,7 +43,7 @@ const LaunchScreen = ({navigation}) => {
         <View style={styles.logo}>
           <Text style={styles.logoText}>PSET</Text>
         </View>
-        <ActivityIndicator size="large" color={colors.textGray} />
+        <ActivityIndicator size="large" color={colors.white} />
         <Text style={styles.text}>{loadingText}</Text>
       </View>
     );

@@ -64,6 +64,8 @@ const styles = StyleSheet.create({
   },
   pageContainer: {
     padding: 20,
+    flex: 1,
+    marginTop: 20,
   },
   borderContainer: {
     alignItems: 'center',
@@ -100,15 +102,16 @@ const styles = StyleSheet.create({
     marginTop: 15,
   },
   buttonContainer: {
-    marginTop: 100,
+    position: 'absolute',
+    bottom: 40,
     width: '100%',
+    left: 20,
   },
   button: {
     borderRadius: 50,
     backgroundColor: Colors.white,
     padding: 10,
     alignItems: 'center',
-    width: '100%',
   },
   buttonText: {
     fontSize: 20,

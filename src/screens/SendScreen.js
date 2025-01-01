@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {View, StyleSheet, TouchableOpacity, Text} from 'react-native';
 
 import colors from '../config/Colors';
@@ -8,16 +8,25 @@ import Numpad from '../components/Numpad';
 import TopBar from '../components/TopBar';
 
 function SendScreen(props) {
-  const {showScannerScreen} = props.route.params;
-  const [showScanner, setShowScanner] = useState(showScannerScreen);
-  const [amount, setAmount] = useState(0);
-  const [balance, setBalance] = useState(0);
+  const {balance} = props.route.params;
+  const [amount, setAmount] = useState('0');
+  const [fontSize, setFontSize] = useState(32);
+
+  useEffect(() => {
+    // Adjust font size based on the length of the amount
+    if (amount.length > 10) {
+      setFontSize(30);
+    } else if (amount.length > 8) {
+      setFontSize(36);
+    } else {
+      setFontSize(50);
+    }
+  }, [amount]);
 
   const onPressNumber = number => {
     console.log('number', number);
 
     setAmount(prevAmount => {
-      // Prevent adding another period if one already exists
       if (number === '.' && prevAmount.includes('.')) {
         return prevAmount;
       }
@@ -26,7 +35,7 @@ function SendScreen(props) {
         return number;
       }
       // Handle period at the beginning
-      if (prevAmount === '' && number === '.') {
+      if (prevAmount === '0' && number === '.') {
         return '0.';
       }
       // Prevent leading zeros
@@ -38,6 +47,10 @@ function SendScreen(props) {
         return '0';
       }
 
+      // Restrict to 15 digits
+      if (prevAmount.replace('.', '').length >= 15) {
+        return prevAmount;
+      }
       return prevAmount + number;
     });
   };
@@ -45,15 +58,18 @@ function SendScreen(props) {
   const onBackspace = () => {
     setAmount(prevAmount => {
       console.log('prevAmount', prevAmount);
-      if (prevAmount === '' || prevAmount == undefined || prevAmount === 0) {
-        return;
+      if (prevAmount === '' || prevAmount === '0') {
+        return '0';
       }
-      return prevAmount.slice(0, -1);
+      const newAmount = prevAmount?.slice(0, -1);
+      return newAmount === '' ? '0' : newAmount;
     });
   };
 
   const onChooseRecipient = () => {
-    props.navigation.navigate('SelectRecipient', {amount: amount});
+    props.navigation.navigate('SelectRecipient', {
+      amount: amount,
+    });
   };
 
   const isAmountGreaterThanZero = parseFloat(amount) > 0;
@@ -67,7 +83,9 @@ function SendScreen(props) {
           <Text style={styles.availableText}>{`Available: ${balance}`}</Text>
         </View>
         <View style={styles.balanceContainer}>
-          <Text style={styles.balance}> {amount ? amount : '0'}</Text>
+          <Text style={[styles.balance, {fontSize}]} numberOfLines={1}>
+            {amount ? amount : '0'}
+          </Text>
           <Text style={styles.denomination}>tL-BTC</Text>
         </View>
         <View style={styles.numpad}>
@@ -128,10 +146,17 @@ const styles = StyleSheet.create({
   balanceContainer: {
     alignItems: 'center',
     marginTop: 20,
+    height: 100, // Ensure the container has a fixed height
   },
   balance: {
     fontSize: 50,
     color: colors.white,
+    //borderWidth: 1,
+    //.borderColor: colors.white,
+    textAlignVertical: 'center',
+    textAlign: 'center',
+    flex: 1,
+    padding: 10,
   },
   denomination: {
     fontSize: 15,

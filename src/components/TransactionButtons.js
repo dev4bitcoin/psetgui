@@ -21,14 +21,14 @@ function TransactionButtons({
             {!hideLabel && <Text style={styles.iconText}>SEND</Text>}
           </View>
         </TouchableOpacity>
-        <TouchableOpacity onPress={onScanPress}>
+        {/* <TouchableOpacity onPress={onScanPress}>
           <View style={styles.iconContainer}>
             <View style={styles.iconWrapper}>
               <Icon name="qrcode" color={colors.white} size={35} />
             </View>
             {!hideLabel && <Text style={styles.iconText}>SCAN</Text>}
           </View>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
         <TouchableOpacity onPress={onReceivePress}>
           <View style={styles.iconContainer}>
             <View style={styles.iconWrapper}>

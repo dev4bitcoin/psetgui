@@ -22,11 +22,12 @@ function SelectRecipient(props) {
       <TopBar title={amount} showBackButton={true} />
 
       <View style={styles.container}>
+        <Text style={styles.text}>Select recipient address option</Text>
         <View style={styles.transactionButtons}>
           <TouchableOpacity onPress={onScan}>
             <View style={styles.iconContainer}>
               <View style={styles.iconWrapper}>
-                <Icon name="qrcode" color={colors.white} size={35} />
+                <Icon name="qrcode" color={colors.white} size={60} />
               </View>
               <Text style={styles.iconText}>Scan Code</Text>
             </View>
@@ -34,7 +35,7 @@ function SelectRecipient(props) {
           <TouchableOpacity onPress={onEnterAddress}>
             <View style={styles.iconContainer}>
               <View style={styles.iconWrapper}>
-                <Icon name="arrow-up" color={colors.white} size={35} />
+                <Icon name="login" color={colors.white} size={60} />
               </View>
               <Text style={styles.iconText}>Enter Address</Text>
             </View>
@@ -73,6 +74,12 @@ const styles = StyleSheet.create({
   iconText: {
     color: colors.white,
     marginTop: 10,
+  },
+  text: {
+    fontSize: 30,
+    color: colors.textGray,
+    marginBottom: 80,
+    textAlign: 'center',
   },
 });
 

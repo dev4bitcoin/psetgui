@@ -12,20 +12,20 @@ import {
   GetBalance,
 } from '../wallet/WalletFactory';
 import Transaction from '../models/Transaction';
+import LoadingScreen from './LoadingScreen';
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 function WalletScreen({navigation}) {
   const [balance, setBalance] = useState(0);
-  const [wollet, setWollet] = useState(null);
   const [transactions, setTransactions] = useState([]);
   const [isScrolledUp, setIsScrolledUp] = useState(false);
-  const [refreshTransactions, setRefreshTransactions] = useState(false);
+  const [loading, setLoading] = useState(false);
   const scrollY = useRef(new Animated.Value(0)).current;
 
-  const getTransactions = async wallet => {
+  const getTransactions = async () => {
     try {
-      const transactionsData = await GetTransactions(wallet);
+      const transactionsData = await GetTransactions();
       const mappedTransactions = transactionsData.map(
         tx => new Transaction(tx),
       );
@@ -37,22 +37,22 @@ function WalletScreen({navigation}) {
   };
 
   const onRefresh = async () => {
-    setRefreshTransactions(true);
+    setLoading(true);
     await sleep(2000);
 
     try {
-      await getBalance(wollet);
-      await getTransactions(wollet);
+      await getBalance();
+      await getTransactions();
     } catch (error) {
       console.error(error);
     } finally {
-      setRefreshTransactions(false);
+      setLoading(false);
     }
   };
 
-  const getBalance = async wallet => {
+  const getBalance = async () => {
     try {
-      const walletBalances = await GetBalance(wallet);
+      const walletBalances = await GetBalance();
       const totalBalance = Object.values(walletBalances).reduce(
         (sum, balance) => sum + balance,
         0,
@@ -65,12 +65,14 @@ function WalletScreen({navigation}) {
 
   const loadData = async () => {
     try {
-      const wallet = await GetWollet();
-      setWollet(wallet);
-      getBalance(wallet);
-      getTransactions(wallet);
+      setLoading(true);
+
+      await getBalance();
+      await getTransactions();
     } catch (error) {
       console.error(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -79,11 +81,11 @@ function WalletScreen({navigation}) {
   }, []);
 
   const onSend = async () => {
-    navigation.navigate('SendScreen', {showScannerScreen: false});
+    navigation.navigate('SendScreen', {balance: balance});
   };
 
   const onReceive = async () => {
-    const {description, qr_code_text, is_blinded} = await GetNewAddress(wollet);
+    const {description, qr_code_text, is_blinded} = await GetNewAddress();
     navigation.navigate('Receive', {address: description});
   };
 
@@ -132,22 +134,11 @@ function WalletScreen({navigation}) {
     navigation.navigate('TransactionDetails', {transaction});
   };
 
-  const onScanPress = () => {
-    navigation.navigate('SendScreen', {showScannerScreen: true});
-  };
-
-  const onScanFinished = address => {
-    console.log('Scanned address:', address);
-  };
-
   return (
     <View style={styles.container}>
-      <TopBar
-        title="Wallet"
-        showRefreshButton={true}
-        isRefreshing={refreshTransactions}
-        onRefresh={onRefresh}
-      />
+      <TopBar title="Wallet" showRefreshButton={false} />
+      {loading && <LoadingScreen />}
+
       <Animated.View
         style={[
           styles.headerRow,
@@ -185,7 +176,6 @@ function WalletScreen({navigation}) {
           <TransactionButtons
             onSendPress={onSend}
             onReceivePress={onReceive}
-            onScanPress={onScanPress}
             hideLabel={isScrolledUp}
           />
         </Animated.View>
@@ -194,6 +184,8 @@ function WalletScreen({navigation}) {
         transactions={transactions}
         onScroll={handleScroll}
         onTransactionDetail={onTransactionDetails}
+        refreshing={loading}
+        onRefresh={onRefresh}
       />
     </View>
   );

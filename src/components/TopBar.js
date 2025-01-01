@@ -7,39 +7,8 @@ import Localize from '../config/Localize';
 import colors from '../config/Colors';
 import AppText from './Text';
 
-function TopBar({
-  title,
-  showBackButton = false,
-  showRefreshButton = false,
-  isRefreshing = false,
-  onRefresh,
-}) {
+function TopBar({title, showBackButton = false}) {
   const navigation = useNavigation();
-  const rotateValue = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    if (isRefreshing) {
-      startRotation();
-    } else {
-      rotateValue.stopAnimation();
-    }
-  }, [isRefreshing]);
-
-  const startRotation = () => {
-    rotateValue.setValue(0);
-    Animated.loop(
-      Animated.timing(rotateValue, {
-        toValue: 1,
-        duration: 1000,
-        useNativeDriver: true,
-      }),
-    ).start();
-  };
-
-  const rotation = rotateValue.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0deg', '360deg'],
-  });
 
   return (
     <View style={styles.container}>
@@ -52,7 +21,7 @@ function TopBar({
           )}
         </View>
         <AppText style={styles.text}>{title}</AppText>
-        <View style={styles.rightIcon}>
+        {/* <View style={styles.rightIcon}>
           {showRefreshButton && (
             <TouchableOpacity onPress={onRefresh}>
               <Animated.View style={{transform: [{rotate: rotation}]}}>
@@ -60,7 +29,7 @@ function TopBar({
               </Animated.View>
             </TouchableOpacity>
           )}
-        </View>
+        </View> */}
       </View>
     </View>
   );
