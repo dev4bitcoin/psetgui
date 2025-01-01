@@ -1,17 +1,35 @@
 import React, {useState} from 'react';
-import {View, StyleSheet, Text, TouchableOpacity} from 'react-native';
+import {View, StyleSheet, Text, TouchableOpacity, Alert} from 'react-native';
 
 import Screen from './Screen';
 import TopBar from '../components/TopBar';
 import Colors from '../config/Colors';
+import {BroadcastTransaction} from '../wallet/WalletFactory';
+import LoadingScreen from './LoadingScreen';
 
 function SendTransactionReview({navigation, route}) {
   const {amount, address} = route.params;
+  const [loading, setLoading] = useState(false);
 
   const [balance, setBalance] = useState(0);
 
-  const onSend = () => {
-    navigation.navigate('Success', {address: address, amount: amount});
+  const onSend = async () => {
+    try {
+      setLoading(true);
+      const txId = await BroadcastTransaction(address, amount);
+      if (!txId) {
+        console.error('Transaction failed');
+        setLoading(false);
+        Alert.alert('Transaction failed', 'Please try again');
+        return;
+      }
+      navigation.navigate('Success', {address: address, amount: amount});
+    } catch (error) {
+      console.error(error);
+      setLoading(false);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const renderAddress = () => {
@@ -31,7 +49,7 @@ function SendTransactionReview({navigation, route}) {
   return (
     <Screen style={styles.screen}>
       <TopBar title="Review Send" showBackButton={true} />
-
+      {loading && <LoadingScreen />}
       <View style={styles.pageContainer}>
         <View style={[styles.borderContainer, {borderBottomWidth: 0}]}>
           <Text style={styles.amount}>{amount} </Text>
@@ -43,7 +61,7 @@ function SendTransactionReview({navigation, route}) {
           <Text style={styles.label}>DESTINATION</Text>
         </View>
         <View style={styles.borderContainer}>
-          <Text style={styles.fee}>{address}</Text>
+          <Text style={styles.fee}></Text>
           <Text style={styles.label}>TRANSACTION SPEED</Text>
         </View>
         <View style={styles.buttonContainer}>
@@ -89,9 +107,9 @@ const styles = StyleSheet.create({
     marginTop: 15,
   },
   address: {
-    fontSize: 25,
+    fontSize: 18,
     color: Colors.white,
-    marginTop: 15,
+    padding: 10,
   },
   addressHighlight: {
     color: Colors.primary,

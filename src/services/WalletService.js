@@ -27,9 +27,7 @@ const deleteWallet = async wallet => {
 };
 
 const getDefaultWallet = async () => {
-  console.log('getDefault');
   const wallets = await getWallets();
-  console.log(wallets);
 
   if (wallets.length === 0) return null;
 

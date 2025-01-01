@@ -1,5 +1,5 @@
-import React, {useEffect} from 'react';
-import {View, StyleSheet, Text, Dimensions} from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {View, StyleSheet, Text, Dimensions, Alert} from 'react-native';
 import {
   useCameraPermission,
   useCodeScanner,
@@ -10,6 +10,7 @@ import {
 import colors from '../config/Colors';
 import Screen from './Screen';
 import TopBar from '../components/TopBar';
+import {ValidateAddress} from '../wallet/WalletFactory';
 
 const {width, height} = Dimensions.get('window');
 const cameraHeight = height; // 70% of the screen height
@@ -20,6 +21,7 @@ function ScanScreen({navigation, route}) {
   const {amount} = route.params;
   const device = useCameraDevice('back');
   const {hasPermission, requestPermission} = useCameraPermission();
+  const [scanned, setScanned] = useState(false);
 
   useEffect(() => {
     if (!hasPermission) {
@@ -48,20 +50,45 @@ function ScanScreen({navigation, route}) {
       </Screen>
     );
   }
+
+  const isAddressValid = async address => {
+    const isValid = await ValidateAddress(address);
+    if (!isValid) {
+      console.log('Invalid address');
+      Alert.alert('Invalid address', 'The invoice contains am invalid address');
+      return false;
+    }
+    return true;
+  };
+
   const codeScanner = useCodeScanner({
     codeTypes: ['qr', 'ean-13'],
-    onCodeScanned: codes => {
+    onCodeScanned: async codes => {
+      if (scanned) return; // Prevent multiple scans
+      setScanned(true);
       if (codes) {
+        console.log(codes);
+        // Ensure codes is a string
+        const codesString =
+          typeof codes === 'string' ? codes : JSON.stringify(codes);
+
         // Parse the JSON string
-        const parsedData = JSON.parse(codes);
+        const parsedData = JSON.parse(codesString);
 
         // Access the value property
         const qrValue = parsedData[0].value;
-        //route.params.onScanFinished(codes);
-        navigation.navigate('SendTransactionReview', {
-          address: qrValue,
-          amount: amount,
-        });
+
+        const isValid = await isAddressValid(qrValue);
+
+        if (isValid) {
+          //route.params.onScanFinished(codes);
+          navigation.navigate('SendTransactionReview', {
+            address: qrValue,
+            amount: amount,
+          });
+        } else {
+          navigation.goBack();
+        }
       }
     },
   });

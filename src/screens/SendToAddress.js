@@ -25,7 +25,7 @@ function SendToAddress({navigation, route}) {
 
   const onPasteFromClipboard = async () => {
     const text = await Clipboard.getString();
-    const isValid = await ValidateAddress(address);
+    const isValid = await ValidateAddress(text);
     if (!isValid) {
       console.log('Invalid address');
       Alert.alert('Invalid address', 'The invoice contains am invalid address');
@@ -35,7 +35,7 @@ function SendToAddress({navigation, route}) {
     setAddress(text);
   };
 
-  const onSend = async () => {
+  const onConfirm = async () => {
     const isValid = await ValidateAddress(address);
     if (!isValid) {
       console.log('Invalid address');
@@ -79,7 +79,7 @@ function SendToAddress({navigation, route}) {
         <View style={styles.flexSpacer} />
         <View style={styles.bottomButtonContainer}>
           {address.length > 0 && (
-            <TouchableOpacity onPress={onSend}>
+            <TouchableOpacity onPress={onConfirm}>
               <View style={styles.bottomButton}>
                 <View style={styles.buttonWrapper}>
                   <Text style={styles.sendButtonText}>Confirm</Text>

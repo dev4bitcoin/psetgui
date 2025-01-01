@@ -19,7 +19,9 @@ let builderInstance = null;
 
 const getSignerInstance = async () => {
   if (!signerInstance) {
-    signerInstance = await new Signer(); // Replace with actual signer initialization
+    const mnemonic =
+      'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about';
+    signerInstance = await new Signer().create(mnemonic, Network.Testnet);
   }
   return signerInstance;
 };
@@ -58,8 +60,7 @@ const CreateWallet = async () => {
     await resetWallets();
     const mnemonic =
       'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about';
-    console.log(mnemonic);
-    const signer = await new Signer().create(mnemonic, Network.Testnet);
+    const signer = await getSignerInstance();
     //const signer = await new Signer().createRandomSigner(Network.Testnet);
     console.log('Signer created');
 
@@ -78,7 +79,6 @@ const CreateWallet = async () => {
 
     const descriptor = await signer.wpkhSlip77Descriptor();
     const descriptorString = await descriptor.asString();
-    console.log(descriptorString);
 
     await createWallet(
       JSON.stringify({
@@ -87,8 +87,6 @@ const CreateWallet = async () => {
         descriptor: descriptorString,
       }),
     );
-
-    console.log('New Wallet created');
   } catch (error) {
     console.error(error);
   }
@@ -114,7 +112,7 @@ const IsWalletExist = async () => {
 
 const GetNewAddress = async () => {
   //await updateWallet(wollet);
-  const address = await getWolletInstance().getAddress();
+  const address = (await getWolletInstance()).getAddress();
   return address;
 };
 
@@ -136,30 +134,41 @@ const ResetWallets = async () => {
   return await resetWallets();
 };
 
-const BroadcastTransaction = async (wollet, address, amount) => {
-  // await updateWallet(wollet);
-  // const txid = await wollet.broadcastTransaction(tx);
-  // return txid;
+const BroadcastTransaction = async (address, satoshis) => {
+  try {
+    const wollet = await getWolletInstance();
+    console.log('address:', address);
+    console.log('satoshis:', satoshis);
+    const fee_rate = 100; // this is the sat/vB * 100 fee rate. Example 280 would equal a fee rate of .28 sat/vB. 100 would equal .1 sat/vB
 
-  const out_address = await wollet.getAddress().description;
-  const satoshis = 900;
-  const fee_rate = 280; // this is the sat/vB * 100 fee rate. Example 280 would equal a fee rate of .28 sat/vB. 100 would equal .1 sat/vB
-  const builder = await getBuilderInstance();
-  await builder.addLbtcRecipient(out_address, satoshis);
-  await builder.feeRate(fee_rate);
-  let pset = await builder.finish(wollet);
-  let signed_pset = await signer.sign(pset);
-  let finalized_pset = await wollet.finalize(signed_pset);
-  const tx = await finalized_pset.extractTx();
-  await client.broadcast(tx);
-  console.log('BROADCASTED TX!\nTXID: {:?}', tx.txId.toString());
+    const builder = await getBuilderInstance();
+    await builder.addLbtcRecipient(address, parseFloat(satoshis));
+    await builder.feeRate(fee_rate);
+
+    let pset = await builder.finish(wollet);
+    const signer = await getSignerInstance();
+    let signed_pset = await signer.sign(pset);
+
+    let finalized_pset = await wollet.finalize(signed_pset);
+    const tx = await finalized_pset.extractTx();
+
+    const client = await getClientInstance();
+    await client.broadcast(tx);
+    const txId = await tx.txId();
+
+    console.log('BROADCASTED TX!\nTXID: {:?}', txId);
+    return tx.txId.toString();
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
 };
 
 const ValidateAddress = async address => {
   try {
     const builder = await getBuilderInstance();
     await builder.addLbtcRecipient(address, 1000);
-    console.log('Validating address:', address);
+    console.log('Address is valid');
     return true;
   } catch (error) {
     console.error(error);
