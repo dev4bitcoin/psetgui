@@ -6,7 +6,6 @@ import TransactionButtons from '../components/TransactionButtons';
 import TopBar from '../components/TopBar';
 import Transactions from './Transactions';
 import {
-  GetWollet,
   GetTransactions,
   GetNewAddress,
   GetBalance,
@@ -36,6 +35,19 @@ function WalletScreen({navigation}) {
     }
   };
 
+  const getBalance = async () => {
+    try {
+      const walletBalances = await GetBalance();
+      const totalBalance = Object.values(walletBalances).reduce(
+        (sum, balance) => sum + balance,
+        0,
+      );
+      setBalance(totalBalance.toLocaleString());
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const onRefresh = async () => {
     setLoading(true);
     await sleep(2000);
@@ -47,19 +59,6 @@ function WalletScreen({navigation}) {
       console.error(error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const getBalance = async () => {
-    try {
-      const walletBalances = await GetBalance();
-      const totalBalance = Object.values(walletBalances).reduce(
-        (sum, balance) => sum + balance,
-        0,
-      );
-      setBalance(totalBalance.toLocaleString());
-    } catch (error) {
-      console.error(error);
     }
   };
 
@@ -156,7 +155,7 @@ function WalletScreen({navigation}) {
                 {scale: balanceContainerScale},
               ],
               marginTop: isScrolledUp ? 20 : 0,
-              marginBottom: isScrolledUp ? 10 : 40,
+              marginBottom: isScrolledUp ? 10 : 25,
               marginLeft: isScrolledUp ? 40 : 0,
             },
           ]}>

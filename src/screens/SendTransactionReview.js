@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   addressHighlight: {
-    color: Colors.primary,
+    color: Colors.priceGreen,
   },
   fee: {
     fontSize: 25,

@@ -1,31 +1,66 @@
 import React, {useEffect, useState} from 'react';
 import {View, Text, ActivityIndicator, StyleSheet} from 'react-native';
+import ReactNativeBiometrics from 'react-native-biometrics';
+
 import {
   IsWalletExist,
   CreateWallet,
   ResetWallets,
 } from '../wallet/WalletFactory';
 import colors from '../config/Colors';
+import Storage from '../storage/Storage';
+import Constants from '../config/Constants';
 
 const LaunchScreen = ({navigation}) => {
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [loadingText, setLoadingText] = useState('Loading...');
+
+  const rnBiometrics = new ReactNativeBiometrics({
+    allowDeviceCredentials: true,
+  });
+
+  const authenticateBiometricsIfAvailable = async () => {
+    try {
+      const resultObject = await rnBiometrics.simplePrompt({
+        promptMessage: 'Confirm fingerprint',
+      });
+      const {success} = resultObject;
+      if (success) {
+        // successful biometrics provided
+        await checkWallet();
+      } else {
+        // user cancelled biometric prompt
+      }
+    } catch (error) {
+      // biometrics failed
+    }
+  };
+
+  const validateBiometricsIfEnabled = async () => {
+    const status = await Storage.getItem(Constants.BIOMETRICS_DISPLAY_STATUS);
+
+    if (!status) {
+      await checkWallet();
+      return;
+    }
+    await authenticateBiometricsIfAvailable();
+  };
 
   const checkWallet = async () => {
     try {
-      setLoadingText('Fetching wallet');
-      await ResetWallets();
+      setLoading(true);
+      setLoadingText('Loading wallet');
+      //await ResetWallets();
 
       // delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       const isExist = await IsWalletExist();
       if (!isExist) {
-        console.log('Creating new wallet');
         setLoadingText('Creating new wallet');
         await new Promise(resolve => setTimeout(resolve, 1000));
         await CreateWallet();
       }
-      navigation.replace('MainApp');
+      navigation.replace('BottomTabs');
     } catch (error) {
       console.error(error);
     } finally {
@@ -34,20 +69,22 @@ const LaunchScreen = ({navigation}) => {
   };
 
   useEffect(() => {
-    checkWallet();
+    validateBiometricsIfEnabled();
   }, [navigation]);
 
-  if (loading) {
-    return (
-      <View style={styles.container}>
-        <View style={styles.logo}>
-          <Text style={styles.logoText}>PSET</Text>
-        </View>
-        <ActivityIndicator size="large" color={colors.white} />
-        <Text style={styles.text}>{loadingText}</Text>
+  return (
+    <View style={styles.container}>
+      <View style={styles.logo}>
+        <Text style={styles.logoText}>PSET</Text>
       </View>
-    );
-  }
+      {loading && (
+        <>
+          <ActivityIndicator size="large" color={colors.white} />
+          <Text style={styles.text}>{loadingText}</Text>
+        </>
+      )}
+    </View>
+  );
 
   return null;
 };

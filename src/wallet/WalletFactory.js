@@ -57,7 +57,7 @@ const getBuilderInstance = async () => {
 const CreateWallet = async () => {
   try {
     // reset wallet for testing purpose
-    await resetWallets();
+    //await resetWallets();
     const mnemonic =
       'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about';
     const signer = await getSignerInstance();
@@ -92,10 +92,10 @@ const CreateWallet = async () => {
   }
 };
 
-const updateWallet = async () => {
+const updateWallet = async wollet => {
   const client = await getClientInstance();
-  const update = await client.fullScan(await getWolletInstance());
-  (await getWolletInstance()).applyUpdate(update);
+  const update = await client.fullScan(wollet);
+  wollet.applyUpdate(update);
 };
 
 const GetWollet = async () => {
@@ -111,7 +111,6 @@ const IsWalletExist = async () => {
 };
 
 const GetNewAddress = async () => {
-  //await updateWallet(wollet);
   const address = (await getWolletInstance()).getAddress();
   return address;
 };
@@ -137,27 +136,26 @@ const ResetWallets = async () => {
 const BroadcastTransaction = async (address, satoshis) => {
   try {
     const wollet = await getWolletInstance();
-    console.log('address:', address);
-    console.log('satoshis:', satoshis);
+    const builder = await getBuilderInstance();
+    const signer = await getSignerInstance();
+    const client = await getClientInstance();
+
     const fee_rate = 100; // this is the sat/vB * 100 fee rate. Example 280 would equal a fee rate of .28 sat/vB. 100 would equal .1 sat/vB
 
-    const builder = await getBuilderInstance();
     await builder.addLbtcRecipient(address, parseFloat(satoshis));
     await builder.feeRate(fee_rate);
 
     let pset = await builder.finish(wollet);
-    const signer = await getSignerInstance();
     let signed_pset = await signer.sign(pset);
 
     let finalized_pset = await wollet.finalize(signed_pset);
     const tx = await finalized_pset.extractTx();
 
-    const client = await getClientInstance();
     await client.broadcast(tx);
     const txId = await tx.txId();
 
     console.log('BROADCASTED TX!\nTXID: {:?}', txId);
-    return tx.txId.toString();
+    return txId;
   } catch (error) {
     console.error(error);
     return null;

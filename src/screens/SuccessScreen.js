@@ -54,6 +54,7 @@ const styles = StyleSheet.create({
     color: Colors.white,
     textAlign: 'center',
     marginTop: 20,
+    padding: 20,
   },
   sentAmount: {
     marginTop: 20,
