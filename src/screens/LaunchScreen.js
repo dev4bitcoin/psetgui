@@ -50,7 +50,7 @@ const LaunchScreen = ({navigation}) => {
     try {
       setLoading(true);
       setLoadingText('Loading wallet');
-      //await ResetWallets();
+      await ResetWallets();
 
       // delay
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -85,8 +85,6 @@ const LaunchScreen = ({navigation}) => {
       )}
     </View>
   );
-
-  return null;
 };
 
 const styles = StyleSheet.create({

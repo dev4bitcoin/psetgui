@@ -10,6 +10,7 @@ function SettingsScreen(props) {
   const onSelect = name => {
     if (name === 'Denomination') props.navigation.navigate('Denomination');
     if (name === 'App access') props.navigation.navigate('AppAccess');
+    if (name === 'Recovery Phrase') props.navigation.navigate('RecoveryPhrase');
   };
   const renderItem = (name, icon) => {
     return (

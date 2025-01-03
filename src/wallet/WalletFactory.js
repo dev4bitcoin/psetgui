@@ -174,6 +174,14 @@ const ValidateAddress = async address => {
   }
 };
 
+const GetMnemonic = async () => {
+  const wallet = await getDefaultWallet();
+  if (!wallet) {
+    return null;
+  }
+  return JSON.parse(wallet).mnemonic;
+};
+
 export {
   CreateWallet,
   GetNewAddress,
@@ -184,4 +192,5 @@ export {
   IsWalletExist,
   BroadcastTransaction,
   ValidateAddress,
+  GetMnemonic,
 };
