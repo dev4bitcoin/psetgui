@@ -12,7 +12,7 @@ import {
 } from '../wallet/WalletFactory';
 import Transaction from '../models/Transaction';
 import LoadingScreen from './LoadingScreen';
-import UnitConverter from '../helpers/UnitConverterTest';
+import UnitConverter from '../helpers/UnitConverter';
 import Constants from '../config/Constants';
 import {AppContext} from '../context/AppContext';
 

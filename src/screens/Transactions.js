@@ -11,7 +11,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {useNavigation} from '@react-navigation/native';
 
 import colors from '../config/Colors';
-import UnitConverter from '../helpers/UnitConverterTest';
+import UnitConverter from '../helpers/UnitConverter';
 
 function Transactions({
   transactions,
