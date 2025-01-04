@@ -11,7 +11,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {useNavigation} from '@react-navigation/native';
 
 import colors from '../config/Colors';
-import unitConverter from '../helpers/unitConverter';
+import UnitConverter from '../helpers/UnitConverterTest';
 
 function Transactions({
   transactions,
@@ -81,7 +81,7 @@ function Transactions({
   const renderTransaction = ({item}) => {
     const balance = Object.values(item.balance)[0];
     const balanceInPreferredDenomination =
-      unitConverter.convertToPreferredBTCDenominator(balance, denomination);
+      UnitConverter.convertToPreferredBTCDenominator(balance, denomination);
 
     return (
       <View style={styles.transaction}>

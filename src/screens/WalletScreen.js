@@ -12,7 +12,7 @@ import {
 } from '../wallet/WalletFactory';
 import Transaction from '../models/Transaction';
 import LoadingScreen from './LoadingScreen';
-import unitConverter from '../helpers/unitConverter';
+import UnitConverter from '../helpers/UnitConverterTest';
 import Constants from '../config/Constants';
 import {AppContext} from '../context/AppContext';
 
@@ -48,7 +48,7 @@ function WalletScreen({navigation}) {
       );
 
       const convertedDenominationAmount =
-        unitConverter.convertToPreferredBTCDenominator(
+        UnitConverter.convertToPreferredBTCDenominator(
           totalBalance,
           preferredBitcoinUnit,
         );
