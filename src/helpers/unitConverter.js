@@ -1,4 +1,12 @@
 import BigNumber from 'bignumber.js';
+import Constants from '../config/Constants';
+
+const useTestnet = true;
+
+const sats = useTestnet ? Constants.TEST_SATS : Constants.SATS;
+const bits = useTestnet ? Constants.TEST_BITS : Constants.BITS;
+const mbtc = useTestnet ? Constants.TEST_MBTC : Constants.MBTC;
+const btc = useTestnet ? Constants.TEST_BTC : Constants.BTC;
 
 function satoshiToBTC(satoshi) {
   return new BigNumber(satoshi).dividedBy(100000000).toString(10);
@@ -25,11 +33,12 @@ function bitsToSatoshi(satoshi) {
 }
 
 function convertToPreferredBTCDenominator(satoshi, preferredBTCUnit) {
-  if (preferredBTCUnit?.name === 'BTC') {
+  preferredBTCUnit = preferredBTCUnit || sats;
+  if (preferredBTCUnit === btc) {
     return satoshiToBTC(satoshi);
-  } else if (preferredBTCUnit?.name === 'mBTC') {
+  } else if (preferredBTCUnit === mbtc) {
     return satoshiToMBTC(satoshi);
-  } else if (preferredBTCUnit?.name === 'BITS') {
+  } else if (preferredBTCUnit === bits) {
     return satoshiToBits(satoshi);
   } else {
     return satoshi;
@@ -37,25 +46,18 @@ function convertToPreferredBTCDenominator(satoshi, preferredBTCUnit) {
 }
 
 function convertToSatoshi(amount, unit) {
-  if (unit?.name === 'BTC') {
+  if (unit?.name === btc) {
     return btcToSatoshi(amount);
-  } else if (unit?.name === 'mBTC') {
+  } else if (unit?.name === mbtc) {
     return mBTCToSatoshi(amount);
-  } else if (unit?.name === 'BITS') {
+  } else if (unit?.name === bits) {
     return bitsToSatoshi(amount);
   } else {
     return amount;
   }
 }
 
-function getFiatAmountForBTC(satoshi, fiat) {
-  const btc = satoshiToBTC(satoshi);
-  const amountInFiat = (btc / 1) * fiat;
-  return amountInFiat.toFixed(2);
-}
-
 export default {
   convertToPreferredBTCDenominator,
-  getFiatAmountForBTC,
   convertToSatoshi,
 };

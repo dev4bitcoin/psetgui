@@ -5,8 +5,8 @@ import TopBar from '../components/TopBar';
 import Screen from './Screen';
 
 function TransactionDetail(props) {
-  const {transaction} = props.route.params;
-  const balance = Object.values(transaction.balance)[0];
+  const {transaction, balance, unit} = props.route.params;
+
   const isIncoming = transaction.type === 'incoming';
 
   const onViewDetail = () => {
@@ -22,7 +22,7 @@ function TransactionDetail(props) {
         <Text style={[styles.balance, isIncoming ? styles.green : styles.red]}>
           {balance}
         </Text>
-        <Text style={styles.denomiantion}>tL-BTC</Text>
+        <Text style={styles.denomiantion}>{unit}</Text>
 
         <View style={styles.detailRow}>
           <Text style={styles.title}>Transaction ID</Text>

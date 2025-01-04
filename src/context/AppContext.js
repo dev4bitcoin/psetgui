@@ -13,7 +13,6 @@ const AppContextProvider = ({children}) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    console.log('AppContextProvider useEffect');
     const initializeContext = async () => {
       await getPreferredBitcoinDenomination();
       await getBiometricsStatus();
@@ -26,8 +25,8 @@ const AppContextProvider = ({children}) => {
     const preferredUnit = await Storage.getItem(
       Constants.PREFERRED_BITCOIN_UNIT,
     );
-    setPreferredBitcoinUnit(preferredUnit);
-    return preferredUnit;
+    setPreferredBitcoinUnit(preferredUnit || Constants.TEST_SATS);
+    return preferredUnit || Constants.TEST_SATS;
   };
 
   const setPreferredBitcoinDenomination = async unit => {
@@ -35,6 +34,7 @@ const AppContextProvider = ({children}) => {
       Constants.PREFERRED_BITCOIN_UNIT,
       unit,
     );
+    setPreferredBitcoinUnit(unit);
   };
 
   const setBiometricsStatus = async displayStatus => {

@@ -11,8 +11,15 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {useNavigation} from '@react-navigation/native';
 
 import colors from '../config/Colors';
+import unitConverter from '../helpers/unitConverter';
 
-function Transactions({transactions, onScroll, refreshing, onRefresh}) {
+function Transactions({
+  transactions,
+  onScroll,
+  refreshing,
+  onRefresh,
+  denomination,
+}) {
   const navigation = useNavigation();
 
   // Step 1: Sort transactions by timestamp
@@ -63,23 +70,32 @@ function Transactions({transactions, onScroll, refreshing, onRefresh}) {
     }
   };
 
-  const onTransactionDetail = transaction => {
-    navigation.navigate('TransactionDetail', {transaction: transaction});
+  const onTransactionDetail = (transaction, balanceInPreferredDenomination) => {
+    navigation.navigate('TransactionDetail', {
+      transaction: transaction,
+      balance: balanceInPreferredDenomination,
+      unit: denomination,
+    });
   };
 
   const renderTransaction = ({item}) => {
     const balance = Object.values(item.balance)[0];
+    const balanceInPreferredDenomination =
+      unitConverter.convertToPreferredBTCDenominator(balance, denomination);
 
     return (
       <View style={styles.transaction}>
-        <TouchableOpacity onPress={() => onTransactionDetail(item)}>
+        <TouchableOpacity
+          onPress={() =>
+            onTransactionDetail(item, balanceInPreferredDenomination)
+          }>
           <View style={styles.transactionDetails}>
             <View style={styles.transactionIdContainer}>
               <Text
                 numberOfLines={1}
                 ellipsizeMode="end"
                 style={styles.transactionId}>
-                {item.txid}
+                {item.type === 'incoming' ? 'Received' : 'Sent'}
               </Text>
             </View>
             <View style={styles.balanceContainer}>
@@ -88,7 +104,7 @@ function Transactions({transactions, onScroll, refreshing, onRefresh}) {
                   styles.balance,
                   item.type === 'incoming' ? styles.green : styles.red,
                 ]}>
-                {balance}
+                {balanceInPreferredDenomination}
               </Text>
               <Icon
                 name={item.type == 'incoming' ? 'arrow-up' : 'arrow-down'}
@@ -157,7 +173,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   transactionIdContainer: {
-    width: '70%',
+    width: '65%',
   },
   balanceContainer: {
     width: '30%',
@@ -165,6 +181,8 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   transactionId: {
+    fontSize: 16,
+
     color: colors.white,
   },
   balance: {

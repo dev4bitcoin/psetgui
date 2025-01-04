@@ -1,26 +1,26 @@
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useState} from 'react';
 import {View, StyleSheet, Text, TouchableOpacity} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import TopBar from '../../components/TopBar';
 import Screen from '../Screen';
 import Colors from '../../config/Colors';
-import Storage from '../../storage/Storage';
+import Constants from '../../config/Constants';
+import {AppContext} from '../../context/AppContext';
 
 function DenominationSelection(props) {
-  const [selectedUnit, setSelectedUnit] = useState('');
+  const {setPreferredBitcoinDenomination, preferredBitcoinUnit} =
+    useContext(AppContext);
 
-  useEffect(() => {
-    const getDenomination = async () => {
-      const denomination = await Storage.getItem('denomination');
-      setSelectedUnit(denomination || 'sat');
-    };
-    getDenomination();
-  }, []);
+  const [useTestnet, setUseTestnet] = useState(true);
+
+  const sats = useTestnet ? Constants.TEST_SATS : Constants.SATS;
+  const bits = useTestnet ? Constants.TEST_BITS : Constants.BITS;
+  const mbtc = useTestnet ? Constants.TEST_MBTC : Constants.MBTC;
+  const btc = useTestnet ? Constants.TEST_BTC : Constants.BTC;
 
   const onSelect = async name => {
-    await Storage.storeItem('denomination', name);
-    setSelectedUnit(name);
+    setPreferredBitcoinDenomination(name);
     props.navigation.goBack();
   };
 
@@ -48,17 +48,21 @@ function DenominationSelection(props) {
         <TopBar title="Denomination" showBackButton={true} />
         <View style={styles.group}>
           {renderItem(
-            'sat',
+            sats,
             '1 sat = 0.00 0000 001 btc',
-            selectedUnit === 'sat',
+            preferredBitcoinUnit === sats,
           )}
           {renderItem(
-            'bit',
+            bits,
             '1 bit = 0.00 000 100 btc',
-            selectedUnit === 'bit',
+            preferredBitcoinUnit === bits,
           )}
-          {renderItem('mbtc', '1 mbtc = 0.00 100 btc', selectedUnit === 'mbtc')}
-          {renderItem('btc', '1 btc', selectedUnit === 'btc')}
+          {renderItem(
+            mbtc,
+            '1 mbtc = 0.00 100 btc',
+            preferredBitcoinUnit === mbtc,
+          )}
+          {renderItem(btc, '1 btc', preferredBitcoinUnit === btc)}
         </View>
       </View>
     </Screen>

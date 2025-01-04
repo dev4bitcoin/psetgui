@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useContext} from 'react';
 import {View, StyleSheet, TouchableOpacity, Text} from 'react-native';
 
 import colors from '../config/Colors';
@@ -6,8 +6,11 @@ import colors from '../config/Colors';
 import Screen from './Screen';
 import Numpad from '../components/Numpad';
 import TopBar from '../components/TopBar';
+import {AppContext} from '../context/AppContext';
 
 function SendScreen(props) {
+  const {preferredBitcoinUnit} = useContext(AppContext);
+
   const {balance} = props.route.params;
   const [amount, setAmount] = useState('0');
   const [fontSize, setFontSize] = useState(32);
@@ -86,7 +89,7 @@ function SendScreen(props) {
           <Text style={[styles.balance, {fontSize}]} numberOfLines={1}>
             {amount ? amount : '0'}
           </Text>
-          <Text style={styles.denomination}>tL-BTC</Text>
+          <Text style={styles.denomination}>{preferredBitcoinUnit}</Text>
         </View>
         <View style={styles.numpad}>
           <Numpad onDelete={onBackspace} onPressNumber={onPressNumber} />

@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useRef} from 'react';
+import React, {useEffect, useState, useRef, useContext} from 'react';
 import {View, StyleSheet, Text, Animated} from 'react-native';
 
 import colors from '../config/Colors';
@@ -12,6 +12,9 @@ import {
 } from '../wallet/WalletFactory';
 import Transaction from '../models/Transaction';
 import LoadingScreen from './LoadingScreen';
+import unitConverter from '../helpers/unitConverter';
+import Constants from '../config/Constants';
+import {AppContext} from '../context/AppContext';
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -21,6 +24,7 @@ function WalletScreen({navigation}) {
   const [isScrolledUp, setIsScrolledUp] = useState(false);
   const [loading, setLoading] = useState(false);
   const scrollY = useRef(new Animated.Value(0)).current;
+  const {preferredBitcoinUnit} = useContext(AppContext);
 
   const getTransactions = async () => {
     try {
@@ -42,7 +46,13 @@ function WalletScreen({navigation}) {
         (sum, balance) => sum + balance,
         0,
       );
-      setBalance(totalBalance.toLocaleString());
+
+      const convertedDenominationAmount =
+        unitConverter.convertToPreferredBTCDenominator(
+          totalBalance,
+          preferredBitcoinUnit,
+        );
+      setBalance(convertedDenominationAmount);
     } catch (error) {
       console.error(error);
     }
@@ -160,7 +170,7 @@ function WalletScreen({navigation}) {
             },
           ]}>
           <Text style={styles.balance}>{balance}</Text>
-          <Text style={styles.denomination}>tL-BTC</Text>
+          <Text style={styles.denomination}>{preferredBitcoinUnit}</Text>
         </Animated.View>
         <Animated.View
           style={[
@@ -185,6 +195,7 @@ function WalletScreen({navigation}) {
         onTransactionDetail={onTransactionDetails}
         refreshing={loading}
         onRefresh={onRefresh}
+        denomination={preferredBitcoinUnit}
       />
     </View>
   );

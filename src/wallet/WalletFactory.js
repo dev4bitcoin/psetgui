@@ -10,7 +10,6 @@ import {
   isWalletExist,
   resetWallets,
 } from '../services/WalletService';
-import {get} from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
 
 let signerInstance = null;
 let wolletInstance = null;
