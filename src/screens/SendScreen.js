@@ -14,6 +14,7 @@ function SendScreen(props) {
   const {balance} = props.route.params;
   const [amount, setAmount] = useState('0');
   const [fontSize, setFontSize] = useState(32);
+  const [showErrorMessage, setShowErrorMessage] = useState(false);
 
   useEffect(() => {
     // Adjust font size based on the length of the amount
@@ -27,44 +28,59 @@ function SendScreen(props) {
   }, [amount]);
 
   const onPressNumber = number => {
-    console.log('number', number);
-
     setAmount(prevAmount => {
       if (number === '.' && prevAmount.includes('.')) {
         return prevAmount;
       }
       // Handle leading zero
-      if (prevAmount === '0' && number !== '.') {
+      else if (prevAmount === '0' && number !== '.') {
         return number;
       }
       // Handle period at the beginning
-      if (prevAmount === '0' && number === '.') {
+      else if (prevAmount === '0' && number === '.') {
         return '0.';
       }
       // Prevent leading zeros
-      if (prevAmount === '' && number === '0') {
+      else if (prevAmount === '' && number === '0') {
         return '0';
       }
       // Prevent multiple leading zeros
-      if (prevAmount === '0' && number === '0') {
+      else if (prevAmount === '0' && number === '0') {
         return '0';
       }
 
       // Restrict to 15 digits
-      if (prevAmount.replace('.', '').length >= 15) {
+      else if (prevAmount.replace('.', '').length >= 15) {
         return prevAmount;
       }
-      return prevAmount + number;
+
+      const newAmount = prevAmount + number;
+      console.log('newAmount', newAmount);
+      // Check if the new amount exceeds the balance
+      if (newAmount > balance) {
+        setShowErrorMessage(true);
+      } else {
+        setShowErrorMessage(false);
+      }
+
+      return newAmount;
     });
   };
 
   const onBackspace = () => {
     setAmount(prevAmount => {
-      console.log('prevAmount', prevAmount);
       if (prevAmount === '' || prevAmount === '0') {
         return '0';
       }
       const newAmount = prevAmount?.slice(0, -1);
+
+      // Check if the new amount exceeds the balance
+      if (newAmount < balance) {
+        setShowErrorMessage(false);
+      } else {
+        setShowErrorMessage(false);
+      }
+
       return newAmount === '' ? '0' : newAmount;
     });
   };
@@ -85,13 +101,24 @@ function SendScreen(props) {
         <View style={styles.available}>
           <Text style={styles.availableText}>{`Available: ${balance}`}</Text>
         </View>
-        <View style={styles.balanceContainer}>
+        <View
+          style={[
+            styles.balanceContainer,
+            {
+              borderColor: showErrorMessage ? colors.error : colors.black,
+            },
+          ]}>
           <Text style={[styles.balance, {fontSize}]} numberOfLines={1}>
             {amount ? amount : '0'}
           </Text>
           <Text style={styles.denomination}>{preferredBitcoinUnit}</Text>
         </View>
-        <View style={styles.numpad}>
+        {showErrorMessage && (
+          <View style={styles.errorPanel}>
+            <Text style={styles.errorText}>Insufficient funds</Text>
+          </View>
+        )}
+        <View style={[styles.numpad, {marginTop: showErrorMessage ? 0 : 20}]}>
           <Numpad onDelete={onBackspace} onPressNumber={onPressNumber} />
         </View>
         <View style={styles.buttonContainer}>
@@ -99,9 +126,10 @@ function SendScreen(props) {
             onPress={onChooseRecipient}
             style={[
               styles.button,
-              !isAmountGreaterThanZero && styles.buttonDisabled,
+              (showErrorMessage || !isAmountGreaterThanZero) &&
+                styles.buttonDisabled,
             ]}
-            disabled={!isAmountGreaterThanZero}>
+            disabled={showErrorMessage || !isAmountGreaterThanZero}>
             <Text style={styles.buttonText}>Choose Recipient</Text>
           </TouchableOpacity>
         </View>
@@ -118,7 +146,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   numpad: {
-    marginTop: 40,
     alignItems: 'center',
   },
   buttonContainer: {
@@ -149,13 +176,15 @@ const styles = StyleSheet.create({
   balanceContainer: {
     alignItems: 'center',
     marginTop: 20,
-    height: 100, // Ensure the container has a fixed height
+    height: 120, // Ensure the container has a fixed height
+    borderWidth: 0.5,
+    marginHorizontal: 20,
+    marginBottom: 0,
   },
   balance: {
     fontSize: 50,
     color: colors.white,
-    //borderWidth: 1,
-    //.borderColor: colors.white,
+
     textAlignVertical: 'center',
     textAlign: 'center',
     flex: 1,
@@ -165,6 +194,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: colors.white,
     marginTop: 20,
+    marginBottom: 20,
   },
   available: {
     marginTop: 20,
@@ -175,6 +205,20 @@ const styles = StyleSheet.create({
   availableText: {
     fontSize: 16,
     color: 'gray',
+    textAlign: 'center',
+  },
+  errorPanel: {
+    margin: 20,
+    marginTop: 0,
+    marginBottom: 0,
+    borderWidth: 0.5,
+    borderColor: colors.error,
+    backgroundColor: colors.error,
+    padding: 15,
+  },
+  errorText: {
+    fontSize: 18,
+    color: colors.white,
     textAlign: 'center',
   },
 });

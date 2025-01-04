@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useContext, useState} from 'react';
 import {View, StyleSheet, Text, TouchableOpacity, Alert} from 'react-native';
 
 import Screen from './Screen';
@@ -6,12 +6,13 @@ import TopBar from '../components/TopBar';
 import Colors from '../config/Colors';
 import {BroadcastTransaction} from '../wallet/WalletFactory';
 import LoadingScreen from './LoadingScreen';
+import {AppContext} from '../context/AppContext';
 
 function SendTransactionReview({navigation, route}) {
+  const {preferredBitcoinUnit} = useContext(AppContext);
+
   const {amount, address} = route.params;
   const [loading, setLoading] = useState(false);
-
-  const [balance, setBalance] = useState(0);
 
   const onSend = async () => {
     try {
@@ -53,7 +54,7 @@ function SendTransactionReview({navigation, route}) {
       <View style={styles.pageContainer}>
         <View style={[styles.borderContainer, {borderBottomWidth: 0}]}>
           <Text style={styles.amount}>{amount} </Text>
-          <Text style={styles.denomination}>tl-BTC</Text>
+          <Text style={styles.denomination}>{preferredBitcoinUnit}</Text>
           <Text style={styles.label}>AMOUNT</Text>
         </View>
         <View style={[styles.borderContainer, {borderBottomWidth: 0}]}>
@@ -94,6 +95,7 @@ const styles = StyleSheet.create({
   },
   amount: {
     fontSize: 40,
+    textAlign: 'center',
     color: Colors.white,
   },
   label: {

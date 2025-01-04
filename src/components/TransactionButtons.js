@@ -46,8 +46,8 @@ const styles = StyleSheet.create({
   container: {},
   transactionButtons: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    //marginTop: 40,
+
+    justifyContent: 'center',
   },
   iconContainer: {
     alignItems: 'center',

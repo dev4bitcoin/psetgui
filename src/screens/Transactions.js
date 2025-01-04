@@ -78,6 +78,45 @@ function Transactions({
     });
   };
 
+  const formatTimestamp = timestamp => {
+    const now = new Date();
+    const date = new Date(timestamp * 1000); // Convert to milliseconds
+
+    const diffInSeconds = Math.floor((now - date) / 1000);
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    const diffInDays = Math.floor(diffInHours / 24);
+
+    const diffInYears = now.getFullYear() - date.getFullYear();
+    const diffInMonths =
+      (now.getFullYear() - date.getFullYear()) * 12 +
+      (now.getMonth() - date.getMonth());
+
+    if (diffInYears >= 1) {
+      if (diffInMonths < 12) {
+        return `${diffInMonths} ${diffInMonths === 1 ? 'month' : 'months'} ago`;
+      } else {
+        return `${diffInYears} ${diffInYears === 1 ? 'year' : 'years'} ago`;
+      }
+    } else if (diffInMonths >= 1) {
+      return `${diffInMonths} ${diffInMonths === 1 ? 'month' : 'months'} ago`;
+    } else if (diffInDays >= 1) {
+      if (diffInDays === 1) {
+        return 'yesterday';
+      } else {
+        return `${diffInDays} ${diffInDays === 1 ? 'day' : 'days'} ago`;
+      }
+    } else if (diffInHours >= 1) {
+      return `${diffInHours} ${diffInHours === 1 ? 'hour' : 'hours'} ago`;
+    } else if (diffInMinutes >= 1) {
+      return `${diffInMinutes} ${
+        diffInMinutes === 1 ? 'minute' : 'minutes'
+      } ago`;
+    } else {
+      return 'now';
+    }
+  };
+
   const renderTransaction = ({item}) => {
     const balance = Object.values(item.balance)[0];
     const balanceInPreferredDenomination =
@@ -91,11 +130,26 @@ function Transactions({
           }>
           <View style={styles.transactionDetails}>
             <View style={styles.transactionIdContainer}>
-              <Text
-                numberOfLines={1}
-                ellipsizeMode="end"
-                style={styles.transactionId}>
-                {item.type === 'incoming' ? 'Received' : 'Sent'}
+              <View style={styles.incomingTextContainer}>
+                <Icon
+                  name={item.type == 'incoming' ? 'arrow-up' : 'arrow-down'}
+                  color={
+                    item.type == 'incoming'
+                      ? colors.priceGreen
+                      : colors.priceRed
+                  }
+                  size={20}
+                />
+
+                <Text
+                  numberOfLines={1}
+                  ellipsizeMode="end"
+                  style={styles.transactionId}>
+                  {item.type === 'incoming' ? 'Received' : 'Sent'}
+                </Text>
+              </View>
+              <Text style={styles.numberOfDays}>
+                {formatTimestamp(item.timestamp)}
               </Text>
             </View>
             <View style={styles.balanceContainer}>
@@ -106,13 +160,7 @@ function Transactions({
                 ]}>
                 {balanceInPreferredDenomination}
               </Text>
-              <Icon
-                name={item.type == 'incoming' ? 'arrow-up' : 'arrow-down'}
-                color={
-                  item.type == 'incoming' ? colors.priceGreen : colors.priceRed
-                }
-                size={20}
-              />
+              <Text style={styles.denomination}>{denomination}</Text>
             </View>
           </View>
         </TouchableOpacity>
@@ -168,27 +216,35 @@ const styles = StyleSheet.create({
   transactionDetails: {
     width: '100%',
     padding: 5,
-    paddingTop: 20,
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
   transactionIdContainer: {
     width: '65%',
   },
-  balanceContainer: {
-    width: '30%',
+  incomingTextContainer: {
     flexDirection: 'row',
-    justifyContent: 'flex-end',
+    alignItems: 'center',
+  },
+  balanceContainer: {
+    width: '35%',
   },
   transactionId: {
     fontSize: 16,
-
+    paddingLeft: 5,
     color: colors.white,
+  },
+  numberOfDays: {
+    fontSize: 16,
+    color: colors.textGray,
+    paddingLeft: 5,
+    paddingTop: 5,
   },
   balance: {
     fontWeight: 'bold',
     paddingRight: 5,
     fontSize: 16,
+    textAlign: 'right',
   },
   transaction: {
     padding: 10,
@@ -202,6 +258,14 @@ const styles = StyleSheet.create({
   },
   contentContainerStyle: {
     paddingBottom: 100,
+  },
+
+  denomination: {
+    fontSize: 14,
+    color: colors.textGray,
+    paddingTop: 5,
+    textAlign: 'right',
+    paddingRight: 5,
   },
 });
 

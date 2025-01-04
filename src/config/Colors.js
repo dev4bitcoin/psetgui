@@ -30,4 +30,5 @@ export default {
   lightGray: '#222222',
   yellow: '#ffff00',
   semiBlack: '#00000080',
+  error: '#8C1A11',
 };

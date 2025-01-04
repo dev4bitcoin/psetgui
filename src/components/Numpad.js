@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   button: {
-    paddingTop: 25,
+    paddingTop: 20,
     paddingBottom: 25,
     paddingLeft: 45,
     paddingRight: 45,
