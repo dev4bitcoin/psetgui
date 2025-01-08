@@ -9,6 +9,8 @@ import {
   GetTransactions,
   GetNewAddress,
   GetBalance,
+  GetSavedBalance,
+  GetSavedTransactions,
 } from '../wallet/WalletFactory';
 import Transaction from '../models/Transaction';
 import LoadingScreen from './LoadingScreen';
@@ -72,10 +74,21 @@ function WalletScreen({navigation}) {
     }
   };
 
+  const loadStoredData = async () => {
+    try {
+      const storedTransactions = await GetSavedTransactions();
+      const storedBalance = await GetSavedBalance();
+      setTransactions(storedTransactions);
+      setBalance(storedBalance);
+    } catch (error) {
+      console.error('Failed to load stored data', error);
+    }
+  };
+
   const loadData = async () => {
     try {
       setLoading(true);
-
+      await loadStoredData();
       await getBalance();
       await getTransactions();
     } catch (error) {
@@ -223,7 +236,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: colors.textGray,
     marginTop: 5,
-    marginLeft: 10,
   },
   transactionButtonsContainer: {
     //marginTop: 20,

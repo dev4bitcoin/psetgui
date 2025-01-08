@@ -48,6 +48,53 @@ const resetWallets = async () => {
   return await storage.storeItem(WALLETS, []);
 };
 
+const storeTransactions = async (walletId, transactions) => {
+  try {
+    if (!walletId) return;
+
+    await storage.setItem(
+      `transactions_${walletId}`,
+      JSON.stringify(transactions),
+    );
+  } catch (error) {
+    console.error('Error storing transactions:', error);
+  }
+};
+
+const getStoredTransactions = async walletId => {
+  try {
+    if (!walletId) return [];
+
+    const transactions = await storage.getItem(`transactions_${walletId}`);
+    return transactions ? JSON.parse(transactions) : [];
+  } catch (error) {
+    console.error('Error getting stored transactions:', error);
+    return [];
+  }
+};
+
+const storeBalance = async (walletId, balance) => {
+  try {
+    if (!walletId) return null;
+
+    await storage.setItem(`balance_${walletId}`, JSON.stringify(balance));
+  } catch (error) {
+    console.error('Error storing balance:', error);
+  }
+};
+
+const getStoredBalance = async walletId => {
+  try {
+    if (!walletId) return null;
+
+    const balance = await storage.getItem(`balance_${walletId}`);
+    return balance ? JSON.parse(balance) : 0;
+  } catch (error) {
+    console.error('Error getting stored balance:', error);
+    return 0;
+  }
+};
+
 export {
   getWallets,
   createWallet,
@@ -56,4 +103,8 @@ export {
   getDefaultWallet,
   isWalletExist,
   resetWallets,
+  storeTransactions,
+  getStoredTransactions,
+  storeBalance,
+  getStoredBalance,
 };

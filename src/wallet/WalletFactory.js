@@ -1,5 +1,15 @@
-import {Wollet, Client, Signer, Network, Descriptor, TxBuilder} from 'lwk-rn';
+import {
+  Wollet,
+  Client,
+  Signer,
+  Network,
+  Descriptor,
+  TxBuilder,
+  Bip,
+} from 'lwk-rn';
 
+import * as bip39 from 'bip39';
+import uuid from 'react-native-uuid';
 import Constants from '../config/Constants';
 import {
   getWallets,
@@ -9,6 +19,10 @@ import {
   getWallet,
   isWalletExist,
   resetWallets,
+  getStoredTransactions,
+  storeTransactions,
+  storeBalance,
+  getStoredBalance,
 } from '../services/WalletService';
 
 let signerInstance = null;
@@ -18,8 +32,11 @@ let builderInstance = null;
 
 const getSignerInstance = async () => {
   if (!signerInstance) {
-    const mnemonic =
-      'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about';
+    const wallet = await getDefaultWallet();
+    const {mnemonic} = JSON.parse(wallet);
+    if (!mnemonic) {
+      return null;
+    }
     signerInstance = await new Signer().create(mnemonic, Network.Testnet);
   }
   return signerInstance;
@@ -53,15 +70,42 @@ const getBuilderInstance = async () => {
   return builderInstance;
 };
 
+const GetSavedTransactions = async () => {
+  const wallet = await getDefaultWallet();
+  if (!wallet) return [];
+
+  const transactions = await getStoredTransactions(wallet.id);
+  return transactions;
+};
+
+const GetSavedBalance = async () => {
+  const wallet = await getDefaultWallet();
+  if (!wallet) return null;
+
+  const balance = await getStoredBalance(wallet.id);
+  return balance;
+};
+
 const CreateWallet = async () => {
   try {
-    // reset wallet for testing purpose
-    //await resetWallets();
-    const mnemonic =
-      'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about';
-    const signer = await getSignerInstance();
-    //const signer = await new Signer().createRandomSigner(Network.Testnet);
+    // Generate a mnemonic using BIP-39
+    const mnemonic = bip39.generateMnemonic();
+    console.log('mnemonic:', mnemonic);
+
+    signerInstance = await new Signer().create(mnemonic, Network.Testnet);
     console.log('Signer created');
+
+    // const mnemonic1 = await signerInstance.mnemonic();
+    // console.log('mnemonic:', mnemonic1);
+
+    // const bip = await new Bip().newBip84();
+    // console.log('BIP created');
+    // await bip.newBip84(); // Use BIP-84 for Native SegWit (Bech32) addresses
+    // console.log('BIP ID:', bip.id);
+
+    // // Get the key origin information
+    // const keyOrigin = await signerInstance.keyoriginXpub(bip);
+    // console.log('keyOrigin:', keyOrigin);
 
     //const mnemonic = await signer.mnemonic();
     //console.log('mnemonic:', mnemonic);
@@ -74,13 +118,15 @@ const CreateWallet = async () => {
       return;
     }
 
-    //const keyOrigin = await signer.keyoriginXpub(Bip);
-
-    const descriptor = await signer.wpkhSlip77Descriptor();
+    const descriptor = await signerInstance.wpkhSlip77Descriptor();
     const descriptorString = await descriptor.asString();
+
+    const id = uuid.v4();
+    console.log('id:', id);
 
     await createWallet(
       JSON.stringify({
+        id: id,
         mnemonic: mnemonic,
         xpub: xpub,
         descriptor: descriptorString,
@@ -115,16 +161,40 @@ const GetNewAddress = async () => {
 };
 
 const GetTransactions = async () => {
-  const wollet = await getWolletInstance();
-  await updateWallet(wollet);
-  const transactions = await wollet.getTransactions();
-  return transactions;
+  const wallet = await getWolletInstance();
+  await updateWallet(wallet);
+  const newTransactions = await wallet.getTransactions();
+
+  const savedWallet = await getDefaultWallet();
+
+  // Retrieve existing transactions from AsyncStorage
+  const storedTransactions = await getStoredTransactions(savedWallet?.id);
+
+  // Filter out new transactions
+  const existingTransactionIds = storedTransactions?.map(tx => tx.txid);
+  const uniqueNewTransactions = newTransactions.filter(
+    tx => !existingTransactionIds.includes(tx.txid),
+  );
+
+  // Combine existing and new transactions
+  const updatedTransactions = [...storedTransactions, ...uniqueNewTransactions];
+
+  // Store the updated transactions back to AsyncStorage
+  await storeTransactions(savedWallet.id, updatedTransactions);
+
+  return updatedTransactions;
 };
 
 const GetBalance = async () => {
   const wollet = await getWolletInstance();
   await updateWallet(wollet);
   const balance = await wollet.getBalance();
+
+  // Store the balance in AsyncStorage
+  const savedWallet = await getDefaultWallet();
+
+  await storeBalance(savedWallet?.id, balance);
+
   return balance;
 };
 
@@ -192,4 +262,6 @@ export {
   BroadcastTransaction,
   ValidateAddress,
   GetMnemonic,
+  GetSavedBalance,
+  GetSavedTransactions,
 };

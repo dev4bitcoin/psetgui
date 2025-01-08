@@ -38,7 +38,6 @@ const AppContextProvider = ({children}) => {
   };
 
   const setBiometricsStatus = async displayStatus => {
-    console.log('setBiometricsStatus', displayStatus);
     setShowBiometrics(displayStatus);
     return await Storage.storeItem(
       Constants.BIOMETRICS_DISPLAY_STATUS,
@@ -48,7 +47,6 @@ const AppContextProvider = ({children}) => {
 
   const getBiometricsStatus = async () => {
     const status = await Storage.getItem(Constants.BIOMETRICS_DISPLAY_STATUS);
-    console.log('getBiometricsStatus', status);
     if (!status) {
       setShowBiometrics(false);
       return false;

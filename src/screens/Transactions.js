@@ -187,6 +187,11 @@ function Transactions({
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
+      ListEmptyComponent={
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>No transactions available</Text>
+        </View>
+      }
     />
   );
 }
@@ -259,13 +264,23 @@ const styles = StyleSheet.create({
   contentContainerStyle: {
     paddingBottom: 100,
   },
-
   denomination: {
     fontSize: 14,
     color: colors.textGray,
     paddingTop: 5,
     textAlign: 'right',
     paddingRight: 5,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+    marginTop: 100,
+  },
+  emptyText: {
+    fontSize: 18,
+    color: colors.textGray,
   },
 });
 
