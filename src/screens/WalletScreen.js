@@ -49,12 +49,7 @@ function WalletScreen({navigation}) {
         0,
       );
 
-      const convertedDenominationAmount =
-        UnitConverter.convertToPreferredBTCDenominator(
-          totalBalance,
-          preferredBitcoinUnit,
-        );
-      setBalance(convertedDenominationAmount);
+      setBalance(totalBalance);
     } catch (error) {
       console.error(error);
     }
@@ -103,7 +98,9 @@ function WalletScreen({navigation}) {
   }, []);
 
   const onSend = async () => {
-    navigation.navigate('SendScreen', {balance: balance});
+    navigation.navigate('SendScreen', {
+      balance: displayBalanceInPreferredUnit(),
+    });
   };
 
   const onReceive = async () => {
@@ -156,6 +153,15 @@ function WalletScreen({navigation}) {
     navigation.navigate('TransactionDetails', {transaction});
   };
 
+  const displayBalanceInPreferredUnit = () => {
+    const convertedDenominationAmount =
+      UnitConverter.convertToPreferredBTCDenominator(
+        balance,
+        preferredBitcoinUnit,
+      );
+    return convertedDenominationAmount;
+  };
+
   return (
     <View style={styles.container}>
       <TopBar title="Wallet" showRefreshButton={false} />
@@ -182,7 +188,9 @@ function WalletScreen({navigation}) {
               marginLeft: isScrolledUp ? 40 : 0,
             },
           ]}>
-          <Text style={styles.balance}>{balance}</Text>
+          <Text style={styles.balance}>
+            {displayBalanceInPreferredUnit() || '0'}
+          </Text>
           <Text style={styles.denomination}>{preferredBitcoinUnit}</Text>
         </Animated.View>
         <Animated.View

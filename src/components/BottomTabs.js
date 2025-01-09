@@ -4,7 +4,7 @@ import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import WalletScreen from '../screens/WalletScreen';
-import BroadcastScreen from '../screens/BroadcastScreen';
+import PSETScreen from '../screens/PSETScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import Colors from '../config/Colors';
 
@@ -21,8 +21,8 @@ function BottomTabs(props) {
         headerShown: false,
       })}>
       <Tab.Screen
-        name="Broadcast"
-        component={BroadcastScreen}
+        name="PSET"
+        component={PSETScreen}
         options={{
           tabBarIcon: ({focused}) => (
             <View style={styles.tabItem}>

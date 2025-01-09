@@ -6,6 +6,7 @@ import {
   Descriptor,
   TxBuilder,
   Bip,
+  Pset,
 } from 'lwk-rn';
 
 import * as bip39 from 'bip39';
@@ -215,8 +216,10 @@ const BroadcastTransaction = async (address, satoshis) => {
     await builder.feeRate(fee_rate);
 
     let pset = await builder.finish(wollet);
+    const psetAsString = await pset.asString();
+    //console.log('PSET:', psetAsString);
     let signed_pset = await signer.sign(pset);
-
+    console.log('SIGNED PSET:', await signed_pset.asString());
     let finalized_pset = await wollet.finalize(signed_pset);
     const tx = await finalized_pset.extractTx();
 
@@ -251,6 +254,32 @@ const GetMnemonic = async () => {
   return JSON.parse(wallet).mnemonic;
 };
 
+const IsValidPSET = async pset => {
+  try {
+    const psetInstance = await new Pset().from(pset);
+
+    tx = psetInstance
+      .asString()
+      .then(res => {
+        console.log('PSET is valid:', res);
+        return true;
+      })
+      .catch(error => {
+        console.error('PSET validation failed:', error);
+        return false;
+      })
+      .finally(() => {
+        console.log('PSET validation completed');
+      });
+
+    console.log('PSET is valid:', tx);
+    return true;
+  } catch (error) {
+    console.error('PSET validation failed:', error);
+    return false;
+  }
+};
+
 export {
   CreateWallet,
   GetNewAddress,
@@ -264,4 +293,5 @@ export {
   GetMnemonic,
   GetSavedBalance,
   GetSavedTransactions,
+  IsValidPSET,
 };

@@ -60,6 +60,7 @@ const LaunchScreen = ({navigation}) => {
         await new Promise(resolve => setTimeout(resolve, 1000));
         await CreateWallet();
       }
+
       navigation.replace('BottomTabs');
     } catch (error) {
       console.error(error);

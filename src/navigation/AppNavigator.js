@@ -12,6 +12,7 @@ import DenominationSelection from '../screens/settings/DenominationSelection';
 import AppAccess from '../screens/settings/AppAccess';
 import BottomTabs from '../components/BottomTabs';
 import RecoveryPhrase from '../screens/settings/RecoveryPhrase';
+import Sign from '../screens/PSET/Sign';
 
 const Stack = createNativeStackNavigator();
 
@@ -81,6 +82,11 @@ const AppNavigator = () => {
       <Stack.Screen
         name="RecoveryPhrase"
         component={RecoveryPhrase}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="Sign"
+        component={Sign}
         options={{headerShown: false}}
       />
     </Stack.Navigator>
