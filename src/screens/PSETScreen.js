@@ -15,11 +15,12 @@ import Clipboard from '@react-native-clipboard/clipboard';
 import Screen from './Screen';
 import TopBar from '../components/TopBar';
 import Colors from '../config/Colors';
-import {IsValidPSET} from '../wallet/WalletFactory';
+import {CreatePSETFromBase64} from '../wallet/WalletFactory';
 
 function PSETScreen(props) {
   const textInputRef = useRef(null);
   const [pset, setPset] = useState('');
+  const [showErrorMessage, setShowErrorMessage] = useState(false);
 
   useEffect(() => {
     textInputRef.current.focus();
@@ -32,14 +33,22 @@ function PSETScreen(props) {
 
   const onAnalyze = async () => {
     try {
-      const isValid = await IsValidPSET(pset);
-      console.log(isValid);
+      const psetInstance = await CreatePSETFromBase64(pset);
+      setShowErrorMessage(psetInstance === null);
+      if (psetInstance) {
+        const tx = await psetInstance.extractTx();
+        const txId = await tx.txId();
+        console.log('BROADCASTED TX!\nTXID: {:?}', txId);
+        const txString = await tx.asString();
+        console.log(txString);
+        const txNew = await tx.create(txString);
+        console.log(txNew);
+        props.navigation.navigate('Detail', {pset: pset});
+      }
     } catch (error) {
+      setShowErrorMessage(true);
       console.error(error);
     }
-    //const isValid = await IsValidPSET(pset);
-    //console.log(isValid);
-    //props.navigation.navigate('Sign', {pset: pset});
   };
 
   return (
@@ -53,7 +62,14 @@ function PSETScreen(props) {
           <View style={styles.textContainer}>
             <TextInput
               ref={textInputRef}
-              style={styles.text}
+              style={[
+                styles.text,
+                {
+                  borderColor: showErrorMessage
+                    ? Colors.error
+                    : Colors.textGray,
+                },
+              ]}
               value={pset}
               onChangeText={setPset}
               multiline={true}
@@ -61,6 +77,11 @@ function PSETScreen(props) {
               placeholderTextColor={Colors.textGray}
             />
           </View>
+          {showErrorMessage && (
+            <View style={styles.errorPanel}>
+              <Text style={styles.errorText}>Invalid PSET</Text>
+            </View>
+          )}
           <View style={styles.button}>
             <TouchableOpacity onPress={onPasteFromClipboard}>
               <Text style={styles.buttonText}>Paste</Text>
@@ -96,6 +117,7 @@ const styles = StyleSheet.create({
   },
   textContainer: {
     padding: 16,
+    paddingBottom: 0,
     paddingHorizontal: 25,
   },
   text: {
@@ -103,8 +125,8 @@ const styles = StyleSheet.create({
     fontSize: 18,
     borderWidth: 1, // Add border width
     borderColor: Colors.textGray, // Add border color
-    borderRadius: 8, // Optional: Add border radius for rounded corners
-    height: 150, // Set height
+    //borderRadius: 8, // Optional: Add border radius for rounded corners
+    height: 140, // Set height
     width: '100%', // Set width
     textAlign: 'center',
     textAlignVertical: 'center',
@@ -116,7 +138,7 @@ const styles = StyleSheet.create({
     width: 150,
     borderRadius: 20,
     marginTop: 15,
-    marginBottom: 10,
+    marginBottom: 0,
     alignSelf: 'center',
   },
 
@@ -155,6 +177,20 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.lightGray,
     borderColor: Colors.lightGray,
     borderWidth: 0.5,
+  },
+  errorPanel: {
+    margin: 25,
+    marginTop: 0,
+    marginBottom: 0,
+    borderWidth: 0.5,
+    borderColor: Colors.error,
+    backgroundColor: Colors.error,
+    padding: 16,
+  },
+  errorText: {
+    fontSize: 18,
+    color: Colors.white,
+    textAlign: 'center',
   },
 });
 

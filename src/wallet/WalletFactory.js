@@ -217,7 +217,6 @@ const BroadcastTransaction = async (address, satoshis) => {
 
     let pset = await builder.finish(wollet);
     const psetAsString = await pset.asString();
-    //console.log('PSET:', psetAsString);
     let signed_pset = await signer.sign(pset);
     console.log('SIGNED PSET:', await signed_pset.asString());
     let finalized_pset = await wollet.finalize(signed_pset);
@@ -254,29 +253,13 @@ const GetMnemonic = async () => {
   return JSON.parse(wallet).mnemonic;
 };
 
-const IsValidPSET = async pset => {
+const CreatePSETFromBase64 = async pset => {
   try {
-    const psetInstance = await new Pset().from(pset);
-
-    tx = psetInstance
-      .asString()
-      .then(res => {
-        console.log('PSET is valid:', res);
-        return true;
-      })
-      .catch(error => {
-        console.error('PSET validation failed:', error);
-        return false;
-      })
-      .finally(() => {
-        console.log('PSET validation completed');
-      });
-
-    console.log('PSET is valid:', tx);
-    return true;
+    const psetInstance = await new Pset().create(pset);
+    return psetInstance;
   } catch (error) {
     console.error('PSET validation failed:', error);
-    return false;
+    return null;
   }
 };
 
@@ -293,5 +276,5 @@ export {
   GetMnemonic,
   GetSavedBalance,
   GetSavedTransactions,
-  IsValidPSET,
+  CreatePSETFromBase64,
 };

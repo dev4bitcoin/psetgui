@@ -9,7 +9,7 @@ PODS:
   - hermes-engine/Pre-built (0.76.3)
   - LiquidWalletKit (0.8.2-1):
     - lwkFFI (= 0.8.2-1)
-  - lwk-rn (0.8.2-1.0):
+  - lwk-rn (0.8.2-1):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1892,7 +1892,7 @@ SPEC CHECKSUMS:
   glog: 08b301085f15bcbb6ff8632a8ebaf239aae04e6a
   hermes-engine: 0555a84ea495e8e3b4bde71b597cd87fbb382888
   LiquidWalletKit: 1bbfad4cc3352a3b85ac29b4ba23bdb091dee185
-  lwk-rn: 88389db968dffc6cfe1b8a0bde7c24ca38e71554
+  lwk-rn: e367115f8455f906b9db1fec62d0c4ebbc45963e
   lwkFFI: 11796b2d2bb0183403d8bc0b1de7db5fe29dd5e1
   RCT-Folly: bf5c0376ffe4dd2cf438dcf86db385df9fdce648
   RCTDeprecation: 2c5e1000b04ab70b53956aa498bf7442c3c6e497
