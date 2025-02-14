@@ -91,8 +91,6 @@ const CreateWallet = async () => {
   try {
     // Generate a mnemonic using BIP-39
     const mnemonic = bip39.generateMnemonic();
-    console.log('mnemonic:', mnemonic);
-
     signerInstance = await new Signer().create(mnemonic, Network.Testnet);
     console.log('Signer created');
 

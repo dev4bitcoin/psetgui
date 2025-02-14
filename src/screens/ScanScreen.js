@@ -14,8 +14,6 @@ import {ValidateAddress} from '../wallet/WalletFactory';
 
 const {width, height} = Dimensions.get('window');
 const cameraHeight = height; // 70% of the screen height
-const marginHorizontal = 10; // Margin on left and right
-const cameraWidth = width; // Width minus margins
 
 function ScanScreen({navigation, route}) {
   const {amount} = route.params;
@@ -24,32 +22,11 @@ function ScanScreen({navigation, route}) {
   const [scanned, setScanned] = useState(false);
 
   useEffect(() => {
+    console.log('ScanScreen useEffect');
     if (!hasPermission) {
       requestPermission();
     }
   }, [hasPermission, requestPermission]);
-
-  if (!hasPermission) {
-    return (
-      <Screen style={styles.screen}>
-        <TopBar title="Scan" showBackButton={true} />
-        <View style={styles.container}>
-          <Text style={styles.text}>No camera permission</Text>
-        </View>
-      </Screen>
-    );
-  }
-
-  if (device == null) {
-    return (
-      <Screen style={styles.screen}>
-        <TopBar title="Scan" showBackButton={true} />
-        <View style={styles.container}>
-          <Text style={styles.text}>No camera device</Text>
-        </View>
-      </Screen>
-    );
-  }
 
   const isAddressValid = async address => {
     const isValid = await ValidateAddress(address);
@@ -96,18 +73,35 @@ function ScanScreen({navigation, route}) {
   return (
     <Screen style={styles.screen}>
       <TopBar title="Scan" showBackButton={true} />
-      <View style={styles.camera}>
-        <Camera
-          style={[styles.camera]}
-          device={device}
-          isActive={true}
-          codeScanner={codeScanner}
-        />
-
-        <View style={styles.rectangleContainer}>
-          <View style={styles.rectangle} />
+      {!hasPermission && (
+        <View style={styles.container}>
+          <Text style={styles.text}>
+            Camera access is required to scan QR codes. Please enable camera
+            permissions in your device settings.
+          </Text>
         </View>
-      </View>
+      )}
+      {hasPermission && device == null && (
+        <View style={styles.container}>
+          <Text style={styles.text}>
+            No camera device found. Please ensure your camera is connected and
+            try again.
+          </Text>
+        </View>
+      )}
+      {hasPermission && device != null && (
+        <View style={styles.camera}>
+          <Camera
+            style={[styles.camera]}
+            device={device}
+            isActive={true}
+            codeScanner={codeScanner}
+          />
+          <View style={styles.rectangleContainer}>
+            <View style={styles.rectangle} />
+          </View>
+        </View>
+      )}
     </Screen>
   );
 }
@@ -120,6 +114,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: 40,
   },
   camera: {
     width: width, // Full width minus margins

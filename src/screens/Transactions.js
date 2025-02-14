@@ -189,7 +189,9 @@ function Transactions({
       }
       ListEmptyComponent={
         <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>No transactions available</Text>
+          <Text style={styles.emptyText}>
+            You don't have any transactions yet.
+          </Text>
         </View>
       }
     />
