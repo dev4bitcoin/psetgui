@@ -22,7 +22,6 @@ function ScanScreen({navigation, route}) {
   const [scanned, setScanned] = useState(false);
 
   useEffect(() => {
-    console.log('ScanScreen useEffect');
     if (!hasPermission) {
       requestPermission();
     }
@@ -31,7 +30,6 @@ function ScanScreen({navigation, route}) {
   const isAddressValid = async address => {
     const isValid = await ValidateAddress(address);
     if (!isValid) {
-      console.log('Invalid address');
       Alert.alert('Invalid address', 'The invoice contains am invalid address');
       return false;
     }

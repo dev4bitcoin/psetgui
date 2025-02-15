@@ -1543,11 +1543,11 @@ PODS:
     - React-utils (= 0.76.3)
   - ReactNativeLocalization (2.3.2):
     - React-Core
-  - RNCAsyncStorage (2.1.0):
+  - RNCAsyncStorage (2.1.1):
     - React-Core
-  - RNCClipboard (1.15.0):
+  - RNCClipboard (1.16.1):
     - React-Core
-  - RNGestureHandler (2.21.2):
+  - RNGestureHandler (2.23.1):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1589,7 +1589,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNScreens (4.3.0):
+  - RNScreens (4.6.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1611,7 +1611,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNSVG (15.10.1):
+  - RNSVG (15.11.1):
     - React-Core
   - RNVectorIcons (10.2.0):
     - DoubleConversion
@@ -1954,12 +1954,12 @@ SPEC CHECKSUMS:
   ReactCodegen: ae99a130606068ed40d1d9c0d5f25fda142a0647
   ReactCommon: 89c87b343deacc8610b099ac764848f0ce937e3e
   ReactNativeLocalization: fb171138cdc80d5d0d4f20243d2fc82c2b3cc48f
-  RNCAsyncStorage: cc6479c4acd84cc7004946946c8afe30b018184d
-  RNCClipboard: 69ab8e51324d5b351f6ba72bbdb72478087a2c64
-  RNGestureHandler: aa9690789023c9be8f06aa90e10ce637ea788f4d
+  RNCAsyncStorage: 03861ec2e1e46b20e51963c62c51dc288beb7c43
+  RNCClipboard: d7a8903d32692b0a1e71738c3825465a9acae10e
+  RNGestureHandler: 7ca7ca7bddcf4853b9a6544db6163e0e5435ddfc
   RNReactNativeHapticFeedback: 0d591ea1e150f36cb96d868d4e8d77272243d78a
-  RNScreens: b03d696c70cc5235ce4587fcc27ae1a93a48f98c
-  RNSVG: 7ff26379b2d1871b8571e6f9bc9630de6baf9bdf
+  RNScreens: d682e5fff3175487730bf2aa308fbf0898b69410
+  RNSVG: 3271d86d99e0ff3bc1c6cb74f894bab06a261969
   RNVectorIcons: 6382277afab3c54658e9d555ee0faa7a37827136
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   VisionCamera: 598ab83c6bf4d65f5c32ec54361eed866505d388
