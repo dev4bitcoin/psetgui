@@ -1,13 +1,15 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import {View, StyleSheet, Text, TouchableOpacity} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import colors from '../config/Colors';
 import Screen from './Screen';
 import TopBar from '../components/TopBar';
+import {AppContext} from '../context/AppContext';
 
 function SelectRecipient(props) {
   const {amount} = props.route.params;
+  const {preferredBitcoinUnit} = useContext(AppContext);
 
   const onScan = () => {
     props.navigation.navigate('ScanScreen', {amount: amount});
@@ -19,7 +21,10 @@ function SelectRecipient(props) {
 
   return (
     <Screen style={styles.screen}>
-      <TopBar title={amount} showBackButton={true} />
+      <TopBar
+        title={`${amount}   ${preferredBitcoinUnit}`}
+        showBackButton={true}
+      />
 
       <View style={styles.container}>
         <Text style={styles.text}>Select recipient address option</Text>

@@ -1,5 +1,8 @@
 import React, {useEffect, useState} from 'react';
-import {View, StyleSheet, Text} from 'react-native';
+import {View, StyleSheet, Text, TouchableOpacity} from 'react-native';
+import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
+import ToastManager, {Toast} from 'toastify-react-native';
+import Clipboard from '@react-native-clipboard/clipboard';
 
 import Screen from '../Screen';
 import TopBar from '../../components/TopBar';
@@ -18,9 +21,30 @@ function RecoveryPhrase(props) {
     getSeed();
   }, []);
 
+  const onCopy = () => {
+    ReactNativeHapticFeedback.trigger('impactLight', {
+      enableVibrateFallback: true,
+      ignoreAndroidSystemSettings: false,
+    });
+    const seedString = seed.join(' ');
+    console.log(seedString);
+    Clipboard.setString(seedString);
+    Toast.info('Copied to clipboard!', 'bottom');
+  };
+
   return (
     <Screen>
       <TopBar title="Recovery Phrase" showBackButton={true} />
+      <ToastManager
+        showCloseIcon={false}
+        showProgressBar={false}
+        style={styles.toastStyle}
+        height={60}
+        animationStyle={'rightInOut'}
+        textStyle={styles.toastTextStyle}
+        duration={1000}
+        positionValue={100}
+      />
       <View style={styles.container}>
         <Text style={styles.warning}>KEEP THIS SEED SAFE.</Text>
         <Text style={styles.warning1}> DO NOT SHARE.</Text>
@@ -41,6 +65,11 @@ function RecoveryPhrase(props) {
               </View>
             ))}
           </View>
+        </View>
+        <View style={styles.copySection}>
+          <TouchableOpacity onPress={onCopy}>
+            <Text style={styles.copyButton}>COPY</Text>
+          </TouchableOpacity>
         </View>
       </View>
     </Screen>
@@ -89,6 +118,27 @@ const styles = StyleSheet.create({
     color: Colors.textGray,
     fontSize: 18,
     width: 35,
+  },
+  copySection: {
+    marginTop: 100,
+    alignItems: 'center',
+  },
+  copyButton: {
+    color: Colors.white,
+    fontSize: 20,
+    padding: 10,
+    borderWidth: 1,
+    width: 160,
+    borderColor: Colors.white,
+    borderRadius: 20,
+    textAlign: 'center',
+    backgroundColor: Colors.lightGray,
+  },
+  toastStyle: {
+    borderRadius: 20,
+  },
+  toastTextStyle: {
+    fontSize: 26,
   },
 });
 

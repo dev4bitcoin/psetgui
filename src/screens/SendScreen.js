@@ -1,5 +1,6 @@
 import React, {useState, useEffect, useContext} from 'react';
 import {View, StyleSheet, TouchableOpacity, Text} from 'react-native';
+import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 
 import colors from '../config/Colors';
 
@@ -28,6 +29,10 @@ function SendScreen(props) {
   }, [amount]);
 
   const onPressNumber = number => {
+    ReactNativeHapticFeedback.trigger('impactLight', {
+      enableVibrateFallback: true,
+      ignoreAndroidSystemSettings: false,
+    });
     setAmount(prevAmount => {
       if (number === '.' && prevAmount.includes('.')) {
         return prevAmount;

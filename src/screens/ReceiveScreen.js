@@ -10,6 +10,7 @@ import {
 import QRCode from 'react-native-qrcode-svg';
 import Clipboard from '@react-native-clipboard/clipboard';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
+import ToastManager, {Toast} from 'toastify-react-native';
 
 import TopBar from '../components/TopBar';
 import Colors from '../config/Colors';
@@ -23,6 +24,7 @@ function ReceiveScreen(props) {
       ignoreAndroidSystemSettings: false,
     });
     Clipboard.setString(address);
+    Toast.info('Copied to clipboard!', 'bottom');
   };
 
   onShare = async () => {
@@ -49,6 +51,15 @@ function ReceiveScreen(props) {
   return (
     <View style={styles.container}>
       <TopBar title="Receive" showBackButton={true} />
+      <ToastManager
+        showCloseIcon={false}
+        showProgressBar={false}
+        style={styles.toastStyle}
+        height={60}
+        animationStyle={'rightInOut'}
+        textStyle={styles.toastTextStyle}
+        duration={1000}
+      />
       <View style={styles.placeholder}></View>
       <View style={styles.qrcode}>
         <QRCode size={250} color={Colors.black} value={address} />
@@ -129,6 +140,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: Colors.white,
     textAlign: 'center',
+  },
+  toastStyle: {
+    borderRadius: 20,
+  },
+  toastTextStyle: {
+    fontSize: 26,
   },
 });
 
