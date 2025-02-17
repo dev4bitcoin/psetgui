@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   toastTextStyle: {
-    fontSize: 26,
+    fontSize: 20,
   },
 });
 

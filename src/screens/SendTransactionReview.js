@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
     color: Colors.priceGreen,
   },
   fee: {
-    fontSize: 25,
+    fontSize: 20,
     color: Colors.white,
     marginTop: 15,
   },

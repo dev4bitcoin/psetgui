@@ -27,7 +27,6 @@ function RecoveryPhrase(props) {
       ignoreAndroidSystemSettings: false,
     });
     const seedString = seed.join(' ');
-    console.log(seedString);
     Clipboard.setString(seedString);
     Toast.info('Copied to clipboard!', 'bottom');
   };
@@ -138,7 +137,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   toastTextStyle: {
-    fontSize: 26,
+    fontSize: 20,
   },
 });
 

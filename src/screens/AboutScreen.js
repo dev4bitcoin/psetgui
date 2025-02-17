@@ -36,10 +36,11 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   text: {
-    fontSize: 20,
+    fontSize: 18,
     color: Colors.white,
     padding: 20,
     paddingHorizontal: 30,
+    textAlign: 'justify',
   },
   versionContainer: {
     position: 'absolute',

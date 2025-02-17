@@ -33,6 +33,7 @@ function SendScreen(props) {
       enableVibrateFallback: true,
       ignoreAndroidSystemSettings: false,
     });
+
     setAmount(prevAmount => {
       if (number === '.' && prevAmount.includes('.')) {
         return prevAmount;
@@ -73,6 +74,11 @@ function SendScreen(props) {
   };
 
   const onBackspace = () => {
+    ReactNativeHapticFeedback.trigger('impactLight', {
+      enableVibrateFallback: true,
+      ignoreAndroidSystemSettings: false,
+    });
+
     setAmount(prevAmount => {
       if (prevAmount === '' || prevAmount === '0') {
         return '0';
@@ -131,7 +137,7 @@ function SendScreen(props) {
             onPress={onChooseRecipient}
             style={[
               styles.button,
-              (showErrorMessage || !isAmountGreaterThanZero) &&
+              (showErrorMessage || !isAmountGreaterThanZero || balance === 0) &&
                 styles.buttonDisabled,
             ]}
             disabled={showErrorMessage || !isAmountGreaterThanZero}>
