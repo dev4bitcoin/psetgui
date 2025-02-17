@@ -51,8 +51,7 @@ const resetWallets = async () => {
 const storeTransactions = async (walletId, transactions) => {
   try {
     if (!walletId) return;
-
-    await storage.setItem(
+    await storage.storeItem(
       `transactions_${walletId}`,
       JSON.stringify(transactions),
     );
@@ -77,7 +76,7 @@ const storeBalance = async (walletId, balance) => {
   try {
     if (!walletId) return null;
 
-    await storage.setItem(`balance_${walletId}`, JSON.stringify(balance));
+    await storage.storeItem(`balance_${walletId}`, JSON.stringify(balance));
   } catch (error) {
     console.error('Error storing balance:', error);
   }

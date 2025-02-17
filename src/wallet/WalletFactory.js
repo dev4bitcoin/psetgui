@@ -75,7 +75,8 @@ const GetSavedTransactions = async () => {
   const wallet = await getDefaultWallet();
   if (!wallet) return [];
 
-  const transactions = await getStoredTransactions(wallet.id);
+  const parsedWallet = JSON.parse(wallet);
+  const transactions = await getStoredTransactions(parsedWallet.id);
   return transactions;
 };
 
@@ -83,8 +84,14 @@ const GetSavedBalance = async () => {
   const wallet = await getDefaultWallet();
   if (!wallet) return null;
 
-  const balance = await getStoredBalance(wallet.id);
-  return balance;
+  const parsedWallet = JSON.parse(wallet);
+  const balance = await getStoredBalance(parsedWallet.id);
+  const totalBalance = Object.values(balance).reduce(
+    (sum, balance) => sum + balance,
+    0,
+  );
+
+  return totalBalance;
 };
 
 const CreateWallet = async () => {
@@ -110,7 +117,6 @@ const CreateWallet = async () => {
     //console.log('mnemonic:', mnemonic);
     // use random number string for xpub now. will be replaced with actual xpub once it is available as par of the signer
     const xpub = Math.floor(Math.random() * 100000).toString();
-    console.log('xpub:', xpub);
 
     if (await isWalletExist(xpub)) {
       console.log('Wallet already exists');
@@ -121,7 +127,6 @@ const CreateWallet = async () => {
     const descriptorString = await descriptor.asString();
 
     const id = uuid.v4();
-    console.log('id:', id);
 
     await createWallet(
       JSON.stringify({
@@ -165,9 +170,10 @@ const GetTransactions = async () => {
   const newTransactions = await wallet.getTransactions();
 
   const savedWallet = await getDefaultWallet();
+  const parsedSavedWallet = JSON.parse(savedWallet);
 
   // Retrieve existing transactions from AsyncStorage
-  const storedTransactions = await getStoredTransactions(savedWallet?.id);
+  const storedTransactions = await getStoredTransactions(parsedSavedWallet?.id);
 
   // Filter out new transactions
   const existingTransactionIds = storedTransactions?.map(tx => tx.txid);
@@ -179,7 +185,7 @@ const GetTransactions = async () => {
   const updatedTransactions = [...storedTransactions, ...uniqueNewTransactions];
 
   // Store the updated transactions back to AsyncStorage
-  await storeTransactions(savedWallet.id, updatedTransactions);
+  await storeTransactions(parsedSavedWallet?.id, updatedTransactions);
 
   return updatedTransactions;
 };
@@ -191,8 +197,9 @@ const GetBalance = async () => {
 
   // Store the balance in AsyncStorage
   const savedWallet = await getDefaultWallet();
+  const parsedSavedWallet = JSON.parse(savedWallet);
 
-  await storeBalance(savedWallet?.id, balance);
+  await storeBalance(parsedSavedWallet?.id, balance);
 
   return balance;
 };
@@ -215,6 +222,7 @@ const BroadcastTransaction = async (address, satoshis) => {
 
     let pset = await builder.finish(wollet);
     const psetAsString = await pset.asString();
+    console.log('Unsigned PSET', psetAsString);
     let signed_pset = await signer.sign(pset);
     console.log('SIGNED PSET:', await signed_pset.asString());
     let finalized_pset = await wollet.finalize(signed_pset);
@@ -235,7 +243,6 @@ const ValidateAddress = async address => {
   try {
     const builder = await getBuilderInstance();
     await builder.addLbtcRecipient(address, 1000);
-    console.log('Address is valid');
     return true;
   } catch (error) {
     console.error(error);
@@ -261,6 +268,16 @@ const CreatePSETFromBase64 = async pset => {
   }
 };
 
+const ExtractTransaction = async pset => {
+  try {
+    const tx = await pset.extractTx();
+    return tx;
+  } catch (error) {
+    console.error('Failed to extract transaction:', error);
+    return null;
+  }
+};
+
 export {
   CreateWallet,
   GetNewAddress,
@@ -275,4 +292,5 @@ export {
   GetSavedBalance,
   GetSavedTransactions,
   CreatePSETFromBase64,
+  ExtractTransaction,
 };

@@ -3,13 +3,30 @@ import {View, StyleSheet, Text} from 'react-native';
 import Screen from '../Screen';
 import TopBar from '../../components/TopBar';
 import Colors from '../../config/Colors';
+import {CreatePSETFromBase64} from '../../wallet/WalletFactory';
 
 function Detail(props) {
   const {pset} = props.route.params;
 
   useEffect(() => {
-    //console.log(pset);
+    extractPsetDetails();
   }, [pset]);
+
+  const extractPsetDetails = async () => {
+    try {
+      const psetInstance = await CreatePSETFromBase64(pset);
+      if (psetInstance) {
+        const tx = await psetInstance.extractTx();
+        const txId = await tx.txId();
+        console.log('BROADCASTED TX!\nTXID: {:?}', txId);
+
+        const txString = await tx.asString();
+        console.log('Tx as String', txString);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   return (
     <Screen style={styles.container}>
