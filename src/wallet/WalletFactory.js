@@ -98,6 +98,8 @@ const CreateWallet = async () => {
   try {
     // Generate a mnemonic using BIP-39
     const mnemonic = bip39.generateMnemonic();
+    // const mnemonic =
+    //   'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about';
     signerInstance = await new Signer().create(mnemonic, Network.Testnet);
     console.log('Signer created');
 
@@ -278,6 +280,24 @@ const ExtractTransaction = async pset => {
   }
 };
 
+const GetWolletInfo = async () => {
+  const signer = await getSignerInstance();
+
+  const descriptor = await signerInstance.wpkhSlip77Descriptor();
+  const descriptorString = await descriptor.asString();
+
+  const bip = await new Bip();
+  const bip49 = await bip.newBip49();
+  const bip84 = await bip.newBip84();
+  const bip87 = await bip.newBip87();
+  const bip49Xpub = await signer.keyoriginXpub(bip);
+  console.log(bip49Xpub);
+
+  const bip84Xpub = await signer.keyoriginXpub(bip84);
+  const bip87Xpub = await signer.keyoriginXpub(bip87);
+  return {descriptorString, bip49Xpub, bip84Xpub, bip87Xpub};
+};
+
 export {
   CreateWallet,
   GetNewAddress,
@@ -293,4 +313,5 @@ export {
   GetSavedTransactions,
   CreatePSETFromBase64,
   ExtractTransaction,
+  GetWolletInfo,
 };

@@ -13,7 +13,6 @@ import {
   GetSavedTransactions,
 } from '../wallet/WalletFactory';
 import Transaction from '../models/Transaction';
-import LoadingScreen from './LoadingScreen';
 import UnitConverter from '../helpers/UnitConverter';
 import Constants from '../config/Constants';
 import {AppContext} from '../context/AppContext';
@@ -23,9 +22,7 @@ const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 function WalletScreen({navigation}) {
   const [balance, setBalance] = useState(0);
   const [transactions, setTransactions] = useState([]);
-  const [isScrolledUp, setIsScrolledUp] = useState(false);
   const [loading, setLoading] = useState(false);
-  const scrollY = useRef(new Animated.Value(0)).current;
   const {preferredBitcoinUnit} = useContext(AppContext);
 
   const getTransactions = async () => {
@@ -108,47 +105,6 @@ function WalletScreen({navigation}) {
     navigation.navigate('Receive', {address: description});
   };
 
-  const balanceContainerTranslateX = scrollY.interpolate({
-    inputRange: [0, 100],
-    outputRange: [0, 10],
-    extrapolate: 'clamp',
-  });
-
-  const transactionButtonsTranslateX = scrollY.interpolate({
-    inputRange: [0, 100],
-    outputRange: [0, -20],
-    extrapolate: 'clamp',
-  });
-
-  const headerRowTranslateY = scrollY.interpolate({
-    inputRange: [0, 100],
-    outputRange: [0, -20],
-    extrapolate: 'clamp',
-  });
-
-  const balanceContainerScale = scrollY.interpolate({
-    inputRange: [0, 100],
-    outputRange: [1, 0.7],
-    extrapolate: 'clamp',
-  });
-
-  const transactionButtonsScale = scrollY.interpolate({
-    inputRange: [0, 100],
-    outputRange: [1, 0.7],
-    extrapolate: 'clamp',
-  });
-
-  const handleScroll = Animated.event(
-    [{nativeEvent: {contentOffset: {y: scrollY}}}],
-    {
-      useNativeDriver: true,
-      listener: event => {
-        const offsetY = event.nativeEvent.contentOffset.y;
-        setIsScrolledUp(offsetY > 50);
-      },
-    },
-  );
-
   const onTransactionDetails = transaction => {
     navigation.navigate('TransactionDetails', {transaction});
   };
@@ -164,55 +120,22 @@ function WalletScreen({navigation}) {
 
   return (
     <View style={styles.container}>
-      <TopBar title="Wallet" showRefreshButton={false} />
-      {loading && <LoadingScreen />}
-
-      <Animated.View
-        style={[
-          styles.headerRow,
-          {
-            flexDirection: isScrolledUp === true ? 'row' : 'column',
-            transform: [{translateY: headerRowTranslateY}],
-          },
-        ]}>
-        <Animated.View
-          style={[
-            styles.balanceContainer,
-            {
-              transform: [
-                {translateX: balanceContainerTranslateX},
-                {scale: balanceContainerScale},
-              ],
-              marginTop: isScrolledUp ? 20 : 0,
-              marginBottom: isScrolledUp ? 10 : 25,
-              marginLeft: isScrolledUp ? 40 : 0,
-            },
-          ]}>
-          <Text style={styles.balance}>
-            {displayBalanceInPreferredUnit() || '0'}
-          </Text>
-          <Text style={styles.denomination}>{preferredBitcoinUnit}</Text>
-        </Animated.View>
-        <Animated.View
-          style={[
-            styles.transactionButtonsContainer,
-            {
-              transform: [
-                {translateX: transactionButtonsTranslateX},
-                {scale: transactionButtonsScale},
-              ],
-            },
-          ]}>
-          <TransactionButtons
-            onSendPress={onSend}
-            onReceivePress={onReceive}
-            hideLabel={isScrolledUp}
-          />
-        </Animated.View>
-      </Animated.View>
+      <View style={styles.topRow}>
+        <TopBar title="Balance" />
+        <View style={[styles.headerRow]}>
+          <View style={[styles.balanceContainer]}>
+            <Text style={styles.balance}>
+              {displayBalanceInPreferredUnit() || '0'}
+            </Text>
+            <Text style={styles.denomination}>{preferredBitcoinUnit}</Text>
+          </View>
+        </View>
+      </View>
+      <View style={[styles.transactionButtonsContainer]}>
+        <TransactionButtons onSendPress={onSend} onReceivePress={onReceive} />
+      </View>
       <Transactions
         transactions={transactions}
-        onScroll={handleScroll}
         onTransactionDetail={onTransactionDetails}
         refreshing={loading}
         onRefresh={onRefresh}
@@ -225,19 +148,23 @@ function WalletScreen({navigation}) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
     backgroundColor: colors.appBackground,
+  },
+  topRow: {
+    width: '100%',
+    backgroundColor: colors.cardBackground,
     paddingTop: 50,
   },
   headerRow: {
-    paddingTop: 30,
+    paddingTop: 20,
     paddingHorizontal: 20,
+    height: 180,
   },
   balanceContainer: {
     alignItems: 'center',
   },
   balance: {
-    fontSize: 45,
+    fontSize: 35,
     color: colors.white,
   },
   denomination: {
@@ -246,11 +173,14 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   transactionButtonsContainer: {
-    //marginTop: 20,
-  },
-  scrollView: {
-    // flex: 1,
-    // width: '100%',
+    alignItems: 'center',
+    marginTop: -65,
+    backgroundColor: colors.appBackground,
+    marginHorizontal: 20,
+    borderRadius: 20,
+    padding: 5,
+    borderColor: colors.textGray,
+    borderWidth: 0.5,
   },
 });
 

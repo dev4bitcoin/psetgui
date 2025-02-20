@@ -16,7 +16,7 @@ function TransactionButtons({
         <TouchableOpacity onPress={onSendPress}>
           <View style={styles.iconContainer}>
             <View style={styles.iconWrapper}>
-              <Icon name="arrow-up" color={colors.white} size={35} />
+              <Icon name="arrow-up" color={colors.white} size={30} />
             </View>
             {!hideLabel && <Text style={styles.iconText}>SEND</Text>}
           </View>
@@ -32,7 +32,7 @@ function TransactionButtons({
         <TouchableOpacity onPress={onReceivePress}>
           <View style={styles.iconContainer}>
             <View style={styles.iconWrapper}>
-              <Icon name="arrow-down" color={colors.white} size={35} />
+              <Icon name="arrow-down" color={colors.white} size={30} />
             </View>
             {!hideLabel && <Text style={styles.iconText}>RECEIVE</Text>}
           </View>

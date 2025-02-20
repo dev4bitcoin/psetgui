@@ -6,14 +6,16 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import WalletScreen from '../screens/WalletScreen';
 import PSETScreen from '../screens/PSETScreen';
 import SettingsScreen from '../screens/SettingsScreen';
+
 import Colors from '../config/Colors';
+import WalletInfo from '../screens/WalletInfo';
 
 function BottomTabs(props) {
   const Tab = createBottomTabNavigator();
 
   return (
     <Tab.Navigator
-      initialRouteName="Wallet"
+      initialRouteName="Home"
       screenOptions={({route}) => ({
         tabBarHideOnKeyboard: true,
         tabBarStyle: styles.toolbar,
@@ -21,30 +23,49 @@ function BottomTabs(props) {
         headerShown: false,
       })}>
       <Tab.Screen
-        name="PSET"
-        component={PSETScreen}
+        name="Home"
+        component={WalletScreen}
         options={{
           tabBarIcon: ({focused}) => (
-            <View style={styles.tabItem}>
+            <View
+              style={[styles.tabItem, focused ? styles.focusedTabItem : '']}>
               <Icon
-                name="broadcast"
-                size={30}
+                name="home"
+                size={35}
                 color={focused ? 'white' : Colors.textGray}
               />
             </View>
           ),
         }}
       />
+
       <Tab.Screen
         name="Wallet"
-        component={WalletScreen}
+        component={WalletInfo}
         options={{
           tabBarIcon: ({focused}) => (
-            <View style={styles.mainTabItem}>
+            <View
+              style={[styles.tabItem, focused ? styles.focusedTabItem : '']}>
               <Icon
                 name="wallet"
-                size={40}
+                size={35}
                 color={focused ? Colors.white : Colors.textGray}
+              />
+            </View>
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="PSET"
+        component={PSETScreen}
+        options={{
+          tabBarIcon: ({focused}) => (
+            <View
+              style={[styles.tabItem, focused ? styles.focusedTabItem : '']}>
+              <Icon
+                name="file-sign"
+                size={35}
+                color={focused ? 'white' : Colors.textGray}
               />
             </View>
           ),
@@ -55,10 +76,11 @@ function BottomTabs(props) {
         component={SettingsScreen}
         options={{
           tabBarIcon: ({focused}) => (
-            <View style={styles.tabItem}>
+            <View
+              style={[styles.tabItem, focused ? styles.focusedTabItem : '']}>
               <Icon
                 name="cog"
-                size={30}
+                size={35}
                 color={focused ? Colors.white : Colors.textGray}
               />
             </View>
@@ -73,24 +95,31 @@ const styles = StyleSheet.create({
   toolbar: {
     display: 'flex',
     position: 'absolute',
-    bottom: 0,
     backgroundColor: Colors.appBackground,
-    height: 80,
+    height: 90,
+    borderTopWidth: 1,
+    borderTopColor: Colors.textGray,
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  toolbarLabel: {
+    fontSize: 16,
+    paddingTop: 5,
   },
   tabItem: {
-    top: 5,
-    width: 30,
-    height: 30,
+    marginTop: 30,
+    paddingTop: 15,
+    width: 90,
+    height: 70,
+    alignContent: 'center',
+    alignItems: 'center',
   },
-  mainTabItem: {
-    top: 0,
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    padding: 10,
-    borderWidth: 0.3,
-    borderColor: Colors.textGray,
-    backgroundColor: Colors.lightGray,
+  focusedTabItem: {
+    borderWidth: 2,
+    borderTopColor: Colors.white,
+    paddingTop: 14,
+    marginTop: 28,
   },
 });
 

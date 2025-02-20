@@ -4,7 +4,7 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  Animated,
+  SectionList,
   RefreshControl,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -175,17 +175,20 @@ function Transactions({
   );
 
   return (
-    <Animated.SectionList
+    <SectionList
       style={styles.transactions}
       sections={sections}
       keyExtractor={item => item.txid}
       renderItem={renderTransaction}
       renderSectionHeader={renderSectionHeader}
       stickySectionHeadersEnabled={true}
-      onScroll={onScroll}
       contentContainerStyle={styles.contentContainerStyle} // Add padding to the bottom
       refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          tintColor={colors.white}
+        />
       }
       ListEmptyComponent={
         <View style={styles.emptyContainer}>
