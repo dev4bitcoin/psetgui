@@ -1,5 +1,5 @@
-import React, {useEffect, useState, useRef, useContext} from 'react';
-import {View, StyleSheet, Text, Animated} from 'react-native';
+import React, {useEffect, useState, useContext} from 'react';
+import {View, StyleSheet, Text, ScrollView, RefreshControl} from 'react-native';
 
 import colors from '../config/Colors';
 import TransactionButtons from '../components/TransactionButtons';
@@ -120,8 +120,20 @@ function WalletScreen({navigation}) {
 
   return (
     <View style={styles.container}>
-      <View style={styles.topRow}>
+      <View style={styles.balanceRow}>
         <TopBar title="Balance" />
+      </View>
+
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollViewContent}
+        refreshControl={
+          <RefreshControl
+            refreshing={loading}
+            onRefresh={onRefresh}
+            tintColor={colors.white}
+          />
+        }>
         <View style={[styles.headerRow]}>
           <View style={[styles.balanceContainer]}>
             <Text style={styles.balance}>
@@ -130,17 +142,21 @@ function WalletScreen({navigation}) {
             <Text style={styles.denomination}>{preferredBitcoinUnit}</Text>
           </View>
         </View>
-      </View>
-      <View style={[styles.transactionButtonsContainer]}>
-        <TransactionButtons onSendPress={onSend} onReceivePress={onReceive} />
-      </View>
-      <Transactions
-        transactions={transactions}
-        onTransactionDetail={onTransactionDetails}
-        refreshing={loading}
-        onRefresh={onRefresh}
-        denomination={preferredBitcoinUnit}
-      />
+        <View style={styles.placeholder}>
+          <View style={[styles.transactionButtonsContainer]}>
+            <TransactionButtons
+              onSendPress={onSend}
+              onReceivePress={onReceive}
+            />
+          </View>
+        </View>
+        <Transactions
+          transactions={transactions}
+          onTransactionDetail={onTransactionDetails}
+          onRefresh={onRefresh}
+          denomination={preferredBitcoinUnit}
+        />
+      </ScrollView>
     </View>
   );
 }
@@ -150,15 +166,21 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.appBackground,
   },
-  topRow: {
+  balanceRow: {
     width: '100%',
     backgroundColor: colors.cardBackground,
     paddingTop: 50,
+  },
+  scrollView: {
+    flex: 1,
+    backgroundColor: colors.cardBackground,
   },
   headerRow: {
     paddingTop: 20,
     paddingHorizontal: 20,
     height: 180,
+    width: '100%',
+    backgroundColor: colors.cardBackground,
   },
   balanceContainer: {
     alignItems: 'center',
@@ -171,6 +193,10 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: colors.textGray,
     marginTop: 5,
+  },
+  placeholder: {
+    //height: 50,
+    backgroundColor: colors.appBackground,
   },
   transactionButtonsContainer: {
     alignItems: 'center',

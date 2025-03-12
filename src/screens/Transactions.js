@@ -5,7 +5,6 @@ import {
   Text,
   TouchableOpacity,
   SectionList,
-  RefreshControl,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {useNavigation} from '@react-navigation/native';
@@ -15,9 +14,7 @@ import UnitConverter from '../helpers/UnitConverter';
 
 function Transactions({
   transactions,
-  onScroll,
-  refreshing,
-  onRefresh,
+
   denomination,
 }) {
   const navigation = useNavigation();
@@ -183,13 +180,7 @@ function Transactions({
       renderSectionHeader={renderSectionHeader}
       stickySectionHeadersEnabled={true}
       contentContainerStyle={styles.contentContainerStyle} // Add padding to the bottom
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={onRefresh}
-          tintColor={colors.white}
-        />
-      }
+      scrollEnabled={false}
       ListEmptyComponent={
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyText}>
@@ -208,6 +199,7 @@ const styles = StyleSheet.create({
   transactions: {
     paddingLeft: 10,
     paddingRight: 10,
+    backgroundColor: colors.appBackground,
   },
   dateContainer: {
     alignItems: 'center',
