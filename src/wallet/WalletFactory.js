@@ -2,14 +2,14 @@ import {
   Wollet,
   Client,
   Signer,
+  Mnemonic,
   Network,
-  Descriptor,
+  WolletDescriptor,
   TxBuilder,
   Bip,
   Pset,
 } from 'lwk-rn';
 
-import * as bip39 from 'bip39';
 import uuid from 'react-native-uuid';
 import Constants from '../config/Constants';
 import {
@@ -25,6 +25,7 @@ import {
   storeBalance,
   getStoredBalance,
 } from '../services/WalletService';
+import Transaction from '../models/Transaction';
 
 let signerInstance = null;
 let wolletInstance = null;
@@ -32,46 +33,55 @@ let clientInstance = null;
 let builderInstance = null;
 
 const getSignerInstance = async () => {
+  console.log('getSignerInstance');
   if (!signerInstance) {
     const wallet = await getDefaultWallet();
     const {mnemonic} = JSON.parse(wallet);
     if (!mnemonic) {
       return null;
     }
-    signerInstance = await new Signer().create(mnemonic, Network.Testnet);
+    signerInstance = new Signer(new Mnemonic(mnemonic), Network.testnet());
   }
   return signerInstance;
 };
 
 const getWolletInstance = async () => {
+  console.log('getWolletInstance');
   if (!wolletInstance) {
     const wallet = await getDefaultWallet();
     if (!wallet) {
       return null;
     }
     const {descriptor} = JSON.parse(wallet);
-    const desc = await new Descriptor().create(descriptor);
-    wolletInstance = await new Wollet().create(Network.Testnet, desc, null);
+    console.log('Descriptor', descriptor);
+    const desc = new WolletDescriptor(descriptor);
+    console.log('WolletDescriptor', descriptor.toString());
+    console.log('Wollet');
+    wolletInstance = new Wollet(Network.testnet(), desc, undefined);
+    console.log('updateWallet');
     await updateWallet(wolletInstance);
   }
+  console.log('ready wolletInstance');
   return wolletInstance;
 };
 
 const getClientInstance = async () => {
+  console.log('getClientInstance');
   if (!clientInstance) {
-    clientInstance = await new Client().defaultElectrumClient(Network.Testnet);
+    clientInstance = await Network.testnet().defaultElectrumClient();
   }
   return clientInstance;
 };
 
 const getBuilderInstance = async () => {
   if (!builderInstance) {
-    builderInstance = await new TxBuilder().create(Network.Testnet);
+    builderInstance = await new TxBuilder(Network.testnet());
   }
   return builderInstance;
 };
 
 const GetSavedTransactions = async () => {
+  console.log('GetSavedTransactions');
   const wallet = await getDefaultWallet();
   if (!wallet) return [];
 
@@ -81,6 +91,7 @@ const GetSavedTransactions = async () => {
 };
 
 const GetSavedBalance = async () => {
+  console.log('GetSavedBalance');
   const wallet = await getDefaultWallet();
   if (!wallet) return null;
 
@@ -97,10 +108,12 @@ const GetSavedBalance = async () => {
 const CreateWallet = async () => {
   try {
     // Generate a mnemonic using BIP-39
-    const mnemonic = bip39.generateMnemonic();
-    // const mnemonic =
-    //   'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about';
-    signerInstance = await new Signer().create(mnemonic, Network.Testnet);
+    console.log('bip39.generateMnemonic()');
+    //const mnemonic = bip39.generateMnemonic();
+    //console.log('mnemonic:', mnemonic);
+    const mnemonic =
+      'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about';
+    signerInstance = new Signer(new Mnemonic(mnemonic), Network.testnet());
     console.log('Signer created');
 
     // const mnemonic1 = await signerInstance.mnemonic();
@@ -126,7 +139,7 @@ const CreateWallet = async () => {
     }
 
     const descriptor = await signerInstance.wpkhSlip77Descriptor();
-    const descriptorString = await descriptor.asString();
+    const descriptorString = await descriptor.toString();
 
     const id = uuid.v4();
 
@@ -144,6 +157,7 @@ const CreateWallet = async () => {
 };
 
 const updateWallet = async wollet => {
+  console.log('updateWallet');
   const client = await getClientInstance();
   const update = await client.fullScan(wollet);
   wollet.applyUpdate(update);
@@ -162,14 +176,37 @@ const IsWalletExist = async () => {
 };
 
 const GetNewAddress = async () => {
-  const address = (await getWolletInstance()).getAddress();
-  return address;
+  console.log('GetNewAddress');
+  const address = (await getWolletInstance()).address(undefined);
+  const txt = address.address().toString();
+  console.log('address:', txt);
+  return txt;
 };
 
 const GetTransactions = async () => {
+  console.log('GetTransactions');
   const wallet = await getWolletInstance();
   await updateWallet(wallet);
-  const newTransactions = await wallet.getTransactions();
+  const txs = await wallet.transactions();
+
+  const newTransactions = txs.map(tx => {
+    var balance = {};
+    tx.balance().forEach((value, key) => {
+      if (balance[key.toString()] === undefined) {
+        balance[key.toString()] = 0;
+      }
+      balance[key.toString()] += Number(value);
+    });
+    return new Transaction({
+      balance: balance,
+      fee: Number(tx.fee()),
+      height: tx.height(),
+      type: tx.type(),
+      txid: tx.txid().toString(),
+      timestamp: tx.timestamp(),
+      tx: tx.tx().toString(),
+    });
+  });
 
   const savedWallet = await getDefaultWallet();
   const parsedSavedWallet = JSON.parse(savedWallet);
@@ -193,10 +230,18 @@ const GetTransactions = async () => {
 };
 
 const GetBalance = async () => {
+  console.log('GetBalance');
   const wollet = await getWolletInstance();
   await updateWallet(wollet);
-  const balance = await wollet.getBalance();
-
+  const res = await wollet.balance();
+  console.log('balance:', res);
+  var balance = {};
+  res.forEach((value, key) => {
+    if (balance[key.toString()] === undefined) {
+      balance[key.toString()] = 0;
+    }
+    balance[key.toString()] += Number(value);
+  });
   // Store the balance in AsyncStorage
   const savedWallet = await getDefaultWallet();
   const parsedSavedWallet = JSON.parse(savedWallet);
@@ -207,10 +252,12 @@ const GetBalance = async () => {
 };
 
 const ResetWallets = async () => {
+  console.log('ResetWallets');
   return await resetWallets();
 };
 
 const BroadcastTransaction = async (address, satoshis) => {
+  console.log('BroadcastTransaction');
   try {
     const wollet = await getWolletInstance();
     const builder = await getBuilderInstance();
@@ -242,6 +289,7 @@ const BroadcastTransaction = async (address, satoshis) => {
 };
 
 const ValidateAddress = async address => {
+  console.log('ValidateAddress');
   try {
     const builder = await getBuilderInstance();
     await builder.addLbtcRecipient(address, 1000);
@@ -253,6 +301,7 @@ const ValidateAddress = async address => {
 };
 
 const GetMnemonic = async () => {
+  console.log('GetMnemonic');
   const wallet = await getDefaultWallet();
   if (!wallet) {
     return null;
@@ -261,8 +310,9 @@ const GetMnemonic = async () => {
 };
 
 const CreatePSETFromBase64 = async pset => {
+  console.log('CreatePSETFromBase64');
   try {
-    const psetInstance = await new Pset().create(pset);
+    const psetInstance = new Pset(pset);
     return psetInstance;
   } catch (error) {
     console.error('PSET validation failed:', error);
@@ -271,6 +321,7 @@ const CreatePSETFromBase64 = async pset => {
 };
 
 const ExtractTransaction = async pset => {
+  console.log('ExtractTransaction');
   try {
     const tx = await pset.extractTx();
     return tx;
@@ -281,20 +332,16 @@ const ExtractTransaction = async pset => {
 };
 
 const GetWolletInfo = async () => {
+  console.log('GetWolletInfo');
   const signer = await getSignerInstance();
 
   const descriptor = await signerInstance.wpkhSlip77Descriptor();
-  const descriptorString = await descriptor.asString();
+  const descriptorString = await descriptor.toString();
 
-  const bip = await new Bip();
-  const bip49 = await bip.newBip49();
-  const bip84 = await bip.newBip84();
-  const bip87 = await bip.newBip87();
-  const bip49Xpub = await signer.keyoriginXpub(bip);
+  const bip49Xpub = await signer.keyoriginXpub(Bip.newBip49());
   console.log(bip49Xpub);
-
-  const bip84Xpub = await signer.keyoriginXpub(bip84);
-  const bip87Xpub = await signer.keyoriginXpub(bip87);
+  const bip84Xpub = await signer.keyoriginXpub(Bip.newBip84());
+  const bip87Xpub = await signer.keyoriginXpub(Bip.newBip87());
   return {descriptorString, bip49Xpub, bip84Xpub, bip87Xpub};
 };
 

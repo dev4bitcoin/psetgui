@@ -1,6 +1,6 @@
-import React, {useEffect, useRef} from 'react';
+import React from 'react';
 import {useNavigation} from '@react-navigation/native';
-import {View, StyleSheet, TouchableOpacity, Animated} from 'react-native';
+import {View, StyleSheet, TouchableOpacity, StatusBar} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import Localize from '../config/Localize';
