@@ -1,5 +1,14 @@
 import React, {useEffect, useState, useContext} from 'react';
-import {View, StyleSheet, Text, ScrollView, RefreshControl} from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Text,
+  ScrollView,
+  RefreshControl,
+  StatusBar,
+  Platform,
+} from 'react-native';
+import {useIsFocused} from '@react-navigation/native'; // Import the hook
 
 import colors from '../config/Colors';
 import TransactionButtons from '../components/TransactionButtons';
@@ -19,11 +28,12 @@ import {AppContext} from '../context/AppContext';
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-function WalletScreen({navigation}) {
+function WalletScreen({route, navigation}) {
   const [balance, setBalance] = useState(0);
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(false);
   const {preferredBitcoinUnit} = useContext(AppContext);
+  const isFocused = useIsFocused(); // Check if the screen is focused
 
   const getTransactions = async () => {
     try {
@@ -101,7 +111,7 @@ function WalletScreen({navigation}) {
   };
 
   const onReceive = async () => {
-    const {description, qr_code_text, is_blinded} = await GetNewAddress();
+    const description = await GetNewAddress();
     navigation.navigate('Receive', {address: description});
   };
 
@@ -120,8 +130,17 @@ function WalletScreen({navigation}) {
 
   return (
     <View style={styles.container}>
-      <View style={styles.balanceRow}>
-        <TopBar title="Balance" />
+      <StatusBar
+        backgroundColor={
+          isFocused ? colors.cardBackground : colors.appBackground
+        } // Android: Sets the background color
+      />
+      <View
+        style={[
+          styles.balanceRow,
+          {paddingTop: Platform.OS == 'android' ? 0 : 50},
+        ]}>
+        <TopBar title="Balance" isHomeScreen={true} />
       </View>
 
       <ScrollView
@@ -169,16 +188,18 @@ const styles = StyleSheet.create({
   balanceRow: {
     width: '100%',
     backgroundColor: colors.cardBackground,
-    paddingTop: 50,
   },
   scrollView: {
     flex: 1,
     backgroundColor: colors.cardBackground,
   },
+  scrollViewContent: {
+    flexGrow: 1,
+  },
   headerRow: {
     paddingTop: 20,
     paddingHorizontal: 20,
-    height: 180,
+    height: 160,
     width: '100%',
     backgroundColor: colors.cardBackground,
   },
@@ -200,13 +221,13 @@ const styles = StyleSheet.create({
   },
   transactionButtonsContainer: {
     alignItems: 'center',
-    marginTop: -65,
-    backgroundColor: colors.appBackground,
+    marginTop: -55,
+    //backgroundColor: colors.appBackground,
     marginHorizontal: 20,
     borderRadius: 20,
     padding: 5,
-    borderColor: colors.textGray,
-    borderWidth: 0.5,
+    //borderColor: colors.textGray,
+    //borderWidth: 0.5,
   },
 });
 

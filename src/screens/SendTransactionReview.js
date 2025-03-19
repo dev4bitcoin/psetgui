@@ -62,7 +62,7 @@ function SendTransactionReview({navigation, route}) {
           <Text style={styles.label}>DESTINATION</Text>
         </View>
         <View style={styles.borderContainer}>
-          <Text style={styles.fee}>100 sat/vB</Text>
+          <Text style={styles.fee}>0.1 sat/vB</Text>
           <Text style={styles.label}>TRANSACTION SPEED</Text>
         </View>
         <View style={styles.buttonContainer}>

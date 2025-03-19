@@ -144,8 +144,6 @@ const styles = StyleSheet.create({
   itemText: {
     fontSize: 16,
     color: Colors.white,
-    borderBottomColor: Colors.white,
-    borderBottomWidth: 0.5,
   },
   nameContainer: {
     flexDirection: 'row',

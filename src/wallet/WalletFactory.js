@@ -1,6 +1,5 @@
 import {
   Wollet,
-  Client,
   Signer,
   Mnemonic,
   Network,
@@ -8,6 +7,7 @@ import {
   TxBuilder,
   Bip,
   Pset,
+  Address,
 } from 'lwk-rn';
 
 import uuid from 'react-native-uuid';
@@ -53,29 +53,26 @@ const getWolletInstance = async () => {
       return null;
     }
     const {descriptor} = JSON.parse(wallet);
-    console.log('Descriptor', descriptor);
     const desc = new WolletDescriptor(descriptor);
-    console.log('WolletDescriptor', descriptor.toString());
-    console.log('Wollet');
+
     wolletInstance = new Wollet(Network.testnet(), desc, undefined);
-    console.log('updateWallet');
     await updateWallet(wolletInstance);
   }
-  console.log('ready wolletInstance');
   return wolletInstance;
 };
 
-const getClientInstance = async () => {
+const getClientInstance = () => {
   console.log('getClientInstance');
   if (!clientInstance) {
-    clientInstance = await Network.testnet().defaultElectrumClient();
+    const network = Network.testnet();
+    clientInstance = network.defaultElectrumClient();
   }
   return clientInstance;
 };
 
-const getBuilderInstance = async () => {
+const getBuilderInstance = () => {
   if (!builderInstance) {
-    builderInstance = await new TxBuilder(Network.testnet());
+    builderInstance = new TxBuilder(Network.testnet());
   }
   return builderInstance;
 };
@@ -105,33 +102,29 @@ const GetSavedBalance = async () => {
   return totalBalance;
 };
 
+const extractKeyOriginAndXpub = input => {
+  const closingBracketIndex = input.indexOf(']');
+  if (closingBracketIndex === -1) {
+    throw new Error('Invalid input format: Missing closing bracket');
+  }
+
+  const keyOrigin = input.substring(1, closingBracketIndex); // Exclude the opening '['
+  const xpub = input.substring(closingBracketIndex + 1); // Everything after ']'
+
+  return {keyOrigin, xpub};
+};
+
 const CreateWallet = async () => {
   try {
-    // Generate a mnemonic using BIP-39
-    console.log('bip39.generateMnemonic()');
-    //const mnemonic = bip39.generateMnemonic();
-    //console.log('mnemonic:', mnemonic);
-    const mnemonic =
-      'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about';
-    signerInstance = new Signer(new Mnemonic(mnemonic), Network.testnet());
-    console.log('Signer created');
+    console.log('CreateWallet');
+    const mnemonic = Mnemonic.fromRandom(12);
+    // const mnemonic =
+    //   'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about';
+    signerInstance = new Signer(mnemonic, Network.testnet());
 
-    // const mnemonic1 = await signerInstance.mnemonic();
-    // console.log('mnemonic:', mnemonic1);
-
-    // const bip = await new Bip().newBip84();
-    // console.log('BIP created');
-    // await bip.newBip84(); // Use BIP-84 for Native SegWit (Bech32) addresses
-    // console.log('BIP ID:', bip.id);
-
-    // // Get the key origin information
-    // const keyOrigin = await signerInstance.keyoriginXpub(bip);
-    // console.log('keyOrigin:', keyOrigin);
-
-    //const mnemonic = await signer.mnemonic();
-    //console.log('mnemonic:', mnemonic);
-    // use random number string for xpub now. will be replaced with actual xpub once it is available as par of the signer
-    const xpub = Math.floor(Math.random() * 100000).toString();
+    // Get the key origin information
+    const keyoriginXpub = await signerInstance.keyoriginXpub(Bip.newBip84());
+    const {keyOrigin, xpub} = extractKeyOriginAndXpub(keyoriginXpub);
 
     if (await isWalletExist(xpub)) {
       console.log('Wallet already exists');
@@ -141,13 +134,12 @@ const CreateWallet = async () => {
     const descriptor = await signerInstance.wpkhSlip77Descriptor();
     const descriptorString = await descriptor.toString();
 
-    const id = uuid.v4();
-
     await createWallet(
       JSON.stringify({
-        id: id,
-        mnemonic: mnemonic,
+        id: uuid.v4(),
+        mnemonic: mnemonic.toString(),
         xpub: xpub,
+        keyOrigin: keyOrigin,
         descriptor: descriptorString,
       }),
     );
@@ -158,7 +150,7 @@ const CreateWallet = async () => {
 
 const updateWallet = async wollet => {
   console.log('updateWallet');
-  const client = await getClientInstance();
+  const client = getClientInstance();
   const update = await client.fullScan(wollet);
   wollet.applyUpdate(update);
 };
@@ -179,7 +171,6 @@ const GetNewAddress = async () => {
   console.log('GetNewAddress');
   const address = (await getWolletInstance()).address(undefined);
   const txt = address.address().toString();
-  console.log('address:', txt);
   return txt;
 };
 
@@ -234,7 +225,6 @@ const GetBalance = async () => {
   const wollet = await getWolletInstance();
   await updateWallet(wollet);
   const res = await wollet.balance();
-  console.log('balance:', res);
   var balance = {};
   res.forEach((value, key) => {
     if (balance[key.toString()] === undefined) {
@@ -260,25 +250,26 @@ const BroadcastTransaction = async (address, satoshis) => {
   console.log('BroadcastTransaction');
   try {
     const wollet = await getWolletInstance();
-    const builder = await getBuilderInstance();
+    const builder = getBuilderInstance();
     const signer = await getSignerInstance();
-    const client = await getClientInstance();
+    const client = getClientInstance();
 
     const fee_rate = 100; // this is the sat/vB * 100 fee rate. Example 280 would equal a fee rate of .28 sat/vB. 100 would equal .1 sat/vB
+    const addressInterface = new Address(address);
 
-    await builder.addLbtcRecipient(address, parseFloat(satoshis));
+    await builder.addLbtcRecipient(addressInterface, parseFloat(satoshis));
     await builder.feeRate(fee_rate);
 
     let pset = await builder.finish(wollet);
-    const psetAsString = await pset.asString();
-    console.log('Unsigned PSET', psetAsString);
+    const psetString = await pset.toString();
+    console.log('Unsigned PSET', psetString);
     let signed_pset = await signer.sign(pset);
-    console.log('SIGNED PSET:', await signed_pset.asString());
+    console.log('SIGNED PSET:', await signed_pset.toString());
     let finalized_pset = await wollet.finalize(signed_pset);
     const tx = await finalized_pset.extractTx();
 
     await client.broadcast(tx);
-    const txId = await tx.txId();
+    const txId = await tx.txid();
 
     console.log('BROADCASTED TX!\nTXID: {:?}', txId);
     return txId;
@@ -289,10 +280,9 @@ const BroadcastTransaction = async (address, satoshis) => {
 };
 
 const ValidateAddress = async address => {
-  console.log('ValidateAddress');
+  console.log('ValidateAddress', address);
   try {
-    const builder = await getBuilderInstance();
-    await builder.addLbtcRecipient(address, 1000);
+    const addressInterface = new Address(address);
     return true;
   } catch (error) {
     console.error(error);
@@ -309,11 +299,21 @@ const GetMnemonic = async () => {
   return JSON.parse(wallet).mnemonic;
 };
 
-const CreatePSETFromBase64 = async pset => {
-  console.log('CreatePSETFromBase64');
+const ExtractPsetDetails = async pset => {
+  console.log('ExtractPsetDetails');
   try {
     const psetInstance = new Pset(pset);
-    return psetInstance;
+    const wolletInstance = await getWolletInstance();
+    const details = await wolletInstance.psetDetails(psetInstance);
+    const balances = details.balance().balances();
+    console.log('Balances:', balances);
+    const fee = details.balance().fee();
+    console.log('Fee:', fee);
+    const signatures = details.signatures();
+    console.log('Signatures:', signatures);
+    const recipients = details.balance().recipients();
+    console.log('Recipients:', recipients);
+    return {balances, fee, signatures, recipients};
   } catch (error) {
     console.error('PSET validation failed:', error);
     return null;
@@ -358,7 +358,7 @@ export {
   GetMnemonic,
   GetSavedBalance,
   GetSavedTransactions,
-  CreatePSETFromBase64,
+  ExtractPsetDetails,
   ExtractTransaction,
   GetWolletInfo,
 };

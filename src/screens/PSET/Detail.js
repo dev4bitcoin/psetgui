@@ -1,47 +1,135 @@
-import React, {useEffect} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {View, StyleSheet, Text} from 'react-native';
+
 import Screen from '../Screen';
 import TopBar from '../../components/TopBar';
 import Colors from '../../config/Colors';
-import {CreatePSETFromBase64} from '../../wallet/WalletFactory';
+import {AppContext} from '../../context/AppContext';
+import UnitConverter from '../../helpers/UnitConverter';
+
+class KeyValueArray {
+  constructor(key, value) {
+    this.key = key;
+    this.value = value;
+  }
+}
 
 function Detail(props) {
-  const {pset} = props.route.params;
+  const {psetDetails} = props.route.params;
+  const {preferredBitcoinUnit} = useContext(AppContext);
 
+  const [fee, setFee] = useState([]);
+  const [signatures, setSignatures] = useState([]);
+  const [recipients, setRecipients] = useState([]);
   useEffect(() => {
     extractPsetDetails();
-  }, [pset]);
+  }, [psetDetails]);
+
+  const displayBalanceInPreferredUnit = amount => {
+    const convertedDenominationAmount =
+      UnitConverter.convertToPreferredBTCDenominator(
+        amount,
+        preferredBitcoinUnit,
+      );
+    return convertedDenominationAmount;
+  };
 
   const extractPsetDetails = async () => {
     try {
-      const psetInstance = await CreatePSETFromBase64(pset);
-      if (psetInstance) {
-        const tx = await psetInstance.extractTx();
-        const txId = await tx.txId();
-        console.log('BROADCASTED TX!\nTXID: {:?}', txId);
+      const feeData = [];
+      feeData.push(
+        new KeyValueArray(
+          'Fee',
+          displayBalanceInPreferredUnit(Number(psetDetails.fee)),
+        ),
+      );
+      setFee(feeData);
 
-        const txString = await tx.asString();
-        console.log('Tx as String', txString);
-      }
+      console.log('Extract signatures');
+      const signaturesArray = [];
+      psetDetails.signatures?.forEach(signatureItem => {
+        console.log('has signature');
+        const hasSignatureMap = signatureItem?.hasSignature?.();
+        if (hasSignatureMap) {
+          hasSignatureMap.forEach((value, key) => {
+            // Extract the part inside square brackets using regex
+            const match = value.match(/\[([^\]]+)\]/); // Matches content inside []
+            const extractedValue = match ? match[1] : null; // Extract the first group
+            if (extractedValue) {
+              signaturesArray.push(new KeyValueArray('Has', extractedValue));
+            }
+          });
+        }
+
+        console.log('missing signature');
+        const missingSignatureMap = signatureItem?.missingSignature?.();
+        if (missingSignatureMap) {
+          missingSignatureMap.forEach((value, key) => {
+            // Extract the part inside square brackets using regex
+            const match = value.match(/\[([^\]]+)\]/); // Matches content inside []
+            const extractedValue = match ? match[1] : null; // Extract the first group
+            if (extractedValue) {
+              signaturesArray.push(
+                new KeyValueArray('Missing', extractedValue),
+              );
+            }
+          });
+        }
+      });
+      setSignatures(signaturesArray);
+
+      const recipientsArray = [];
+      psetDetails.recipients?.map(recipient => {
+        const address = recipient?.address()?.toString();
+        const amount = recipient?.value();
+        console.log('Recipient', address, amount);
+        recipientsArray.push(
+          new KeyValueArray(
+            address,
+            displayBalanceInPreferredUnit(Number(amount)),
+          ),
+        );
+      });
+      setRecipients(recipientsArray);
     } catch (error) {
       console.error(error);
     }
+  };
+
+  const renderItem = (header, items) => {
+    return (
+      <View style={styles.group}>
+        <Text style={styles.header}>{header}</Text>
+        <View style={styles.itemGroup}>
+          <View style={styles.item}>
+            {Array.isArray(items) &&
+              items.map((item, index) => (
+                <View key={index} style={styles.nameContainer}>
+                  <Text
+                    style={styles.itemTextHeader}
+                    numberOfLines={1}
+                    ellipsizeMode="middle">
+                    {item?.key}
+                  </Text>
+                  <Text style={styles.itemText}>{item?.value}</Text>
+                </View>
+              ))}
+          </View>
+        </View>
+      </View>
+    );
   };
 
   return (
     <Screen style={styles.container}>
       <TopBar title="Review PSET" showBackButton={true} />
       <View style={styles.content}>
-        <View style={styles.group}>
-          <Text style={styles.header}>Fee</Text>
-          <View style={styles.itemGroup}>
-            <View style={styles.item}>
-              <View style={styles.nameContainer}>
-                <Text style={styles.itemText}>dd</Text>
-              </View>
-            </View>
-          </View>
-        </View>
+        {renderItem(
+          `Net balance (From the perspective of the current wallet) - ${preferredBitcoinUnit}`,
+          fee,
+        )}
+        {renderItem('Signatures', signatures)}
+        {renderItem('Recipients', recipients)}
       </View>
     </Screen>
   );
@@ -52,7 +140,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    padding: 10,
+    //padding: 10,
   },
   group: {
     width: '100%',
@@ -65,9 +153,6 @@ const styles = StyleSheet.create({
     color: Colors.textGray,
   },
   item: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
     padding: 10,
   },
   itemGroup: {
@@ -77,16 +162,27 @@ const styles = StyleSheet.create({
     borderBottomColor: Colors.textGray,
     borderRadius: 5,
   },
+  itemTextHeader: {
+    fontSize: 18,
+    color: Colors.textGray,
+    //marginLeft: 10,
+    width: '55%',
+  },
   itemText: {
     fontSize: 18,
     color: Colors.white,
-    marginLeft: 20,
-    borderBottomColor: Colors.white,
-    borderBottomWidth: 0.5,
+    //marginLeft: 20,
+    paddingRight: 10,
+    textAlign: 'right',
+    width: '45%',
   },
   nameContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+    paddingVertical: 15,
+    //paddingHorizontal,
   },
 });
 

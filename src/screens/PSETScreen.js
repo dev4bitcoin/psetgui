@@ -1,4 +1,5 @@
 import React, {useEffect, useRef, useState} from 'react';
+
 import {
   View,
   StyleSheet,
@@ -15,7 +16,7 @@ import Clipboard from '@react-native-clipboard/clipboard';
 import Screen from './Screen';
 import TopBar from '../components/TopBar';
 import Colors from '../config/Colors';
-import {CreatePSETFromBase64} from '../wallet/WalletFactory';
+import {ExtractPsetDetails} from '../wallet/WalletFactory';
 
 function PSETScreen(props) {
   const textInputRef = useRef(null);
@@ -33,17 +34,10 @@ function PSETScreen(props) {
 
   const onAnalyze = async () => {
     try {
-      const psetInstance = await CreatePSETFromBase64(pset);
-      setShowErrorMessage(psetInstance === null);
-      if (psetInstance) {
-        const tx = await psetInstance.extractTx();
-        const txId = await tx.txId();
-        console.log('BROADCASTED TX!\nTXID: {:?}', txId);
-        const txString = await tx.asString();
-        console.log(txString);
-        const txNew = await tx.create(txString);
-        console.log(txNew);
-        props.navigation.navigate('Detail', {pset: pset});
+      const psetDetails = await ExtractPsetDetails(pset);
+      setShowErrorMessage(psetDetails === null);
+      if (psetDetails) {
+        props.navigation.navigate('Detail', {psetDetails: psetDetails});
       }
     } catch (error) {
       setShowErrorMessage(true);

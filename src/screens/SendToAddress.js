@@ -28,7 +28,7 @@ function SendToAddress({navigation, route}) {
     const isValid = await ValidateAddress(text);
     if (!isValid) {
       console.log('Invalid address');
-      Alert.alert('Invalid address', 'The invoice contains am invalid address');
+      Alert.alert('Invalid address', 'The invoice contains an invalid address');
       return;
     }
 
@@ -39,7 +39,7 @@ function SendToAddress({navigation, route}) {
     const isValid = await ValidateAddress(address);
     if (!isValid) {
       console.log('Invalid address');
-      Alert.alert('Invalid address', 'The invoice contains am invalid address');
+      Alert.alert('Invalid address', 'The invoice contains an invalid address');
       return;
     }
     navigation.navigate('SendTransactionReview', {
