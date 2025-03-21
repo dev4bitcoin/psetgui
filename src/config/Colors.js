@@ -17,7 +17,7 @@ export default {
   gainsboro: '#DCDCDC',
   watchOnly: '#1a1a1a',
   bottomRowText: '#6d767f',
-  darkGray: '#252529',
+  darkGray: '#262626',
   blue: '#4493ff',
   darkBlue: '#154c79',
   lightBlue: '#1e81b0',

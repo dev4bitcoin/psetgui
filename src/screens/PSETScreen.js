@@ -37,7 +37,10 @@ function PSETScreen(props) {
       const psetDetails = await ExtractPsetDetails(pset);
       setShowErrorMessage(psetDetails === null);
       if (psetDetails) {
-        props.navigation.navigate('Detail', {psetDetails: psetDetails});
+        props.navigation.navigate('Detail', {
+          pset: pset,
+          psetDetails: psetDetails,
+        });
       }
     } catch (error) {
       setShowErrorMessage(true);

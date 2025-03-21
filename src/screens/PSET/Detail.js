@@ -1,5 +1,11 @@
 import React, {useContext, useEffect, useState} from 'react';
-import {View, StyleSheet, Text} from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+} from 'react-native';
 
 import Screen from '../Screen';
 import TopBar from '../../components/TopBar';
@@ -15,7 +21,7 @@ class KeyValueArray {
 }
 
 function Detail(props) {
-  const {psetDetails} = props.route.params;
+  const {pset, psetDetails} = props.route.params;
   const {preferredBitcoinUnit} = useContext(AppContext);
 
   const [fee, setFee] = useState([]);
@@ -96,6 +102,13 @@ function Detail(props) {
     }
   };
 
+  const onSign = async () => {
+    props.navigation.navigate('SignerSelection', {
+      pset: pset,
+      psetDetails: psetDetails,
+    });
+  };
+
   const renderItem = (header, items) => {
     return (
       <View style={styles.group}>
@@ -123,14 +136,23 @@ function Detail(props) {
   return (
     <Screen style={styles.container}>
       <TopBar title="Review PSET" showBackButton={true} />
-      <View style={styles.content}>
-        {renderItem(
-          `Net balance (From the perspective of the current wallet) - ${preferredBitcoinUnit}`,
-          fee,
-        )}
-        {renderItem('Signatures', signatures)}
-        {renderItem('Recipients', recipients)}
-      </View>
+      <ScrollView>
+        <View style={styles.content}>
+          {renderItem(
+            `Net balance (From the perspective of the current wallet) - ${preferredBitcoinUnit}`,
+            fee,
+          )}
+          {renderItem('Signatures', signatures)}
+          {renderItem('Recipients', recipients)}
+        </View>
+        <View>
+          <TouchableOpacity
+            onPress={onSign}
+            style={styles.bottomButtonContainer}>
+            <Text style={styles.bottomButtonText}>Sign</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
     </Screen>
   );
 }
@@ -139,9 +161,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  content: {
-    //padding: 10,
-  },
+  content: {},
   group: {
     width: '100%',
     padding: 20,
@@ -165,13 +185,11 @@ const styles = StyleSheet.create({
   itemTextHeader: {
     fontSize: 18,
     color: Colors.textGray,
-    //marginLeft: 10,
     width: '55%',
   },
   itemText: {
     fontSize: 18,
     color: Colors.white,
-    //marginLeft: 20,
     paddingRight: 10,
     textAlign: 'right',
     width: '45%',
@@ -182,7 +200,21 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     width: '100%',
     paddingVertical: 15,
-    //paddingHorizontal,
+  },
+  bottomButtonContainer: {
+    alignItems: 'center',
+    backgroundColor: Colors.white,
+    borderColor: Colors.white,
+    borderWidth: 2,
+    padding: 20,
+    borderRadius: 50,
+    margin: 20,
+  },
+  bottomButtonText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: Colors.black,
+    textAlign: 'center',
   },
 });
 

@@ -1,13 +1,19 @@
 import React from 'react';
 import {useNavigation} from '@react-navigation/native';
-import {View, StyleSheet, TouchableOpacity, StatusBar} from 'react-native';
+import {
+  View,
+  StyleSheet,
+  TouchableOpacity,
+  StatusBar,
+  Text,
+} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import Localize from '../config/Localize';
 import colors from '../config/Colors';
 import AppText from './Text';
 
-function TopBar({title, showBackButton = false}) {
+function TopBar({title, showBackButton = false, showBackButtonText = false}) {
   const navigation = useNavigation();
 
   return (
@@ -15,9 +21,12 @@ function TopBar({title, showBackButton = false}) {
       <View style={styles.topBar}>
         <View style={styles.leftIcon}>
           {showBackButton && (
-            <TouchableOpacity onPress={() => navigation.goBack()}>
-              <Icon name="chevron-left" size={35} color={colors.white} />
-            </TouchableOpacity>
+            <View style={styles.backButtonContainer}>
+              <TouchableOpacity onPress={() => navigation.goBack()}>
+                <Icon name="chevron-left" size={35} color={colors.white} />
+              </TouchableOpacity>
+              {showBackButtonText && <Text style={styles.backText}>Back</Text>}
+            </View>
           )}
         </View>
         <AppText style={styles.text}>{title}</AppText>
@@ -59,6 +68,16 @@ const styles = StyleSheet.create({
     fontSize: 23,
     fontWeight: 'bold',
     color: colors.white,
+    textAlign: 'center',
+  },
+  backButtonContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  backText: {
+    color: colors.white,
+    fontSize: 18,
+    fontWeight: 'bold',
     textAlign: 'center',
   },
 });

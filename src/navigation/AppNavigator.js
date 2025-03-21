@@ -12,9 +12,10 @@ import DenominationSelection from '../screens/settings/DenominationSelection';
 import AppAccess from '../screens/settings/AppAccess';
 import BottomTabs from '../components/BottomTabs';
 import RecoveryPhrase from '../screens/settings/RecoveryPhrase';
-import Sign from '../screens/PSET/Detail';
 import Detail from '../screens/PSET/Detail';
 import AboutScreen from '../screens/AboutScreen';
+import SignerSelection from '../screens/PSET/SignerSelection';
+import SignWithMnemonic from '../screens/PSET/SignWithMnemonic';
 
 const Stack = createNativeStackNavigator();
 
@@ -89,6 +90,16 @@ const AppNavigator = () => {
       <Stack.Screen
         name="Detail"
         component={Detail}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="SignerSelection"
+        component={SignerSelection}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="SignWithMnemonic"
+        component={SignWithMnemonic}
         options={{headerShown: false}}
       />
       <Stack.Screen

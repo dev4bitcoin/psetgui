@@ -306,13 +306,9 @@ const ExtractPsetDetails = async pset => {
     const wolletInstance = await getWolletInstance();
     const details = await wolletInstance.psetDetails(psetInstance);
     const balances = details.balance().balances();
-    console.log('Balances:', balances);
     const fee = details.balance().fee();
-    console.log('Fee:', fee);
     const signatures = details.signatures();
-    console.log('Signatures:', signatures);
     const recipients = details.balance().recipients();
-    console.log('Recipients:', recipients);
     return {balances, fee, signatures, recipients};
   } catch (error) {
     console.error('PSET validation failed:', error);
@@ -345,6 +341,19 @@ const GetWolletInfo = async () => {
   return {descriptorString, bip49Xpub, bip84Xpub, bip87Xpub};
 };
 
+const SignPSETWithMnemonic = async (mnemonic, pset) => {
+  console.log('SignWithMnemonic');
+  try {
+    const signer = new Signer(new Mnemonic(mnemonic), Network.testnet());
+    const psetInstance = new Pset(pset);
+    const signedPset = await signer.sign(psetInstance);
+    return signedPset.toString();
+  } catch (error) {
+    console.error('Failed to sign PSET:', error);
+    return null;
+  }
+};
+
 export {
   CreateWallet,
   GetNewAddress,
@@ -361,4 +370,5 @@ export {
   ExtractPsetDetails,
   ExtractTransaction,
   GetWolletInfo,
+  SignPSETWithMnemonic,
 };
