@@ -16,6 +16,7 @@ import Detail from '../screens/PSET/Detail';
 import AboutScreen from '../screens/AboutScreen';
 import SignerSelection from '../screens/PSET/SignerSelection';
 import SignWithMnemonic from '../screens/PSET/SignWithMnemonic';
+import Recipients from '../screens/PSET/Recipients';
 
 const Stack = createNativeStackNavigator();
 
@@ -90,6 +91,11 @@ const AppNavigator = () => {
       <Stack.Screen
         name="Detail"
         component={Detail}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="Recipients"
+        component={Recipients}
         options={{headerShown: false}}
       />
       <Stack.Screen

@@ -24,7 +24,11 @@ function PSETScreen(props) {
   const [showErrorMessage, setShowErrorMessage] = useState(false);
 
   useEffect(() => {
-    textInputRef.current.focus();
+    const timer = setTimeout(() => {
+      textInputRef.current?.focus();
+    }, 100); // Delay the focus slightly
+
+    return () => clearTimeout(timer); // Cleanup the timer
   }, []);
 
   const onPasteFromClipboard = async () => {

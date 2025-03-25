@@ -257,7 +257,7 @@ const BroadcastTransaction = async (address, satoshis) => {
     const fee_rate = 100; // this is the sat/vB * 100 fee rate. Example 280 would equal a fee rate of .28 sat/vB. 100 would equal .1 sat/vB
     const addressInterface = new Address(address);
 
-    await builder.addLbtcRecipient(addressInterface, parseFloat(satoshis));
+    await builder.addLbtcRecipient(addressInterface, parseFloat(satoshis, 10));
     await builder.feeRate(fee_rate);
 
     let pset = await builder.finish(wollet);
@@ -268,11 +268,12 @@ const BroadcastTransaction = async (address, satoshis) => {
     let finalized_pset = await wollet.finalize(signed_pset);
     const tx = await finalized_pset.extractTx();
 
-    await client.broadcast(tx);
-    const txId = await tx.txid();
+    //await client.broadcast(tx);
+    //const txId = await tx.txid();
 
-    console.log('BROADCASTED TX!\nTXID: {:?}', txId);
-    return txId;
+    //console.log('BROADCASTED TX!\nTXID: {:?}', txId);
+    //return txId;
+    return null;
   } catch (error) {
     console.error(error);
     return null;
@@ -347,7 +348,8 @@ const SignPSETWithMnemonic = async (mnemonic, pset) => {
     const signer = new Signer(new Mnemonic(mnemonic), Network.testnet());
     const psetInstance = new Pset(pset);
     const signedPset = await signer.sign(psetInstance);
-    return signedPset.toString();
+    return signedPset.finalize().toString();
+    //return signedPset.toString();
   } catch (error) {
     console.error('Failed to sign PSET:', error);
     return null;

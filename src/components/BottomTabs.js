@@ -31,7 +31,7 @@ function BottomTabs(props) {
               style={[styles.tabItem, focused ? styles.focusedTabItem : '']}>
               <Icon
                 name="home"
-                size={35}
+                size={30}
                 color={focused ? 'white' : Colors.textGray}
               />
             </View>
@@ -48,7 +48,7 @@ function BottomTabs(props) {
               style={[styles.tabItem, focused ? styles.focusedTabItem : '']}>
               <Icon
                 name="wallet"
-                size={35}
+                size={30}
                 color={focused ? Colors.white : Colors.textGray}
               />
             </View>
@@ -64,7 +64,7 @@ function BottomTabs(props) {
               style={[styles.tabItem, focused ? styles.focusedTabItem : '']}>
               <Icon
                 name="file-sign"
-                size={35}
+                size={30}
                 color={focused ? 'white' : Colors.textGray}
               />
             </View>
@@ -80,7 +80,7 @@ function BottomTabs(props) {
               style={[styles.tabItem, focused ? styles.focusedTabItem : '']}>
               <Icon
                 name="cog"
-                size={35}
+                size={30}
                 color={focused ? Colors.white : Colors.textGray}
               />
             </View>
@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
     display: 'flex',
     position: 'absolute',
     backgroundColor: Colors.appBackground,
-    height: 90,
+    height: 85,
     borderTopWidth: 1,
     borderTopColor: Colors.textGray,
     width: '100%',

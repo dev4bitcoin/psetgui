@@ -50,9 +50,10 @@ function SignWithMnemonic(props) {
       const mnemonic = enteredWords.join(' ');
       const signedPset = await SignPSETWithMnemonic(mnemonic, pset);
       if (signedPset) {
-        // props.navigation.navigate('SignResult', {
-        //   signedPset: signedPset,
-        // });
+        props.navigation.navigate('Detail', {
+          pset: pset,
+          signedPset: signedPset,
+        });
       } else {
         Alert.alert('Failed to sign PSET');
       }

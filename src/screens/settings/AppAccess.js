@@ -153,8 +153,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: Colors.white,
     marginLeft: 20,
-    borderBottomColor: Colors.white,
-    borderBottomWidth: 0.5,
   },
   nameContainer: {
     flexDirection: 'row',
