@@ -11,4 +11,5 @@ export default {
   MBTC: 'L-mBTC',
   BTC: 'L-BTC',
   BITS: 'L-bits',
+  SAVE_MNEMONIC: 'SaveMnemonic',
 };

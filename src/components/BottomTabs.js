@@ -24,7 +24,7 @@ function BottomTabs(props) {
       })}>
       <Tab.Screen
         name="Home"
-        component={WalletScreen}
+        component={PSETScreen}
         options={{
           tabBarIcon: ({focused}) => (
             <View
@@ -38,10 +38,9 @@ function BottomTabs(props) {
           ),
         }}
       />
-
       <Tab.Screen
         name="Wallet"
-        component={WalletInfo}
+        component={WalletScreen}
         options={{
           tabBarIcon: ({focused}) => (
             <View
@@ -49,28 +48,30 @@ function BottomTabs(props) {
               <Icon
                 name="wallet"
                 size={30}
-                color={focused ? Colors.white : Colors.textGray}
-              />
-            </View>
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="PSET"
-        component={PSETScreen}
-        options={{
-          tabBarIcon: ({focused}) => (
-            <View
-              style={[styles.tabItem, focused ? styles.focusedTabItem : '']}>
-              <Icon
-                name="file-sign"
-                size={30}
                 color={focused ? 'white' : Colors.textGray}
               />
             </View>
           ),
         }}
       />
+
+      <Tab.Screen
+        name="WalletInfo"
+        component={WalletInfo}
+        options={{
+          tabBarIcon: ({focused}) => (
+            <View
+              style={[styles.tabItem, focused ? styles.focusedTabItem : '']}>
+              <Icon
+                name="information-outline"
+                size={30}
+                color={focused ? Colors.white : Colors.textGray}
+              />
+            </View>
+          ),
+        }}
+      />
+
       <Tab.Screen
         name="Settings"
         component={SettingsScreen}

@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {
   View,
   StyleSheet,
@@ -10,14 +10,24 @@ import {
   KeyboardAvoidingView,
   Keyboard,
   Alert,
+  Switch,
 } from 'react-native';
+import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
+
 import TopBar from '../../components/TopBar';
 import Colors from '../../config/Colors';
 import wordList from '../../config/WordList';
 import {SignPSETWithMnemonic} from '../../wallet/WalletFactory';
+import {AppContext} from '../../context/AppContext';
+import {
+  getPSETMnemonic,
+  removePSETMnemonic,
+  savePSETMnemonic,
+} from '../../services/WalletService';
 
 function SignWithMnemonic(props) {
   const {pset, psetDetails} = props.route.params;
+  const {mnemonicSaved, setSaveMnemonicStatus} = useContext(AppContext);
 
   const [lengthSelection, setLengthSelection] = useState('12');
   const [inputValues, setInputValues] = useState({});
@@ -25,6 +35,7 @@ function SignWithMnemonic(props) {
   const [activeInputIndex, setActiveInputIndex] = useState(null);
 
   useEffect(() => {
+    getSavedMnemonic();
     const keyboardListeners = [
       Keyboard.addListener('keyboardWillHide', () => {
         setSuggestions([]);
@@ -35,6 +46,22 @@ function SignWithMnemonic(props) {
       keyboardListeners.forEach(listener => listener.remove());
     };
   }, []);
+
+  const getSavedMnemonic = async () => {
+    const mnemonicValue = await getPSETMnemonic();
+    if (mnemonicValue) {
+      // Split mnemonic into words and populate inputValues
+      const words = mnemonicValue.split(' ');
+      const populatedInputs = {};
+      if (words.length > 12) {
+        setLengthSelection('24');
+      }
+      words.forEach((word, index) => {
+        populatedInputs[index + 1] = word;
+      });
+      setInputValues(populatedInputs);
+    }
+  };
 
   const onPressLengthSelection = length => {
     setLengthSelection(length);
@@ -50,6 +77,9 @@ function SignWithMnemonic(props) {
       const mnemonic = enteredWords.join(' ');
       const signedPset = await SignPSETWithMnemonic(mnemonic, pset);
       if (signedPset) {
+        if (mnemonicSaved) await savePSETMnemonic(mnemonic);
+        else await removePSETMnemonic();
+
         props.navigation.navigate('Detail', {
           pset: pset,
           signedPset: signedPset,
@@ -84,6 +114,16 @@ function SignWithMnemonic(props) {
       setActiveInputIndex(null); // Clear active input index (optional)
     }
     Keyboard.dismiss(); // Explicitly dismiss the keyboard after handling
+  };
+
+  const onToggleSaveMnemonicSwitch = async () => {
+    ReactNativeHapticFeedback.trigger('impactLight', {
+      enableVibrateFallback: true,
+      ignoreAndroidSystemSettings: false,
+    });
+    const status = !mnemonicSaved;
+    console.log('Save Mnemonic', status);
+    setSaveMnemonicStatus(status); // Toggle the state
   };
 
   const renderlengthSelectionButtons = text => {
@@ -147,6 +187,19 @@ function SignWithMnemonic(props) {
           {Array.from({length: lengthSelection}, (_, index) =>
             renderTextInput(index + 1),
           )}
+        </View>
+        <View style={styles.saveMnemonicContainer}>
+          <Text style={styles.itemText}>Save Mnemonic</Text>
+          <TouchableOpacity onPress={onToggleSaveMnemonicSwitch}>
+            <Switch
+              trackColor={{false: Colors.textGray, true: Colors.priceGreen}}
+              thumbColor={mnemonicSaved ? Colors.white : Colors.lightGray}
+              ios_backgroundColor={Colors.textGray}
+              onValueChange={onToggleSaveMnemonicSwitch}
+              value={mnemonicSaved}
+              //disabled={true}
+            />
+          </TouchableOpacity>
         </View>
         <TouchableOpacity onPress={OnSign} style={styles.bottomButtonContainer}>
           <Text style={styles.bottomButtonText}>Sign</Text>
@@ -284,6 +337,18 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: Colors.black,
     textAlign: 'center',
+  },
+  saveMnemonicContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    margin: 20,
+    marginHorizontal: 50,
+  },
+  itemText: {
+    fontSize: 18,
+    color: Colors.white,
+    paddingRight: 20,
   },
 });
 

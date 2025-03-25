@@ -94,7 +94,6 @@ function Detail(props) {
         },
         {address: null, amount: 0},
       );
-      console.log('Destination Address:', destination.address);
       setDestination(destination?.address);
     } catch (error) {
       console.error(error);
@@ -268,7 +267,6 @@ const styles = StyleSheet.create({
     color: Colors.textGray,
     paddingRight: 10,
     textAlign: 'right',
-    width: 200,
   },
   clickableItem: {
     flexDirection: 'row',

@@ -348,8 +348,7 @@ const SignPSETWithMnemonic = async (mnemonic, pset) => {
     const signer = new Signer(new Mnemonic(mnemonic), Network.testnet());
     const psetInstance = new Pset(pset);
     const signedPset = await signer.sign(psetInstance);
-    return signedPset.finalize().toString();
-    //return signedPset.toString();
+    return signedPset.toString();
   } catch (error) {
     console.error('Failed to sign PSET:', error);
     return null;

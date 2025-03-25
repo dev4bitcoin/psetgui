@@ -11,11 +11,13 @@ const AppContextProvider = ({children}) => {
   const [preferredBitcoinUnit, setPreferredBitcoinUnit] = useState();
   const [showBiometrics, setShowBiometrics] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [mnemonicSaved, setMnemonicSaved] = useState(false);
 
   useEffect(() => {
     const initializeContext = async () => {
       await getPreferredBitcoinDenomination();
       await getBiometricsStatus();
+      await getSaveMnemonicStatus();
       setIsLoading(false);
     };
     initializeContext();
@@ -55,6 +57,21 @@ const AppContextProvider = ({children}) => {
     return status;
   };
 
+  const setSaveMnemonicStatus = async saveMnemonic => {
+    setMnemonicSaved(saveMnemonic);
+    return await Storage.storeItem(Constants.SAVE_MNEMONIC, saveMnemonic);
+  };
+
+  const getSaveMnemonicStatus = async () => {
+    const status = await Storage.getItem(Constants.SAVE_MNEMONIC);
+    if (!status) {
+      setMnemonicSaved(false);
+      return false;
+    }
+    setMnemonicSaved(status);
+    return status;
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -62,6 +79,8 @@ const AppContextProvider = ({children}) => {
         showBiometrics,
         setPreferredBitcoinDenomination,
         preferredBitcoinUnit,
+        mnemonicSaved,
+        setSaveMnemonicStatus,
       }}>
       {children}
     </AppContext.Provider>

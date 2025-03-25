@@ -21,7 +21,7 @@ function SettingsScreen(props) {
             <Icon name={icon} size={30} color={Colors.textGray} />
             <Text style={styles.itemText}>{name}</Text>
           </View>
-          <Icon name="arrow-right" size={30} color={Colors.textGray} />
+          <Icon name="chevron-right" size={30} color={Colors.textGray} />
         </View>
       </TouchableOpacity>
     );

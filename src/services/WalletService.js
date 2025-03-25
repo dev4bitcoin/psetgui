@@ -94,6 +94,31 @@ const getStoredBalance = async walletId => {
   }
 };
 
+const savePSETMnemonic = async mnemonic => {
+  try {
+    await storage.storeItem('psetmnemonic', mnemonic);
+  } catch (error) {
+    console.error('Error storing mnemonic:', error);
+  }
+};
+
+const removePSETMnemonic = async () => {
+  try {
+    await storage.removeItem('psetmnemonic');
+  } catch (error) {
+    console.error('Error removing mnemonic:', error);
+  }
+};
+
+const getPSETMnemonic = async () => {
+  try {
+    return await storage.getItem('psetmnemonic');
+  } catch (error) {
+    console.error('Error getting mnemonic:', error);
+    return null;
+  }
+};
+
 export {
   getWallets,
   createWallet,
@@ -106,4 +131,7 @@ export {
   getStoredTransactions,
   storeBalance,
   getStoredBalance,
+  savePSETMnemonic,
+  removePSETMnemonic,
+  getPSETMnemonic,
 };
