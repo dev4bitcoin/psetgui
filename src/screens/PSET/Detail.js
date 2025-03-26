@@ -5,6 +5,7 @@ import {
   Text,
   TouchableOpacity,
   ScrollView,
+  FlatList,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
@@ -55,9 +56,13 @@ function Detail(props) {
 
       setFee(displayBalanceInPreferredUnit(Number(extractedPSET?.fee || 0)));
       // balances
-      extractedPSET.balances?.forEach(balance => {
-        console.log('Balance', balance.amount);
+      const balances = extractedPSET.balances || [];
+
+      let totalBalance = BigInt(0);
+      balances?.forEach(balance => {
+        totalBalance += BigInt(balance);
       });
+      console.log('Total Balance:', totalBalance.toString());
 
       const signaturesArray = [];
       extractedPSET.signatures?.forEach(signatureItem => {
@@ -75,7 +80,17 @@ function Detail(props) {
           });
         }
       });
-      setSignatures(signaturesArray);
+
+      // Generic filtering logic for the desired signature
+      const filteredSignatures = signaturesArray?.filter(signature => {
+        // Check if the derivation path matches a "change address" pattern
+        const derivationPath = signature.value; // Example: "84'/1'/0'/1/0"
+        const pathSegments = derivationPath.split('/');
+        const isChangeAddress = pathSegments[3] === '1'; // Check if the 3th segment is '1' (change address)
+        return isChangeAddress;
+      });
+
+      setSignatures(filteredSignatures || []);
 
       const recipientMap = new Map();
       // Iterate through the recipients and store the latest entry for each address
@@ -106,8 +121,10 @@ function Detail(props) {
 
   const onSign = async () => {
     console.log('Signing');
+    setLoading(true);
     const signedPset = await WalletFactory.SignPSETWithMnemonic(pset);
     await setupData(signedPset);
+    setLoading(false);
   };
 
   const onBroadcast = async () => {
@@ -194,22 +211,68 @@ function Detail(props) {
               {`-${fee}  ${preferredBitcoinUnit}`}
             </Text>
           </View>
-          <TouchableOpacity style={styles.item} onPress={onRecipients}>
-            <Text style={styles.itemName}>RECIPIENT TOTAL</Text>
-            <View style={styles.clickableItem}>
-              <Text style={styles.itemValue}>{recipients?.length}</Text>
-              <Icon name="chevron-right" size={25} color={Colors.textGray} />
-            </View>
-          </TouchableOpacity>
+
           <View style={styles.item}>
             <Text style={styles.itemName}>DESTINATION</Text>
-            <View>
-              <Text style={styles.itemValue}>{firstRow}</Text>
-              <Text style={[styles.itemValue, {textAlign: 'center'}]}>...</Text>
-              <Text style={styles.itemValue}>{lastRow}</Text>
-            </View>
+            {destination ? (
+              <View>
+                <Text style={styles.itemValue}>{firstRow}</Text>
+                <Text style={[styles.itemValue, {textAlign: 'center'}]}>
+                  ...
+                </Text>
+                <Text style={styles.itemValue}>{lastRow}</Text>
+              </View>
+            ) : (
+              <Text style={styles.itemValue}>NONE</Text>
+            )}
           </View>
-          <View style={styles.signatureGroup}>{renderItem(signatures)}</View>
+
+          <View
+            style={[
+              styles.item,
+              {flexDirection: recipients?.length > 1 ? 'column' : 'row'},
+            ]}>
+            <Text
+              style={
+                styles.itemName
+              }>{`RECIPIENT TOTAL (${recipients?.length})`}</Text>
+            {recipients?.length > 1 ? (
+              <View style={styles.recipientItems}>
+                <FlatList
+                  data={recipients || []}
+                  keyExtractor={(item, index) => index.toString()}
+                  horizontal
+                  showsHorizontalScrollIndicator
+                  renderItem={({item}) => (
+                    <View style={styles.recipientItem}>
+                      <View style={styles.recipientAmountContainer}>
+                        <Text style={styles.recipientAmount}>
+                          {`${displayBalanceInPreferredUnit(
+                            item?.amount,
+                          )}  ${preferredBitcoinUnit}`}
+                        </Text>
+                      </View>
+                      <Text style={styles.recipientAddress}>
+                        {`${item?.address?.match(/.{1,4}/g).join(' ')}`}
+                      </Text>
+                    </View>
+                  )}
+                />
+              </View>
+            ) : (
+              <Text style={styles.itemValue}>NONE</Text>
+            )}
+          </View>
+
+          {signatures.length > 0 && (
+            <View style={styles.signatureGroup}>
+              <Text
+                style={
+                  styles.itemName
+                }>{`SIGNATURES (${signatures.length})`}</Text>
+              {renderItem(signatures)}
+            </View>
+          )}
         </View>
         <View>
           <TouchableOpacity
@@ -270,8 +333,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: Colors.textGray,
-    paddingRight: 10,
+    paddingRight: 13,
     textAlign: 'right',
+    textTransform: 'uppercase',
   },
   clickableItem: {
     flexDirection: 'row',
@@ -280,7 +344,6 @@ const styles = StyleSheet.create({
   signatureGroup: {
     justifyContent: 'center',
     padding: 20,
-    paddingTop: 40,
   },
   signatureItem: {
     flexDirection: 'row',
@@ -322,6 +385,40 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: Colors.black,
     textAlign: 'center',
+  },
+  recipientItems: {
+    marginTop: 10,
+    flexDirection: 'row',
+  },
+  recipientItem: {
+    padding: 10,
+    marginTop: 5,
+    marginLeft: 0,
+    marginRight: 15,
+    marginBottom: 10,
+    borderWidth: 0.3,
+    borderColor: Colors.textGray,
+    borderRadius: 10,
+  },
+  recipientAmountContainer: {
+    marginBottom: 5,
+    borderBottomWidth: 0.3,
+    borderColor: Colors.textGray,
+    borderBottomStyle: 'dotted',
+  },
+  recipientAmount: {
+    fontSize: 16,
+    color: Colors.textGray,
+    fontWeight: 'bold',
+    marginBottom: 5,
+    paddingBottom: 5,
+  },
+  recipientAddress: {
+    fontSize: 16,
+    color: Colors.textGray,
+    width: 250,
+    paddingRight: 5,
+    textTransform: 'uppercase',
   },
 });
 

@@ -129,7 +129,7 @@ function Transactions({
             <View style={styles.transactionIdContainer}>
               <View style={styles.incomingTextContainer}>
                 <Icon
-                  name={item.type == 'incoming' ? 'arrow-up' : 'arrow-down'}
+                  name={item.type == 'incoming' ? 'arrow-down' : 'arrow-up'}
                   color={
                     item.type == 'incoming'
                       ? colors.priceGreen

@@ -50,12 +50,12 @@ function SignWithMnemonic(props) {
     const enteredWords = Object.values(inputValues).filter(
       word => word.trim() !== '',
     ); // Get non-empty words
-
+    //const enteredWords = [];
     if (enteredWords.length === selectedLength) {
       const mnemonic = enteredWords.join(' ');
       await WalletFactory.init(mnemonic);
       // await WalletFactory.init(
-      //   'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about',
+      //   'room thought hello final antenna rude ugly symptom weather wave top eternal',
       // );
       await WalletFactory.CreateWallet(mnemonicSaved);
       setLoading(false);

@@ -10,7 +10,7 @@ function SuccessScreen(props) {
   const {address, amount} = props.route.params;
 
   const onClose = () => {
-    props.navigation.navigate('BottomTabs');
+    props.navigation.navigate('BottomTabs', {screen: 'Wallet'});
   };
 
   return (

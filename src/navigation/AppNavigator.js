@@ -17,6 +17,7 @@ import AboutScreen from '../screens/AboutScreen';
 import SignerSelection from '../screens/PSET/SignerSelection';
 import SignWithMnemonic from '../screens/PSET/SignWithMnemonic';
 import Recipients from '../screens/PSET/Recipients';
+import WalletScreen from '../screens/WalletScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -31,6 +32,11 @@ const AppNavigator = () => {
       <Stack.Screen
         name="BottomTabs"
         component={BottomTabs}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="Wallet"
+        component={WalletScreen}
         options={{headerShown: false}}
       />
       <Stack.Screen

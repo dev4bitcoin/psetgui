@@ -4,7 +4,6 @@ import {
   Mnemonic,
   Network,
   WolletDescriptor,
-  TxBuilder,
   Bip,
   Pset,
   Address,
@@ -28,14 +27,12 @@ export default class WalletFactory {
   static signerInstance = null;
   static wolletInstance = null;
   static clientInstance = null;
-  static builderInstance = null;
   static defaultWallet = null;
 
   static async init(seed = null) {
     const network = Network.testnet();
 
     this.clientInstance = network.defaultElectrumClient();
-    this.builderInstance = new TxBuilder(network);
 
     const wallet = await getDefaultWallet();
     this.defaultWallet = JSON.parse(wallet);
@@ -82,7 +79,6 @@ export default class WalletFactory {
   static async CreateWallet(shouldStoreMnemonic) {
     try {
       console.log('CreateWallet');
-
       const descriptor = await this.signerInstance.wpkhSlip77Descriptor();
       const descriptorString = await descriptor.toString();
 
@@ -198,28 +194,25 @@ export default class WalletFactory {
     console.log('BroadcastTransaction');
     try {
       const fee_rate = 100; // this is the sat/vB * 100 fee rate. Example 280 would equal a fee rate of .28 sat/vB. 100 would equal .1 sat/vB
-      const addressInterface = new Address(address);
 
-      await this.builderInstance.addLbtcRecipient(
-        addressInterface,
-        parseFloat(satoshis, 10),
-      );
-      await this.builderInstance.feeRate(fee_rate);
+      const outAddress = new Address(address);
+      const builder = Network.testnet().txBuilder();
 
-      let pset = await this.builderInstance.finish(this.wolletInstance);
-      const psetString = await pset.toString();
-      console.log('Unsigned PSET', psetString);
-      let signed_pset = await this.signerInstance.sign(pset);
-      console.log('SIGNED PSET:', await signed_pset.toString());
-      let finalized_pset = await this.wolletInstance.finalize(signed_pset);
-      const tx = await finalized_pset.extractTx();
+      await builder.addLbtcRecipient(outAddress, BigInt(satoshis));
+      await builder.feeRate(fee_rate);
 
-      //await client.broadcast(tx);
-      //const txId = await tx.txid();
+      await this.updateWallet(this.wolletInstance);
+      let pset = await builder.finish(this.wolletInstance);
+      // const psetString = await pset.toString();
+      // console.log('Unsigned PSET', psetString);
 
-      //console.log('BROADCASTED TX!\nTXID: {:?}', txId);
-      //return txId;
-      return null;
+      let signedPset = await this.signerInstance.sign(pset);
+      const finalizedPset = await this.wolletInstance.finalize(signedPset);
+      const tx = await finalizedPset.extractTx();
+
+      const txId = await this.clientInstance.broadcast(tx);
+      console.log('BROADCASTED TX!\nTXID: {:?}', txId.toString());
+      return txId.toString();
     } catch (error) {
       console.error(error);
       return null;
