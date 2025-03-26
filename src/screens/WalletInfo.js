@@ -12,8 +12,8 @@ import ToastManager, {Toast} from 'toastify-react-native';
 
 import Colors from '../config/Colors';
 import TopBar from '../components/TopBar';
-import {GetWolletInfo} from '../wallet/WalletFactory';
 import LoadingScreen from './LoadingScreen';
+import WalletFactory from '../wallet/WalletFactory';
 
 function WalletInfo(props) {
   const [descriptor, setDescriptor] = useState('');
@@ -22,9 +22,9 @@ function WalletInfo(props) {
   const [bip87, setBip87] = useState('');
   const [loading, setLoading] = useState(false);
 
-  setWalletData = async () => {
+  const setWalletData = async () => {
     setLoading(true);
-    const wallet = await GetWolletInfo();
+    const wallet = await WalletFactory.GetWolletInfo();
     setDescriptor(wallet.descriptorString);
     setBip49(wallet.bip49Xpub);
     setBip84(wallet.bip84Xpub);

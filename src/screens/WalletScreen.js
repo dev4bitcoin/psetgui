@@ -14,17 +14,13 @@ import colors from '../config/Colors';
 import TransactionButtons from '../components/TransactionButtons';
 import TopBar from '../components/TopBar';
 import Transactions from './Transactions';
-import {
-  GetTransactions,
-  GetNewAddress,
-  GetBalance,
-  GetSavedBalance,
-  GetSavedTransactions,
-} from '../wallet/WalletFactory';
+
 import Transaction from '../models/Transaction';
 import UnitConverter from '../helpers/UnitConverter';
 import Constants from '../config/Constants';
 import {AppContext} from '../context/AppContext';
+import WalletFactory from '../wallet/WalletFactory';
+import LoadingScreen from './LoadingScreen';
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -37,7 +33,7 @@ function WalletScreen({route, navigation}) {
 
   const getTransactions = async () => {
     try {
-      const transactionsData = await GetTransactions();
+      const transactionsData = await WalletFactory.GetTransactions();
       const mappedTransactions = transactionsData.map(
         tx => new Transaction(tx),
       );
@@ -50,7 +46,7 @@ function WalletScreen({route, navigation}) {
 
   const getBalance = async () => {
     try {
-      const walletBalances = await GetBalance();
+      const walletBalances = await WalletFactory.GetBalance();
       const totalBalance = Object.values(walletBalances).reduce(
         (sum, balance) => sum + balance,
         0,
@@ -78,8 +74,8 @@ function WalletScreen({route, navigation}) {
 
   const loadStoredData = async () => {
     try {
-      const storedTransactions = await GetSavedTransactions();
-      const storedBalance = await GetSavedBalance();
+      const storedTransactions = await WalletFactory.GetSavedTransactions();
+      const storedBalance = await WalletFactory.GetSavedBalance();
       setTransactions(storedTransactions);
       setBalance(storedBalance);
     } catch (error) {
@@ -111,7 +107,7 @@ function WalletScreen({route, navigation}) {
   };
 
   const onReceive = async () => {
-    const description = await GetNewAddress();
+    const description = await WalletFactory.GetNewAddress();
     navigation.navigate('Receive', {address: description});
   };
 
@@ -130,6 +126,7 @@ function WalletScreen({route, navigation}) {
 
   return (
     <View style={styles.container}>
+      {loading && <LoadingScreen />}
       <StatusBar
         backgroundColor={
           isFocused ? colors.cardBackground : colors.appBackground

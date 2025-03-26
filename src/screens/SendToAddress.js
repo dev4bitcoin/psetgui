@@ -9,10 +9,10 @@ import {
   Alert,
 } from 'react-native';
 import Clipboard from '@react-native-clipboard/clipboard';
-import {ValidateAddress} from '../wallet/WalletFactory';
 
 import colors from '../config/Colors';
 import Screen from './Screen';
+import WalletFactory from '../wallet/WalletFactory';
 
 function SendToAddress({navigation, route}) {
   const {amount} = route.params;
@@ -25,7 +25,7 @@ function SendToAddress({navigation, route}) {
 
   const onPasteFromClipboard = async () => {
     const text = await Clipboard.getString();
-    const isValid = await ValidateAddress(text);
+    const isValid = WalletFactory.ValidateAddress(text);
     if (!isValid) {
       console.log('Invalid address');
       Alert.alert('Invalid address', 'The invoice contains an invalid address');
@@ -36,7 +36,7 @@ function SendToAddress({navigation, route}) {
   };
 
   const onConfirm = async () => {
-    const isValid = await ValidateAddress(address);
+    const isValid = WalletFactory.ValidateAddress(address);
     if (!isValid) {
       console.log('Invalid address');
       Alert.alert('Invalid address', 'The invoice contains an invalid address');

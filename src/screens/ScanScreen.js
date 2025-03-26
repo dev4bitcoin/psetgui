@@ -10,7 +10,7 @@ import {
 import colors from '../config/Colors';
 import Screen from './Screen';
 import TopBar from '../components/TopBar';
-import {ValidateAddress} from '../wallet/WalletFactory';
+import WalletFactory from '../wallet/WalletFactory';
 
 const {width, height} = Dimensions.get('window');
 const cameraHeight = height; // 70% of the screen height
@@ -28,7 +28,7 @@ function ScanScreen({navigation, route}) {
   }, [hasPermission, requestPermission]);
 
   const isAddressValid = async address => {
-    const isValid = await ValidateAddress(address);
+    const isValid = WalletFactory.ValidateAddress(address);
     if (!isValid) {
       Alert.alert('Invalid address', 'The invoice contains am invalid address');
       return false;

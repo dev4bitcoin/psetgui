@@ -2,14 +2,11 @@ import React, {useEffect, useState} from 'react';
 import {View, Text, ActivityIndicator, StyleSheet} from 'react-native';
 import ReactNativeBiometrics from 'react-native-biometrics';
 
-import {
-  IsWalletExist,
-  CreateWallet,
-  ResetWallets,
-} from '../wallet/WalletFactory';
 import colors from '../config/Colors';
 import Storage from '../storage/Storage';
 import Constants from '../config/Constants';
+import {getDefaultWallet} from '../services/WalletService';
+import WalletFactory from '../wallet/WalletFactory';
 
 const LaunchScreen = ({navigation}) => {
   const [loading, setLoading] = useState(false);
@@ -49,19 +46,18 @@ const LaunchScreen = ({navigation}) => {
   const checkWallet = async () => {
     try {
       setLoading(true);
-      setLoadingText('Loading wallet');
-      //await ResetWallets();
+      setLoadingText('Check Wallets...');
 
       // delay
       await new Promise(resolve => setTimeout(resolve, 1000));
-      const isExist = await IsWalletExist();
-      if (!isExist) {
-        setLoadingText('Creating new wallet');
+      if ((await getDefaultWallet()) === null) {
         await new Promise(resolve => setTimeout(resolve, 1000));
-        await CreateWallet();
-      }
 
-      navigation.replace('BottomTabs');
+        navigation.navigate('SignerSelection');
+      } else {
+        await WalletFactory.init();
+        navigation.replace('BottomTabs');
+      }
     } catch (error) {
       console.error(error);
     } finally {

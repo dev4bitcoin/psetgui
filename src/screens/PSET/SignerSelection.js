@@ -5,20 +5,17 @@ import Screen from '../Screen';
 import Colors from '../../config/Colors';
 
 function SignerSelection(props) {
-  const {pset, psetDetails} = props.route.params;
+  //const {pset, psetDetails} = props.route.params;
 
   const onSignWithMnemonic = () => {
-    props.navigation.navigate('SignWithMnemonic', {
-      pset: pset,
-      psetDetails: psetDetails,
-    });
+    props.navigation.navigate('SignWithMnemonic');
   };
 
   const onSignWithJade = () => {};
 
   return (
     <Screen style={styles.container}>
-      <TopBar title="Select Signer" showBackButton={true} />
+      <TopBar title="Select Signer" showBackButton={false} />
       <View style={styles.content}>
         <TouchableOpacity
           onPress={onSignWithMnemonic}

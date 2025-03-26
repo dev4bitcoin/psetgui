@@ -13,11 +13,8 @@ import {
 import uuid from 'react-native-uuid';
 import Constants from '../config/Constants';
 import {
-  getWallets,
   createWallet,
-  deleteWallet,
   getDefaultWallet,
-  getWallet,
   isWalletExist,
   resetWallets,
   getStoredTransactions,
@@ -27,349 +24,282 @@ import {
 } from '../services/WalletService';
 import Transaction from '../models/Transaction';
 
-let signerInstance = null;
-let wolletInstance = null;
-let clientInstance = null;
-let builderInstance = null;
+export default class WalletFactory {
+  static signerInstance = null;
+  static wolletInstance = null;
+  static clientInstance = null;
+  static builderInstance = null;
+  static defaultWallet = null;
 
-const getSignerInstance = async () => {
-  console.log('getSignerInstance');
-  if (!signerInstance) {
-    const wallet = await getDefaultWallet();
-    const {mnemonic} = JSON.parse(wallet);
-    if (!mnemonic) {
-      return null;
-    }
-    signerInstance = new Signer(new Mnemonic(mnemonic), Network.testnet());
-  }
-  return signerInstance;
-};
-
-const getWolletInstance = async () => {
-  console.log('getWolletInstance');
-  if (!wolletInstance) {
-    const wallet = await getDefaultWallet();
-    if (!wallet) {
-      return null;
-    }
-    const {descriptor} = JSON.parse(wallet);
-    const desc = new WolletDescriptor(descriptor);
-
-    wolletInstance = new Wollet(Network.testnet(), desc, undefined);
-    await updateWallet(wolletInstance);
-  }
-  return wolletInstance;
-};
-
-const getClientInstance = () => {
-  console.log('getClientInstance');
-  if (!clientInstance) {
+  static async init(seed = null) {
     const network = Network.testnet();
-    clientInstance = network.defaultElectrumClient();
-  }
-  return clientInstance;
-};
 
-const getBuilderInstance = () => {
-  if (!builderInstance) {
-    builderInstance = new TxBuilder(Network.testnet());
-  }
-  return builderInstance;
-};
+    this.clientInstance = network.defaultElectrumClient();
+    this.builderInstance = new TxBuilder(network);
 
-const GetSavedTransactions = async () => {
-  console.log('GetSavedTransactions');
-  const wallet = await getDefaultWallet();
-  if (!wallet) return [];
+    const wallet = await getDefaultWallet();
+    this.defaultWallet = JSON.parse(wallet);
 
-  const parsedWallet = JSON.parse(wallet);
-  const transactions = await getStoredTransactions(parsedWallet.id);
-  return transactions;
-};
+    if (this.defaultWallet) {
+      const {mnemonic, descriptor} = this.defaultWallet;
 
-const GetSavedBalance = async () => {
-  console.log('GetSavedBalance');
-  const wallet = await getDefaultWallet();
-  if (!wallet) return null;
-
-  const parsedWallet = JSON.parse(wallet);
-  const balance = await getStoredBalance(parsedWallet.id);
-  const totalBalance = Object.values(balance).reduce(
-    (sum, balance) => sum + balance,
-    0,
-  );
-
-  return totalBalance;
-};
-
-const extractKeyOriginAndXpub = input => {
-  const closingBracketIndex = input.indexOf(']');
-  if (closingBracketIndex === -1) {
-    throw new Error('Invalid input format: Missing closing bracket');
-  }
-
-  const keyOrigin = input.substring(1, closingBracketIndex); // Exclude the opening '['
-  const xpub = input.substring(closingBracketIndex + 1); // Everything after ']'
-
-  return {keyOrigin, xpub};
-};
-
-const CreateWallet = async () => {
-  try {
-    console.log('CreateWallet');
-    const mnemonic = Mnemonic.fromRandom(12);
-    // const mnemonic =
-    //   'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about';
-    signerInstance = new Signer(mnemonic, Network.testnet());
-
-    // Get the key origin information
-    const keyoriginXpub = await signerInstance.keyoriginXpub(Bip.newBip84());
-    const {keyOrigin, xpub} = extractKeyOriginAndXpub(keyoriginXpub);
-
-    if (await isWalletExist(xpub)) {
-      console.log('Wallet already exists');
-      return;
+      this.signerInstance = new Signer(new Mnemonic(mnemonic), network);
+      const desc = new WolletDescriptor(descriptor);
+      this.wolletInstance = new Wollet(network, desc, undefined);
+      await this.updateWallet();
+    } else {
+      if (seed) {
+        this.signerInstance = new Signer(new Mnemonic(seed), network);
+        const desc = await this.signerInstance.wpkhSlip77Descriptor();
+        this.wolletInstance = new Wollet(network, desc, undefined);
+        await this.updateWallet();
+      }
     }
+  }
 
-    const descriptor = await signerInstance.wpkhSlip77Descriptor();
-    const descriptorString = await descriptor.toString();
+  static async GetSavedTransactions() {
+    console.log('GetSavedTransactions');
 
-    await createWallet(
-      JSON.stringify({
-        id: uuid.v4(),
-        mnemonic: mnemonic.toString(),
-        xpub: xpub,
-        keyOrigin: keyOrigin,
-        descriptor: descriptorString,
-      }),
+    if (!this.defaultWallet) return [];
+
+    const transactions = await getStoredTransactions(this.defaultWallet.id);
+    return transactions;
+  }
+
+  static async GetSavedBalance() {
+    console.log('GetSavedBalance');
+    if (!this.defaultWallet) return null;
+
+    const balance = await getStoredBalance(this.defaultWallet.id);
+    const totalBalance = Object.values(balance).reduce(
+      (sum, balance) => sum + balance,
+      0,
     );
-  } catch (error) {
-    console.error(error);
+
+    return totalBalance;
   }
-};
 
-const updateWallet = async wollet => {
-  console.log('updateWallet');
-  const client = getClientInstance();
-  const update = await client.fullScan(wollet);
-  wollet.applyUpdate(update);
-};
+  static async CreateWallet(shouldStoreMnemonic) {
+    try {
+      console.log('CreateWallet');
 
-const GetWollet = async () => {
-  return getWolletInstance();
-};
+      const descriptor = await this.signerInstance.wpkhSlip77Descriptor();
+      const descriptorString = await descriptor.toString();
 
-const IsWalletExist = async () => {
-  const wallet = await getDefaultWallet();
-  if (!wallet) {
-    return false;
+      const mnemonic = await this.signerInstance.mnemonic();
+
+      if (shouldStoreMnemonic) {
+        await createWallet(
+          JSON.stringify({
+            id: uuid.v4(),
+            mnemonic: mnemonic.toString(),
+            descriptor: descriptorString,
+          }),
+        );
+      } else {
+      }
+    } catch (error) {
+      console.error(error);
+    }
   }
-  return true;
-};
 
-const GetNewAddress = async () => {
-  console.log('GetNewAddress');
-  const address = (await getWolletInstance()).address(undefined);
-  const txt = address.address().toString();
-  return txt;
-};
+  static async updateWallet() {
+    console.log('updateWallet');
+    const update = await this.clientInstance.fullScan(this.wolletInstance);
+    await this.wolletInstance.applyUpdate(update);
+  }
 
-const GetTransactions = async () => {
-  console.log('GetTransactions');
-  const wallet = await getWolletInstance();
-  await updateWallet(wallet);
-  const txs = await wallet.transactions();
+  static async GetWollet() {
+    return this.wolletInstance;
+  }
 
-  const newTransactions = txs.map(tx => {
+  static IsWalletExist() {
+    if (!this.defaultWallet) {
+      return false;
+    }
+    return true;
+  }
+
+  static async GetNewAddress() {
+    console.log('GetNewAddress');
+    const address = this.wolletInstance.address(undefined);
+    const txt = address.address().toString();
+    return txt;
+  }
+
+  static async GetTransactions() {
+    console.log('GetTransactions');
+    const txs = await this.wolletInstance.transactions();
+
+    const newTransactions = txs.map(tx => {
+      var balance = {};
+      tx.balance().forEach((value, key) => {
+        if (balance[key.toString()] === undefined) {
+          balance[key.toString()] = 0;
+        }
+        balance[key.toString()] += Number(value);
+      });
+      return new Transaction({
+        balance: balance,
+        fee: Number(tx.fee()),
+        height: tx.height(),
+        type: tx.type(),
+        txid: tx.txid().toString(),
+        timestamp: tx.timestamp(),
+        tx: tx.tx().toString(),
+      });
+    });
+
+    // Retrieve existing transactions from AsyncStorage
+    const storedTransactions = await getStoredTransactions(
+      this.defaultWallet?.id,
+    );
+
+    // Filter out new transactions
+    const existingTransactionIds = storedTransactions?.map(tx => tx.txid);
+    const uniqueNewTransactions = newTransactions.filter(
+      tx => !existingTransactionIds.includes(tx.txid),
+    );
+
+    // Combine existing and new transactions
+    const updatedTransactions = [
+      ...storedTransactions,
+      ...uniqueNewTransactions,
+    ];
+
+    // Store the updated transactions back to AsyncStorage
+    await storeTransactions(this.defaultWallet?.id, updatedTransactions);
+
+    return updatedTransactions;
+  }
+
+  static async GetBalance() {
+    console.log('GetBalance');
+    await this.updateWallet(this.wolletInstance);
+    const res = await this.wolletInstance.balance();
     var balance = {};
-    tx.balance().forEach((value, key) => {
+    res.forEach((value, key) => {
       if (balance[key.toString()] === undefined) {
         balance[key.toString()] = 0;
       }
       balance[key.toString()] += Number(value);
     });
-    return new Transaction({
-      balance: balance,
-      fee: Number(tx.fee()),
-      height: tx.height(),
-      type: tx.type(),
-      txid: tx.txid().toString(),
-      timestamp: tx.timestamp(),
-      tx: tx.tx().toString(),
-    });
-  });
 
-  const savedWallet = await getDefaultWallet();
-  const parsedSavedWallet = JSON.parse(savedWallet);
+    await storeBalance(this.defaultWallet?.id, balance);
+    return balance;
+  }
 
-  // Retrieve existing transactions from AsyncStorage
-  const storedTransactions = await getStoredTransactions(parsedSavedWallet?.id);
+  static async ResetWallets() {
+    console.log('ResetWallets');
+    return await resetWallets();
+  }
 
-  // Filter out new transactions
-  const existingTransactionIds = storedTransactions?.map(tx => tx.txid);
-  const uniqueNewTransactions = newTransactions.filter(
-    tx => !existingTransactionIds.includes(tx.txid),
-  );
+  static async BroadcastTransaction(address, satoshis) {
+    console.log('BroadcastTransaction');
+    try {
+      const fee_rate = 100; // this is the sat/vB * 100 fee rate. Example 280 would equal a fee rate of .28 sat/vB. 100 would equal .1 sat/vB
+      const addressInterface = new Address(address);
 
-  // Combine existing and new transactions
-  const updatedTransactions = [...storedTransactions, ...uniqueNewTransactions];
+      await this.builderInstance.addLbtcRecipient(
+        addressInterface,
+        parseFloat(satoshis, 10),
+      );
+      await this.builderInstance.feeRate(fee_rate);
 
-  // Store the updated transactions back to AsyncStorage
-  await storeTransactions(parsedSavedWallet?.id, updatedTransactions);
+      let pset = await this.builderInstance.finish(this.wolletInstance);
+      const psetString = await pset.toString();
+      console.log('Unsigned PSET', psetString);
+      let signed_pset = await this.signerInstance.sign(pset);
+      console.log('SIGNED PSET:', await signed_pset.toString());
+      let finalized_pset = await this.wolletInstance.finalize(signed_pset);
+      const tx = await finalized_pset.extractTx();
 
-  return updatedTransactions;
-};
+      //await client.broadcast(tx);
+      //const txId = await tx.txid();
 
-const GetBalance = async () => {
-  console.log('GetBalance');
-  const wollet = await getWolletInstance();
-  await updateWallet(wollet);
-  const res = await wollet.balance();
-  var balance = {};
-  res.forEach((value, key) => {
-    if (balance[key.toString()] === undefined) {
-      balance[key.toString()] = 0;
+      //console.log('BROADCASTED TX!\nTXID: {:?}', txId);
+      //return txId;
+      return null;
+    } catch (error) {
+      console.error(error);
+      return null;
     }
-    balance[key.toString()] += Number(value);
-  });
-  // Store the balance in AsyncStorage
-  const savedWallet = await getDefaultWallet();
-  const parsedSavedWallet = JSON.parse(savedWallet);
-
-  await storeBalance(parsedSavedWallet?.id, balance);
-
-  return balance;
-};
-
-const ResetWallets = async () => {
-  console.log('ResetWallets');
-  return await resetWallets();
-};
-
-const BroadcastTransaction = async (address, satoshis) => {
-  console.log('BroadcastTransaction');
-  try {
-    const wollet = await getWolletInstance();
-    const builder = getBuilderInstance();
-    const signer = await getSignerInstance();
-    const client = getClientInstance();
-
-    const fee_rate = 100; // this is the sat/vB * 100 fee rate. Example 280 would equal a fee rate of .28 sat/vB. 100 would equal .1 sat/vB
-    const addressInterface = new Address(address);
-
-    await builder.addLbtcRecipient(addressInterface, parseFloat(satoshis, 10));
-    await builder.feeRate(fee_rate);
-
-    let pset = await builder.finish(wollet);
-    const psetString = await pset.toString();
-    console.log('Unsigned PSET', psetString);
-    let signed_pset = await signer.sign(pset);
-    console.log('SIGNED PSET:', await signed_pset.toString());
-    let finalized_pset = await wollet.finalize(signed_pset);
-    const tx = await finalized_pset.extractTx();
-
-    //await client.broadcast(tx);
-    //const txId = await tx.txid();
-
-    //console.log('BROADCASTED TX!\nTXID: {:?}', txId);
-    //return txId;
-    return null;
-  } catch (error) {
-    console.error(error);
-    return null;
   }
-};
 
-const ValidateAddress = async address => {
-  console.log('ValidateAddress', address);
-  try {
-    const addressInterface = new Address(address);
-    return true;
-  } catch (error) {
-    console.error(error);
-    return false;
+  static ValidateAddress(address) {
+    console.log('ValidateAddress', address);
+    try {
+      const addressInterface = new Address(address);
+      return true;
+    } catch (error) {
+      console.error(error);
+      return false;
+    }
   }
-};
 
-const GetMnemonic = async () => {
-  console.log('GetMnemonic');
-  const wallet = await getDefaultWallet();
-  if (!wallet) {
-    return null;
+  static async GetMnemonic() {
+    console.log('GetMnemonic');
+    return this.signerInstance.mnemonic().toString();
   }
-  return JSON.parse(wallet).mnemonic;
-};
 
-const ExtractPsetDetails = async pset => {
-  console.log('ExtractPsetDetails');
-  try {
-    const psetInstance = new Pset(pset);
-    const wolletInstance = await getWolletInstance();
-    const details = await wolletInstance.psetDetails(psetInstance);
-    const balances = details.balance().balances();
-    const fee = details.balance().fee();
-    const signatures = details.signatures();
-    const recipients = details.balance().recipients();
-    return {balances, fee, signatures, recipients};
-  } catch (error) {
-    console.error('PSET validation failed:', error);
-    return null;
+  static async ExtractPsetDetails(pset) {
+    console.log('ExtractPsetDetails');
+    try {
+      const psetInstance = new Pset(pset);
+      const details = await this.wolletInstance.psetDetails(psetInstance);
+      const balances = details.balance().balances();
+      const fee = details.balance().fee();
+      const signatures = details.signatures();
+      const recipients = details.balance().recipients();
+      return {balances, fee, signatures, recipients};
+    } catch (error) {
+      console.error('PSET validation failed:', error);
+      return null;
+    }
   }
-};
 
-const ExtractTransaction = async pset => {
-  console.log('ExtractTransaction');
-  try {
-    const tx = await pset.extractTx();
-    return tx;
-  } catch (error) {
-    console.error('Failed to extract transaction:', error);
-    return null;
+  static async ExtractTransaction(pset) {
+    console.log('ExtractTransaction');
+    try {
+      const tx = await pset.extractTx();
+      return tx;
+    } catch (error) {
+      console.error('Failed to extract transaction:', error);
+      return null;
+    }
   }
-};
 
-const GetWolletInfo = async () => {
-  console.log('GetWolletInfo');
-  const signer = await getSignerInstance();
+  static async GetWolletInfo() {
+    console.log('GetWolletInfo');
 
-  const descriptor = await signerInstance.wpkhSlip77Descriptor();
-  const descriptorString = await descriptor.toString();
-
-  const bip49Xpub = await signer.keyoriginXpub(Bip.newBip49());
-  console.log(bip49Xpub);
-  const bip84Xpub = await signer.keyoriginXpub(Bip.newBip84());
-  const bip87Xpub = await signer.keyoriginXpub(Bip.newBip87());
-  return {descriptorString, bip49Xpub, bip84Xpub, bip87Xpub};
-};
-
-const SignPSETWithMnemonic = async (mnemonic, pset) => {
-  console.log('SignWithMnemonic');
-  try {
-    const signer = new Signer(new Mnemonic(mnemonic), Network.testnet());
-    const psetInstance = new Pset(pset);
-    const signedPset = await signer.sign(psetInstance);
-    return signedPset.toString();
-  } catch (error) {
-    console.error('Failed to sign PSET:', error);
-    return null;
+    const descriptor = await this.signerInstance.wpkhSlip77Descriptor();
+    const descriptorString = await descriptor.toString();
+    const bip49Xpub = await this.signerInstance.keyoriginXpub(Bip.newBip49());
+    const bip84Xpub = await this.signerInstance.keyoriginXpub(Bip.newBip84());
+    const bip87Xpub = await this.signerInstance.keyoriginXpub(Bip.newBip87());
+    return {descriptorString, bip49Xpub, bip84Xpub, bip87Xpub};
   }
-};
 
-export {
-  CreateWallet,
-  GetNewAddress,
-  GetTransactions,
-  GetBalance,
-  GetWollet,
-  ResetWallets,
-  IsWalletExist,
-  BroadcastTransaction,
-  ValidateAddress,
-  GetMnemonic,
-  GetSavedBalance,
-  GetSavedTransactions,
-  ExtractPsetDetails,
-  ExtractTransaction,
-  GetWolletInfo,
-  SignPSETWithMnemonic,
-};
+  static async SignPSETWithMnemonic(pset) {
+    console.log('SignWithMnemonic');
+    try {
+      const psetInstance = new Pset(pset);
+      const signedPset = await this.signerInstance.sign(psetInstance);
+      return signedPset.toString();
+    } catch (error) {
+      console.error('Failed to sign PSET:', error);
+      return null;
+    }
+  }
+
+  static ValidatePSET(pset) {
+    console.log('ValidatePSET');
+    try {
+      const psetInstance = new Pset(pset);
+      return true;
+    } catch (error) {
+      console.error('Failed to validate PSET:', error);
+      return false;
+    }
+  }
+}

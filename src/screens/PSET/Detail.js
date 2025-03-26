@@ -13,7 +13,8 @@ import TopBar from '../../components/TopBar';
 import Colors from '../../config/Colors';
 import {AppContext} from '../../context/AppContext';
 import UnitConverter from '../../helpers/UnitConverter';
-import {ExtractPsetDetails} from '../../wallet/WalletFactory';
+import LoadingScreen from '../LoadingScreen';
+import WalletFactory from '../../wallet/WalletFactory';
 
 class Signature {
   constructor(key, value, isMissing) {
@@ -24,15 +25,17 @@ class Signature {
 }
 
 function Detail(props) {
-  const {pset, psetDetails, signedPset} = props.route.params;
+  const {pset} = props.route.params;
   const {preferredBitcoinUnit} = useContext(AppContext);
 
   const [fee, setFee] = useState(0);
   const [signatures, setSignatures] = useState([]);
   const [recipients, setRecipients] = useState([]);
   const [destination, setDestination] = useState(null);
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
-    setupdData();
+    setupData(pset);
   }, []);
 
   const displayBalanceInPreferredUnit = amount => {
@@ -44,12 +47,11 @@ function Detail(props) {
     return convertedDenominationAmount;
   };
 
-  const setupdData = async () => {
+  const setupData = async psetToParse => {
     try {
-      let extractedPSET = psetDetails;
-      if (!psetDetails) {
-        extractedPSET = await ExtractPsetDetails(signedPset);
-      }
+      setLoading(true);
+
+      const extractedPSET = await WalletFactory.ExtractPsetDetails(psetToParse);
 
       setFee(displayBalanceInPreferredUnit(Number(extractedPSET?.fee || 0)));
       // balances
@@ -95,16 +97,17 @@ function Detail(props) {
         {address: null, amount: 0},
       );
       setDestination(destination?.address);
+      setLoading(false);
     } catch (error) {
+      setLoading(false);
       console.error(error);
     }
   };
 
   const onSign = async () => {
-    props.navigation.navigate('SignerSelection', {
-      pset: pset,
-      psetDetails: psetDetails,
-    });
+    console.log('Signing');
+    const signedPset = await WalletFactory.SignPSETWithMnemonic(pset);
+    await setupData(signedPset);
   };
 
   const onBroadcast = async () => {
@@ -176,6 +179,8 @@ function Detail(props) {
   return (
     <Screen style={styles.container}>
       <TopBar title="" showBackButton={true} />
+      {loading && <LoadingScreen />}
+
       <ScrollView>
         <Text style={styles.signatureTotalHeader}>
           {hasSignaturesMissing

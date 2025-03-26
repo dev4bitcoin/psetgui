@@ -16,7 +16,7 @@ import Clipboard from '@react-native-clipboard/clipboard';
 import Screen from './Screen';
 import TopBar from '../components/TopBar';
 import Colors from '../config/Colors';
-import {ExtractPsetDetails} from '../wallet/WalletFactory';
+import WalletFactory from '../wallet/WalletFactory';
 
 function PSETScreen(props) {
   const textInputRef = useRef(null);
@@ -38,13 +38,10 @@ function PSETScreen(props) {
 
   const onAnalyze = async () => {
     try {
-      const psetDetails = await ExtractPsetDetails(pset);
-      setShowErrorMessage(psetDetails === null);
-      if (psetDetails) {
-        props.navigation.navigate('Detail', {
-          pset: pset,
-          psetDetails: psetDetails,
-        });
+      const isValid = WalletFactory.ValidatePSET(pset);
+      setShowErrorMessage(!isValid);
+      if (isValid) {
+        props.navigation.navigate('Detail', {pset: pset});
       }
     } catch (error) {
       setShowErrorMessage(true);

@@ -4,9 +4,9 @@ import {View, StyleSheet, Text, TouchableOpacity, Alert} from 'react-native';
 import Screen from './Screen';
 import TopBar from '../components/TopBar';
 import Colors from '../config/Colors';
-import {BroadcastTransaction} from '../wallet/WalletFactory';
 import LoadingScreen from './LoadingScreen';
 import {AppContext} from '../context/AppContext';
+import WalletFactory from '../wallet/WalletFactory';
 
 function SendTransactionReview({navigation, route}) {
   const {preferredBitcoinUnit} = useContext(AppContext);
@@ -17,7 +17,7 @@ function SendTransactionReview({navigation, route}) {
   const onSend = async () => {
     try {
       setLoading(true);
-      const txId = await BroadcastTransaction(address, amount);
+      const txId = await WalletFactory.BroadcastTransaction(address, amount);
       if (!txId) {
         console.error('Transaction failed');
         setLoading(false);

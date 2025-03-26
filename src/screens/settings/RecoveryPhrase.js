@@ -7,13 +7,13 @@ import Clipboard from '@react-native-clipboard/clipboard';
 import Screen from '../Screen';
 import TopBar from '../../components/TopBar';
 import Colors from '../../config/Colors';
-import {GetMnemonic} from '../../wallet/WalletFactory';
+import WalletFactory from '../../wallet/WalletFactory';
 
 function RecoveryPhrase(props) {
   const [seed, setSeed] = useState([]);
 
   getSeed = async () => {
-    const mnemonic = await GetMnemonic();
+    const mnemonic = await WalletFactory.GetMnemonic();
     setSeed(mnemonic.split(' '));
   };
 

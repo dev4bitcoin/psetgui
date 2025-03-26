@@ -17,25 +17,18 @@ import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import TopBar from '../../components/TopBar';
 import Colors from '../../config/Colors';
 import wordList from '../../config/WordList';
-import {SignPSETWithMnemonic} from '../../wallet/WalletFactory';
-import {AppContext} from '../../context/AppContext';
-import {
-  getPSETMnemonic,
-  removePSETMnemonic,
-  savePSETMnemonic,
-} from '../../services/WalletService';
+import LoadingScreen from '../LoadingScreen';
+import WalletFactory from '../../wallet/WalletFactory';
 
 function SignWithMnemonic(props) {
-  const {pset, psetDetails} = props.route.params;
-  const {mnemonicSaved, setSaveMnemonicStatus} = useContext(AppContext);
-
   const [lengthSelection, setLengthSelection] = useState('12');
   const [inputValues, setInputValues] = useState({});
   const [suggestions, setSuggestions] = useState([]);
   const [activeInputIndex, setActiveInputIndex] = useState(null);
+  const [mnemonicSaved, setMnemonicSaved] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    getSavedMnemonic();
     const keyboardListeners = [
       Keyboard.addListener('keyboardWillHide', () => {
         setSuggestions([]);
@@ -47,27 +40,12 @@ function SignWithMnemonic(props) {
     };
   }, []);
 
-  const getSavedMnemonic = async () => {
-    const mnemonicValue = await getPSETMnemonic();
-    if (mnemonicValue) {
-      // Split mnemonic into words and populate inputValues
-      const words = mnemonicValue.split(' ');
-      const populatedInputs = {};
-      if (words.length > 12) {
-        setLengthSelection('24');
-      }
-      words.forEach((word, index) => {
-        populatedInputs[index + 1] = word;
-      });
-      setInputValues(populatedInputs);
-    }
-  };
-
   const onPressLengthSelection = length => {
     setLengthSelection(length);
   };
 
   const OnSign = async () => {
+    setLoading(true);
     const selectedLength = parseInt(lengthSelection, 10); // Convert lengthSelection to a number
     const enteredWords = Object.values(inputValues).filter(
       word => word.trim() !== '',
@@ -75,19 +53,15 @@ function SignWithMnemonic(props) {
 
     if (enteredWords.length === selectedLength) {
       const mnemonic = enteredWords.join(' ');
-      const signedPset = await SignPSETWithMnemonic(mnemonic, pset);
-      if (signedPset) {
-        if (mnemonicSaved) await savePSETMnemonic(mnemonic);
-        else await removePSETMnemonic();
-
-        props.navigation.navigate('Detail', {
-          pset: pset,
-          signedPset: signedPset,
-        });
-      } else {
-        Alert.alert('Failed to sign PSET');
-      }
+      await WalletFactory.init(mnemonic);
+      // await WalletFactory.init(
+      //   'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about',
+      // );
+      await WalletFactory.CreateWallet(mnemonicSaved);
+      setLoading(false);
+      props.navigation.navigate('BottomTabs');
     } else {
+      setLoading(false);
       Alert.alert(`Please enter all ${selectedLength} words.`);
     }
   };
@@ -122,8 +96,7 @@ function SignWithMnemonic(props) {
       ignoreAndroidSystemSettings: false,
     });
     const status = !mnemonicSaved;
-    console.log('Save Mnemonic', status);
-    setSaveMnemonicStatus(status); // Toggle the state
+    setMnemonicSaved(status);
   };
 
   const renderlengthSelectionButtons = text => {
@@ -176,6 +149,8 @@ function SignWithMnemonic(props) {
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <TopBar showBackButton={true} showBackButtonText={true} />
+      {loading && <LoadingScreen />}
+
       <ScrollView style={styles.content}>
         <Text style={styles.header}>Enter your recovery phrase</Text>
         <View style={styles.passphraseLengthSelection}>
