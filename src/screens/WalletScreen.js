@@ -25,6 +25,7 @@ import LoadingScreen from './LoadingScreen';
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 function WalletScreen({route, navigation}) {
+  const {assetId} = route.params?.asset;
   const [balance, setBalance] = useState(0);
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -33,7 +34,7 @@ function WalletScreen({route, navigation}) {
 
   const getTransactions = async () => {
     try {
-      const transactionsData = await WalletFactory.GetTransactions();
+      const transactionsData = await WalletFactory.GetTransactions(assetId);
       const mappedTransactions = transactionsData.map(
         tx => new Transaction(tx),
       );
@@ -46,11 +47,7 @@ function WalletScreen({route, navigation}) {
 
   const getBalance = async () => {
     try {
-      const walletBalances = await WalletFactory.GetBalance();
-      const totalBalance = Object.values(walletBalances).reduce(
-        (sum, balance) => sum + balance,
-        0,
-      );
+      const totalBalance = await WalletFactory.GetBalance(assetId);
 
       setBalance(totalBalance);
     } catch (error) {
@@ -137,7 +134,7 @@ function WalletScreen({route, navigation}) {
           styles.balanceRow,
           {paddingTop: Platform.OS == 'android' ? 0 : 50},
         ]}>
-        <TopBar title="Balance" isHomeScreen={true} />
+        <TopBar title="Balance" isHomeScreen={false} showBackButton={true} />
       </View>
 
       <ScrollView

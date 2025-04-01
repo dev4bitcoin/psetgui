@@ -12,13 +12,10 @@ import {useNavigation} from '@react-navigation/native';
 import colors from '../config/Colors';
 import UnitConverter from '../helpers/UnitConverter';
 
-function Transactions({
-  transactions,
-
-  denomination,
-}) {
+function Transactions({transactions, denomination}) {
   const navigation = useNavigation();
 
+  console.log('Transactions:', transactions);
   // Step 1: Sort transactions by timestamp
   const sortedTransactions = transactions.sort(
     (a, b) => b.timestamp - a.timestamp,

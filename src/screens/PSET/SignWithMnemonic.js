@@ -50,7 +50,7 @@ function SignWithMnemonic(props) {
     const enteredWords = Object.values(inputValues).filter(
       word => word.trim() !== '',
     ); // Get non-empty words
-    //const enteredWords = [];
+
     if (enteredWords.length === selectedLength) {
       const mnemonic = enteredWords.join(' ');
       await WalletFactory.init(mnemonic);
@@ -180,7 +180,7 @@ function SignWithMnemonic(props) {
           <Text style={styles.bottomButtonText}>Sign</Text>
         </TouchableOpacity>
       </ScrollView>
-      {suggestions.length > 0 && (
+      {/* {suggestions.length > 0 && (
         <View style={styles.suggestionsContainer}>
           <FlatList
             data={suggestions}
@@ -199,7 +199,7 @@ function SignWithMnemonic(props) {
             )}
           />
         </View>
-      )}
+      )} */}
     </KeyboardAvoidingView>
   );
 }

@@ -123,11 +123,21 @@ export default class WalletFactory {
     return txt;
   }
 
-  static async GetTransactions() {
-    console.log('GetTransactions');
-    const txs = await this.wolletInstance.transactions();
+  static async GetAssets() {
+    console.log('GetAssets');
 
-    const newTransactions = txs.map(tx => {
+    const assets = await this.wolletInstance.balance();
+    return assets;
+  }
+
+  static async GetTransactions(assetId) {
+    console.log('GetTransactions');
+
+    if (!assetId) return [];
+
+    const txs = await this.wolletInstance.transactions();
+    const newTransactions = [];
+    txs?.forEach(tx => {
       var balance = {};
       tx.balance().forEach((value, key) => {
         if (balance[key.toString()] === undefined) {
@@ -135,15 +145,25 @@ export default class WalletFactory {
         }
         balance[key.toString()] += Number(value);
       });
-      return new Transaction({
-        balance: balance,
-        fee: Number(tx.fee()),
-        height: tx.height(),
-        type: tx.type(),
-        txid: tx.txid().toString(),
-        timestamp: tx.timestamp(),
-        tx: tx.tx().toString(),
+
+      const shouldInclude = tx?.outputs()?.some(output => {
+        const outputAsset = output?.unblinded()?.asset();
+        return outputAsset === assetId;
       });
+
+      if (shouldInclude) {
+        const txToInclude = new Transaction({
+          balance: balance,
+          fee: Number(tx.fee()),
+          height: tx.height(),
+          type: tx.type(),
+          txid: tx.txid().toString(),
+          timestamp: tx.timestamp(),
+          tx: tx.tx().toString(),
+        });
+
+        newTransactions.push(txToInclude);
+      }
     });
 
     // Retrieve existing transactions from AsyncStorage
@@ -153,9 +173,13 @@ export default class WalletFactory {
 
     // Filter out new transactions
     const existingTransactionIds = storedTransactions?.map(tx => tx.txid);
-    const uniqueNewTransactions = newTransactions.filter(
-      tx => !existingTransactionIds.includes(tx.txid),
-    );
+
+    const uniqueNewTransactions =
+      existingTransactionIds?.length > 0
+        ? newTransactions?.filter(
+            tx => !existingTransactionIds.includes(tx?.txid),
+          )
+        : newTransactions;
 
     // Combine existing and new transactions
     const updatedTransactions = [
@@ -166,19 +190,18 @@ export default class WalletFactory {
     // Store the updated transactions back to AsyncStorage
     await storeTransactions(this.defaultWallet?.id, updatedTransactions);
 
-    return updatedTransactions;
+    return updatedTransactions?.filter(tx => tx != null);
   }
 
-  static async GetBalance() {
+  static async GetBalance(assetId) {
     console.log('GetBalance');
     await this.updateWallet(this.wolletInstance);
     const res = await this.wolletInstance.balance();
-    var balance = {};
+    var balance = 0;
     res.forEach((value, key) => {
-      if (balance[key.toString()] === undefined) {
-        balance[key.toString()] = 0;
+      if (key.toString() === assetId) {
+        balance = Number(value || 0);
       }
-      balance[key.toString()] += Number(value);
     });
 
     await storeBalance(this.defaultWallet?.id, balance);
@@ -203,16 +226,16 @@ export default class WalletFactory {
 
       await this.updateWallet(this.wolletInstance);
       let pset = await builder.finish(this.wolletInstance);
-      // const psetString = await pset.toString();
-      // console.log('Unsigned PSET', psetString);
+      const psetString = await pset.toString();
+      console.log('Unsigned PSET', psetString);
 
       let signedPset = await this.signerInstance.sign(pset);
       const finalizedPset = await this.wolletInstance.finalize(signedPset);
       const tx = await finalizedPset.extractTx();
 
-      const txId = await this.clientInstance.broadcast(tx);
-      console.log('BROADCASTED TX!\nTXID: {:?}', txId.toString());
-      return txId.toString();
+      // const txId = await this.clientInstance.broadcast(tx);
+      // console.log('BROADCASTED TX!\nTXID: {:?}', txId.toString());
+      // return txId.toString();
     } catch (error) {
       console.error(error);
       return null;
@@ -244,7 +267,8 @@ export default class WalletFactory {
       const fee = details.balance().fee();
       const signatures = details.signatures();
       const recipients = details.balance().recipients();
-      return {balances, fee, signatures, recipients};
+      const inputsIssuances = details.inputsIssuances();
+      return {balances, fee, signatures, recipients, inputsIssuances};
     } catch (error) {
       console.error('PSET validation failed:', error);
       return null;

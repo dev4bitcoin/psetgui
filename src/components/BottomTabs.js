@@ -9,6 +9,7 @@ import SettingsScreen from '../screens/SettingsScreen';
 
 import Colors from '../config/Colors';
 import WalletInfo from '../screens/WalletInfo';
+import AssetListScreen from '../screens/AssetListScreen';
 
 function BottomTabs(props) {
   const Tab = createBottomTabNavigator();
@@ -39,8 +40,8 @@ function BottomTabs(props) {
         }}
       />
       <Tab.Screen
-        name="Wallet"
-        component={WalletScreen}
+        name="wallet"
+        component={AssetListScreen}
         options={{
           tabBarIcon: ({focused}) => (
             <View

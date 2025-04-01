@@ -27,7 +27,7 @@ function ReceiveScreen(props) {
     Toast.info('Copied to clipboard!', 'bottom');
   };
 
-  onShare = async () => {
+  const onShare = async () => {
     try {
       const result = await Share.share({
         message: address,

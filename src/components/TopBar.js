@@ -58,7 +58,7 @@ const styles = StyleSheet.create({
   },
   leftIcon: {
     position: 'absolute',
-    left: 20,
+    left: 10,
   },
   rightIcon: {
     position: 'absolute',

@@ -30,10 +30,11 @@ function Detail(props) {
   const {preferredBitcoinUnit} = useContext(AppContext);
 
   const [fee, setFee] = useState(0);
+  const [totalBalance, setTotalBalance] = useState(0);
   const [signatures, setSignatures] = useState([]);
   const [recipients, setRecipients] = useState([]);
-  const [destination, setDestination] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [loadingText, setLoadingText] = useState('Loading PSET details...');
 
   useEffect(() => {
     setupData(pset);
@@ -55,14 +56,24 @@ function Detail(props) {
       const extractedPSET = await WalletFactory.ExtractPsetDetails(psetToParse);
 
       setFee(displayBalanceInPreferredUnit(Number(extractedPSET?.fee || 0)));
-      // balances
-      const balances = extractedPSET.balances || [];
 
-      let totalBalance = BigInt(0);
-      balances?.forEach(balance => {
-        totalBalance += BigInt(balance);
+      let netBalance = 0;
+      extractedPSET?.balances?.forEach(balance => {
+        netBalance += Number(balance);
       });
-      console.log('Total Balance:', totalBalance.toString());
+
+      setTotalBalance(displayBalanceInPreferredUnit(netBalance));
+
+      const inputIssuances = extractedPSET.inputsIssuances || [];
+
+      // Iterate through the input issuances and store the latest entry for each address
+      const inputIssuancesMap = new Map();
+      inputIssuances.forEach(inputIssuance => {
+        console.log('asset:', inputIssuance.asset());
+        console.log('token:', inputIssuance.token());
+        console.log('isIssuance:', inputIssuance.isIssuance());
+        console.log('isReissuance:', inputIssuance.isReissuance());
+      });
 
       const signaturesArray = [];
       extractedPSET.signatures?.forEach(signatureItem => {
@@ -92,26 +103,17 @@ function Detail(props) {
 
       setSignatures(filteredSignatures || []);
 
-      const recipientMap = new Map();
+      const recipientsList = [];
       // Iterate through the recipients and store the latest entry for each address
       extractedPSET?.recipients?.forEach(recipient => {
-        recipientMap.set(recipient?.address()?.toString(), recipient?.value());
+        recipientsList.push({
+          address: recipient?.address()?.toString(),
+          amount: recipient?.value(),
+        });
       });
 
-      const recipients = Array.from(recipientMap, ([address, amount]) => ({
-        address,
-        amount,
-      }));
+      setRecipients(recipientsList);
 
-      setRecipients(recipients);
-
-      const destination = recipients.reduce(
-        (max, recipient) => {
-          return recipient.amount > max.amount ? recipient : max;
-        },
-        {address: null, amount: 0},
-      );
-      setDestination(destination?.address);
       setLoading(false);
     } catch (error) {
       setLoading(false);
@@ -122,8 +124,11 @@ function Detail(props) {
   const onSign = async () => {
     console.log('Signing');
     setLoading(true);
+    setLoadingText('Signing PSET...');
     const signedPset = await WalletFactory.SignPSETWithMnemonic(pset);
     await setupData(signedPset);
+    await new Promise(resolve => setTimeout(resolve, 20000));
+
     setLoading(false);
   };
 
@@ -131,35 +136,15 @@ function Detail(props) {
     console.log('Broadcasting');
   };
 
-  const onRecipients = () => {
-    props.navigation.navigate('Recipients', {
-      recipients: recipients,
+  const onRecipient = recipient => {
+    props.navigation.navigate('Recipient', {
+      recipient: recipient,
     });
   };
 
   const hasSignaturesMissing = signatures.some(
     signature => signature.isMissing,
   );
-
-  const formatAddress = address => {
-    if (!address) return {firstRow: '', lastRow: ''};
-
-    // Take the first 16 characters and split into 4x4 groups
-    const firstRow = address
-      .slice(0, 16)
-      .match(/.{1,4}/g)
-      .join(' ');
-
-    // Take the last 16 characters and split into 4x4 groups
-    const lastRow = address
-      .slice(-16)
-      .match(/.{1,4}/g)
-      .join(' ');
-
-    return {firstRow, lastRow};
-  };
-
-  const {firstRow, lastRow} = formatAddress(destination);
 
   const renderItem = items => {
     return (
@@ -182,9 +167,23 @@ function Detail(props) {
                 } #${index + 1}`}</Text>
 
                 <Text style={styles.signatureItemText}>{item?.value}</Text>
-                {/* {!item?.isMissing && (
-                  <Text style={styles.signatureItemText}>Signed</Text>
-                )} */}
+                {item?.isMissing ? (
+                  <Text
+                    style={[
+                      styles.signatureItemText,
+                      {color: Colors.priceRed},
+                    ]}>
+                    Signature Missing
+                  </Text>
+                ) : (
+                  <Text
+                    style={[
+                      styles.signatureItemText,
+                      {color: Colors.priceGreen},
+                    ]}>
+                    Signed
+                  </Text>
+                )}
                 {/* <Text style={styles.signatureItemText}>{item?.key}</Text> */}
               </View>
             </TouchableOpacity>
@@ -196,7 +195,7 @@ function Detail(props) {
   return (
     <Screen style={styles.container}>
       <TopBar title="" showBackButton={true} />
-      {loading && <LoadingScreen />}
+      {loading && <LoadingScreen text={loadingText} />}
 
       <ScrollView>
         <Text style={styles.signatureTotalHeader}>
@@ -206,56 +205,83 @@ function Detail(props) {
         </Text>
         <View style={styles.content}>
           <View style={styles.item}>
+            <Text style={styles.itemName}>NET BALANCE</Text>
+            <Text style={styles.itemValue}>
+              {`${totalBalance}  ${preferredBitcoinUnit}`}
+            </Text>
+          </View>
+          <View style={styles.item}>
             <Text style={styles.itemName}>FEES</Text>
             <Text style={styles.itemValue}>
               {`-${fee}  ${preferredBitcoinUnit}`}
             </Text>
           </View>
-
-          <View style={styles.item}>
-            <Text style={styles.itemName}>DESTINATION</Text>
-            {destination ? (
-              <View>
-                <Text style={styles.itemValue}>{firstRow}</Text>
-                <Text style={[styles.itemValue, {textAlign: 'center'}]}>
-                  ...
-                </Text>
-                <Text style={styles.itemValue}>{lastRow}</Text>
-              </View>
-            ) : (
-              <Text style={styles.itemValue}>NONE</Text>
-            )}
-          </View>
+          <View style={styles.splitter}></View>
 
           <View
             style={[
               styles.item,
-              {flexDirection: recipients?.length > 1 ? 'column' : 'row'},
+              {flexDirection: recipients?.length > 0 ? 'column' : 'row'},
             ]}>
             <Text
               style={
                 styles.itemName
-              }>{`RECIPIENT TOTAL (${recipients?.length})`}</Text>
-            {recipients?.length > 1 ? (
+              }>{`RECIPIENTS TOTAL (${recipients?.length})`}</Text>
+            {recipients?.length > 0 ? (
               <View style={styles.recipientItems}>
                 <FlatList
                   data={recipients || []}
                   keyExtractor={(item, index) => index.toString()}
                   horizontal
                   showsHorizontalScrollIndicator
-                  renderItem={({item}) => (
-                    <View style={styles.recipientItem}>
+                  renderItem={({item, index}) => (
+                    <TouchableOpacity
+                      style={styles.recipientItem}
+                      onPress={() =>
+                        onRecipient({
+                          amount: `${displayBalanceInPreferredUnit(
+                            item?.amount,
+                          )} ${preferredBitcoinUnit}`,
+                          address: item?.address,
+                        })
+                      }>
                       <View style={styles.recipientAmountContainer}>
                         <Text style={styles.recipientAmount}>
                           {`${displayBalanceInPreferredUnit(
                             item?.amount,
-                          )}  ${preferredBitcoinUnit}`}
+                          )} ${preferredBitcoinUnit}`}
                         </Text>
+                        <Text style={styles.itemValue}>{`#${index + 1}`}</Text>
                       </View>
-                      <Text style={styles.recipientAddress}>
-                        {`${item?.address?.match(/.{1,4}/g).join(' ')}`}
-                      </Text>
-                    </View>
+                      <View>
+                        {item?.address ? (
+                          <>
+                            <Text style={styles.itemValue}>
+                              {item?.address
+                                .slice(0, 16)
+                                .match(/.{1,4}/g)
+                                .join('   ')}
+                              {/* First 4 characters */}
+                            </Text>
+                            <Text
+                              style={[
+                                styles.itemValue,
+                                {textAlign: 'center', paddingBottom: 10},
+                              ]}>
+                              ...
+                            </Text>
+                            <Text style={styles.itemValue}>
+                              {item?.address
+                                .slice(-16)
+                                .match(/.{1,4}/g)
+                                .join('   ')}
+                            </Text>
+                          </>
+                        ) : (
+                          <Text style={styles.itemValue}>No Address</Text>
+                        )}
+                      </View>
+                    </TouchableOpacity>
                   )}
                 />
               </View>
@@ -263,6 +289,9 @@ function Detail(props) {
               <Text style={styles.itemValue}>NONE</Text>
             )}
           </View>
+
+          <View style={styles.splitter}></View>
+          <View style={styles.splitter}></View>
 
           {signatures.length > 0 && (
             <View style={styles.signatureGroup}>
@@ -301,7 +330,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    paddingTop: 40,
+    paddingTop: 20,
   },
 
   signatureTotalHeader: {
@@ -324,6 +353,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
   },
+  splitter: {
+    marginHorizontal: 20,
+    height: 0.3,
+    backgroundColor: Colors.textGray,
+  },
   itemName: {
     fontSize: 16,
     fontWeight: 'bold',
@@ -334,8 +368,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: Colors.textGray,
     paddingRight: 13,
-    textAlign: 'right',
-    textTransform: 'uppercase',
+    textAlign: 'justify',
   },
   clickableItem: {
     flexDirection: 'row',
@@ -349,7 +382,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 10,
-    marginTop: 10,
+    marginTop: 20,
   },
   signtureItemDetails: {
     paddingLeft: 10,
@@ -401,10 +434,12 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   recipientAmountContainer: {
-    marginBottom: 5,
+    marginBottom: 10,
     borderBottomWidth: 0.3,
     borderColor: Colors.textGray,
     borderBottomStyle: 'dotted',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
   recipientAmount: {
     fontSize: 16,
@@ -419,6 +454,7 @@ const styles = StyleSheet.create({
     width: 250,
     paddingRight: 5,
     textTransform: 'uppercase',
+    textAlign: 'justify',
   },
 });
 
