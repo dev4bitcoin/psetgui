@@ -71,8 +71,10 @@ function WalletScreen({route, navigation}) {
 
   const loadStoredData = async () => {
     try {
-      const storedTransactions = await WalletFactory.GetSavedTransactions();
-      const storedBalance = await WalletFactory.GetSavedBalance();
+      const storedTransactions = await WalletFactory.GetSavedTransactions(
+        assetId,
+      );
+      const storedBalance = await WalletFactory.GetSavedBalance(assetId);
       setTransactions(storedTransactions);
       setBalance(storedBalance);
     } catch (error) {
