@@ -30,12 +30,12 @@ const AppNavigator = () => {
       <Stack.Screen
         name="LaunchScreen"
         component={LaunchScreen}
-        options={{headerShown: false}}
+        options={{headerShown: false, gestureEnabled: false}}
       />
       <Stack.Screen
         name="BottomTabs"
         component={BottomTabs}
-        options={{headerShown: false}}
+        options={{headerShown: false, gestureEnabled: false}}
       />
       <Stack.Screen
         name="Wallet"
@@ -45,7 +45,7 @@ const AppNavigator = () => {
       <Stack.Screen
         name="AssetList"
         component={AssetListScreen}
-        options={{headerShown: false}}
+        options={{headerShown: false, gestureEnabled: false}}
       />
       <Stack.Screen
         name="Receive"
@@ -115,7 +115,7 @@ const AppNavigator = () => {
       <Stack.Screen
         name="SignerSelection"
         component={SignerSelection}
-        options={{headerShown: false}}
+        options={{headerShown: false, gestureEnabled: false}}
       />
       <Stack.Screen
         name="SignWithMnemonic"
@@ -135,7 +135,7 @@ const AppNavigator = () => {
       <Stack.Screen
         name="Descriptor"
         component={DescriptorScreen}
-        options={{headerShown: false}}
+        options={{headerShown: false, gestureEnabled: false}}
       />
     </Stack.Navigator>
   );

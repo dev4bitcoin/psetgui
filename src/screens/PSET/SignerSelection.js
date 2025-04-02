@@ -42,7 +42,7 @@ function SignerSelection(props) {
   return (
     <Screen style={styles.container}>
       <TopBar title="Select Signer" showBackButton={false} />
-      {loading && <LoadingScreen text="Please wait..." />}
+      {loading && <LoadingScreen text="Loading Wallet..." />}
 
       <View style={styles.content}>
         <TouchableOpacity

@@ -3,10 +3,8 @@ import {View, StyleSheet} from 'react-native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
-import WalletScreen from '../screens/WalletScreen';
 import PSETScreen from '../screens/PSETScreen';
 import SettingsScreen from '../screens/SettingsScreen';
-
 import Colors from '../config/Colors';
 import WalletInfo from '../screens/WalletInfo';
 import AssetListScreen from '../screens/AssetListScreen';
@@ -22,6 +20,7 @@ function BottomTabs(props) {
         tabBarStyle: styles.toolbar,
         tabBarShowLabel: false,
         headerShown: false,
+        swipeEnabled: true,
       })}>
       <Tab.Screen
         name="Home"
@@ -37,6 +36,7 @@ function BottomTabs(props) {
               />
             </View>
           ),
+          gestureEnabled: false,
         }}
       />
       <Tab.Screen
