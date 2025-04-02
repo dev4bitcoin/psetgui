@@ -48,16 +48,18 @@ const LaunchScreen = ({navigation}) => {
       setLoading(true);
       setLoadingText('Check Wallets...');
 
-      // delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      if ((await getDefaultWallet()) === null) {
-        await new Promise(resolve => setTimeout(resolve, 1000));
+      navigation.navigate('SignerSelection');
 
-        navigation.navigate('SignerSelection');
-      } else {
-        await WalletFactory.init();
-        navigation.replace('BottomTabs');
-      }
+      // delay
+      // await new Promise(resolve => setTimeout(resolve, 1000));
+      // if ((await getDefaultWallet()) === null) {
+      //   await new Promise(resolve => setTimeout(resolve, 1000));
+
+      //   navigation.navigate('SignerSelection');
+      // } else {
+      //   await WalletFactory.init();
+      //   navigation.replace('BottomTabs');
+      // }
     } catch (error) {
       console.error(error);
     } finally {

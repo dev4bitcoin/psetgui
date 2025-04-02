@@ -27,7 +27,7 @@ function SignWithMnemonic(props) {
   const [activeInputIndex, setActiveInputIndex] = useState(null);
   const [mnemonicSaved, setMnemonicSaved] = useState(false);
   const [loading, setLoading] = useState(false);
-
+  const [loadingText, setLoadingText] = useState('Please wait...');
   useEffect(() => {
     const keyboardListeners = [
       Keyboard.addListener('keyboardWillHide', () => {
@@ -46,6 +46,7 @@ function SignWithMnemonic(props) {
 
   const OnSign = async () => {
     setLoading(true);
+
     const selectedLength = parseInt(lengthSelection, 10); // Convert lengthSelection to a number
     const enteredWords = Object.values(inputValues).filter(
       word => word.trim() !== '',
@@ -149,7 +150,7 @@ function SignWithMnemonic(props) {
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <TopBar showBackButton={true} showBackButtonText={true} />
-      {loading && <LoadingScreen />}
+      {loading && <LoadingScreen text={loadingText} />}
 
       <ScrollView style={styles.content}>
         <Text style={styles.header}>Enter your recovery phrase</Text>
@@ -177,7 +178,7 @@ function SignWithMnemonic(props) {
           </TouchableOpacity>
         </View>
         <TouchableOpacity onPress={OnSign} style={styles.bottomButtonContainer}>
-          <Text style={styles.bottomButtonText}>Sign</Text>
+          <Text style={styles.bottomButtonText}>Next</Text>
         </TouchableOpacity>
       </ScrollView>
       {/* {suggestions.length > 0 && (

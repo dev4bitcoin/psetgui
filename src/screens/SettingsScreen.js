@@ -8,6 +8,7 @@ import TopBar from '../components/TopBar';
 import Colors from '../config/Colors';
 import {deleteWallet} from '../services/WalletService';
 import LoadingScreen from './LoadingScreen';
+import WalletFactory from '../wallet/WalletFactory';
 
 function SettingsScreen(props) {
   const [loading, setLoading] = React.useState(false);
@@ -18,7 +19,7 @@ function SettingsScreen(props) {
     if (name === 'About') props.navigation.navigate('About');
   };
 
-  const onLogout = async () => {
+  const onDelete = async () => {
     Alert.alert(
       'Confirm Deletion',
       'Are you sure you want to erase all wallet data? This action cannot be undone.',
@@ -31,7 +32,12 @@ function SettingsScreen(props) {
           text: 'Yes',
           onPress: async () => {
             setLoading(true);
-            await deleteWallet();
+            const assets = await WalletFactory.GetAssets();
+            let assetList = [];
+            assets?.forEach((amount, assetId) => {
+              assetList.push(assetId);
+            });
+            await deleteWallet(assetList);
             setLoading(false);
             RNRestart.restart(); // Restart the app
           },
@@ -56,8 +62,8 @@ function SettingsScreen(props) {
   };
 
   return (
-    <Screen>
-      <View style={styles.container}>
+    <Screen style={styles.container}>
+      <View style={[{flex: 1}]}>
         <TopBar title="Settings" showBackButton={false} />
         {loading && <LoadingScreen />}
 
@@ -77,18 +83,18 @@ function SettingsScreen(props) {
         </View>
       </View>
 
-      <View>
-        <TouchableOpacity style={[styles.buttonContainer]} onPress={onLogout}>
+      {WalletFactory.signerInstance && (
+        <TouchableOpacity style={[styles.buttonContainer]} onPress={onDelete}>
           <Text style={styles.buttonText}>Delete</Text>
         </TouchableOpacity>
-      </View>
+      )}
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    alignItems: 'center',
+    flex: 1,
   },
   group: {
     width: '100%',
@@ -128,9 +134,11 @@ const styles = StyleSheet.create({
     borderColor: Colors.white,
     borderWidth: 2,
     padding: 20,
+    width: '75%',
     borderRadius: 50,
-    margin: 40,
     marginHorizontal: 60,
+    bottom: 100,
+    marginTop: 30,
   },
   buttonText: {
     fontSize: 18,

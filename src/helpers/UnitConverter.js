@@ -57,7 +57,16 @@ function convertToSatoshi(amount, unit) {
   }
 }
 
+function displayBalanceInPreferredUnit(balance, preferredBitcoinUnit) {
+  const convertedDenominationAmount = convertToPreferredBTCDenominator(
+    balance,
+    preferredBitcoinUnit,
+  );
+  return convertedDenominationAmount;
+}
+
 export default {
   convertToPreferredBTCDenominator,
   convertToSatoshi,
+  displayBalanceInPreferredUnit,
 };

@@ -54,20 +54,40 @@ export default class WalletFactory {
     }
   }
 
-  static async GetSavedTransactions() {
+  static async initWithDescriptor(descriptor = null) {
+    const network = Network.testnet();
+    this.clientInstance = network.defaultElectrumClient();
+
+    const desc = new WolletDescriptor(descriptor);
+    this.wolletInstance = new Wollet(network, desc, undefined);
+    await this.updateWallet();
+  }
+
+  static ValidateDescriptor(descriptor) {
+    console.log('ValidateDescriptor');
+    try {
+      const desc = new WolletDescriptor(descriptor);
+      return true;
+    } catch (error) {
+      console.error('Failed to validate descriptor:', error);
+      return false;
+    }
+  }
+
+  static async GetSavedTransactions(assetId) {
     console.log('GetSavedTransactions');
 
-    if (!this.defaultWallet) return [];
+    if (!assetId) return [];
 
-    const transactions = await getStoredTransactions(this.defaultWallet.id);
+    const transactions = await getStoredTransactions(assetId);
     return transactions;
   }
 
-  static async GetSavedBalance() {
+  static async GetSavedBalance(assetId) {
     console.log('GetSavedBalance');
-    if (!this.defaultWallet) return null;
+    if (!assetId) return null;
 
-    const balance = await getStoredBalance(this.defaultWallet.id);
+    const balance = await getStoredBalance(assetId);
     const totalBalance = Object.values(balance).reduce(
       (sum, balance) => sum + balance,
       0,
@@ -167,9 +187,7 @@ export default class WalletFactory {
     });
 
     // Retrieve existing transactions from AsyncStorage
-    const storedTransactions = await getStoredTransactions(
-      this.defaultWallet?.id,
-    );
+    const storedTransactions = await getStoredTransactions(assetId);
 
     // Filter out new transactions
     const existingTransactionIds = storedTransactions?.map(tx => tx.txid);
@@ -188,7 +206,7 @@ export default class WalletFactory {
     ];
 
     // Store the updated transactions back to AsyncStorage
-    await storeTransactions(this.defaultWallet?.id, updatedTransactions);
+    await storeTransactions(assetId, updatedTransactions);
 
     return updatedTransactions?.filter(tx => tx != null);
   }
@@ -204,7 +222,7 @@ export default class WalletFactory {
       }
     });
 
-    await storeBalance(this.defaultWallet?.id, balance);
+    await storeBalance(assetId, balance);
     return balance;
   }
 
@@ -216,26 +234,13 @@ export default class WalletFactory {
   static async BroadcastTransaction(address, satoshis) {
     console.log('BroadcastTransaction');
     try {
-      const fee_rate = 100; // this is the sat/vB * 100 fee rate. Example 280 would equal a fee rate of .28 sat/vB. 100 would equal .1 sat/vB
-
-      const outAddress = new Address(address);
-      const builder = Network.testnet().txBuilder();
-
-      await builder.addLbtcRecipient(outAddress, BigInt(satoshis));
-      await builder.feeRate(fee_rate);
-
-      await this.updateWallet(this.wolletInstance);
-      let pset = await builder.finish(this.wolletInstance);
-      const psetString = await pset.toString();
-      console.log('Unsigned PSET', psetString);
-
-      let signedPset = await this.signerInstance.sign(pset);
+      const signedPset = await this.CreatePSET(address, satoshis, false);
       const finalizedPset = await this.wolletInstance.finalize(signedPset);
       const tx = await finalizedPset.extractTx();
 
-      // const txId = await this.clientInstance.broadcast(tx);
-      // console.log('BROADCASTED TX!\nTXID: {:?}', txId.toString());
-      // return txId.toString();
+      const txId = await this.clientInstance.broadcast(tx);
+      console.log('BROADCASTED TX!\nTXID: {:?}', txId.toString());
+      return txId.toString();
     } catch (error) {
       console.error(error);
       return null;
@@ -289,8 +294,12 @@ export default class WalletFactory {
   static async GetWolletInfo() {
     console.log('GetWolletInfo');
 
-    const descriptor = await this.signerInstance.wpkhSlip77Descriptor();
+    const descriptor = await this.wolletInstance.descriptor();
     const descriptorString = await descriptor.toString();
+    if (!this.signerInstance) {
+      return {descriptorString};
+    }
+
     const bip49Xpub = await this.signerInstance.keyoriginXpub(Bip.newBip49());
     const bip84Xpub = await this.signerInstance.keyoriginXpub(Bip.newBip84());
     const bip87Xpub = await this.signerInstance.keyoriginXpub(Bip.newBip87());
@@ -309,6 +318,21 @@ export default class WalletFactory {
     }
   }
 
+  static async BroadcastPSET(signedPset) {
+    console.log('BroadcastPSET');
+    try {
+      await this.updateWallet(this.wolletInstance);
+      const psetInstance = new Pset(signedPset);
+      const finalizedPset = await this.wolletInstance.finalize(psetInstance);
+      const tx = await finalizedPset.extractTx();
+      const txId = await this.clientInstance.broadcast(tx);
+      return txId.toString();
+    } catch (error) {
+      console.error('Failed to broadcast PSET:', error);
+      return null;
+    }
+  }
+
   static ValidatePSET(pset) {
     console.log('ValidatePSET');
     try {
@@ -317,6 +341,33 @@ export default class WalletFactory {
     } catch (error) {
       console.error('Failed to validate PSET:', error);
       return false;
+    }
+  }
+
+  static async CreatePSET(address, satoshis, asString = true) {
+    console.log('CreatePSET');
+    try {
+      const fee_rate = 100; // this is the sat/vB * 100 fee rate. Example 280 would equal a fee rate of .28 sat/vB. 100 would equal .1 sat/vB
+
+      const outAddress = new Address(address);
+      const builder = Network.testnet().txBuilder();
+
+      await builder.addLbtcRecipient(outAddress, BigInt(satoshis));
+      await builder.feeRate(fee_rate);
+
+      await this.updateWallet(this.wolletInstance);
+      let pset = await builder.finish(this.wolletInstance);
+      const psetString = await pset.toString();
+
+      if (this.signerInstance) {
+        let signedPset = await this.signerInstance.sign(pset);
+        return asString ? signedPset.toString() : signedPset;
+      }
+
+      return asString ? psetString : pset;
+    } catch (error) {
+      console.error('Failed to create PSET:', error);
+      return null;
     }
   }
 }

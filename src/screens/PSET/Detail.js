@@ -16,6 +16,8 @@ import {AppContext} from '../../context/AppContext';
 import UnitConverter from '../../helpers/UnitConverter';
 import LoadingScreen from '../LoadingScreen';
 import WalletFactory from '../../wallet/WalletFactory';
+import assetFinder from '../../helpers/assetFinder';
+import Constants from '../../config/Constants';
 
 class Signature {
   constructor(key, value, isMissing) {
@@ -29,7 +31,9 @@ function Detail(props) {
   const {pset} = props.route.params;
   const {preferredBitcoinUnit} = useContext(AppContext);
 
+  const [signedPset, setSignedPset] = useState('');
   const [fee, setFee] = useState(0);
+  const [assetList, setAssetList] = useState([]);
   const [totalBalance, setTotalBalance] = useState(0);
   const [signatures, setSignatures] = useState([]);
   const [recipients, setRecipients] = useState([]);
@@ -55,26 +59,34 @@ function Detail(props) {
 
       const extractedPSET = await WalletFactory.ExtractPsetDetails(psetToParse);
 
+      // Fee
       setFee(displayBalanceInPreferredUnit(Number(extractedPSET?.fee || 0)));
 
+      // Assets and balance
       let netBalance = 0;
-      extractedPSET?.balances?.forEach(balance => {
-        netBalance += Number(balance);
+      let assets = [];
+      extractedPSET?.balances?.forEach((amount, assetId) => {
+        const assetInfo = assetFinder.findAsset(assetId);
+
+        const assetName = assetInfo[2] || 'Unknown';
+        const ticker =
+          assetId == Constants.LIQUID_TESTNET_ASSETID
+            ? preferredBitcoinUnit
+            : assetInfo[1] || 'Unknown';
+
+        assets.push({
+          assetId,
+          assetName,
+          ticker,
+          amount,
+        });
+        netBalance += Number(amount);
       });
 
+      setAssetList(assets);
       setTotalBalance(displayBalanceInPreferredUnit(netBalance));
 
-      const inputIssuances = extractedPSET.inputsIssuances || [];
-
-      // Iterate through the input issuances and store the latest entry for each address
-      const inputIssuancesMap = new Map();
-      inputIssuances.forEach(inputIssuance => {
-        console.log('asset:', inputIssuance.asset());
-        console.log('token:', inputIssuance.token());
-        console.log('isIssuance:', inputIssuance.isIssuance());
-        console.log('isReissuance:', inputIssuance.isReissuance());
-      });
-
+      // Signatures
       const signaturesArray = [];
       extractedPSET.signatures?.forEach(signatureItem => {
         const hasSignatureMap = signatureItem?.hasSignature?.();
@@ -103,6 +115,7 @@ function Detail(props) {
 
       setSignatures(filteredSignatures || []);
 
+      // Recipients
       const recipientsList = [];
       // Iterate through the recipients and store the latest entry for each address
       extractedPSET?.recipients?.forEach(recipient => {
@@ -122,18 +135,30 @@ function Detail(props) {
   };
 
   const onSign = async () => {
-    console.log('Signing');
     setLoading(true);
     setLoadingText('Signing PSET...');
-    const signedPset = await WalletFactory.SignPSETWithMnemonic(pset);
-    await setupData(signedPset);
+    const signedPsetToParse = await WalletFactory.SignPSETWithMnemonic(pset);
+    setSignedPset(signedPsetToParse);
+    await setupData(signedPsetToParse);
     await new Promise(resolve => setTimeout(resolve, 20000));
 
     setLoading(false);
   };
 
   const onBroadcast = async () => {
-    console.log('Broadcasting');
+    setLoading(true);
+    setLoadingText('Broadcasting PSET...');
+    const txId = await WalletFactory.BroadcastPSET(signedPset);
+    if (!txId) {
+      console.error('Transaction failed');
+      setLoading(false);
+      return;
+    }
+    props.navigation.navigate('Success', {
+      address: txId,
+      amount: totalBalance,
+      isPET: true,
+    });
   };
 
   const onRecipient = recipient => {
@@ -204,18 +229,47 @@ function Detail(props) {
             : 'PSET Ready to broadcast.'}
         </Text>
         <View style={styles.content}>
-          <View style={styles.item}>
+          {/* <View style={styles.item}>
             <Text style={styles.itemName}>NET BALANCE</Text>
             <Text style={styles.itemValue}>
               {`${totalBalance}  ${preferredBitcoinUnit}`}
             </Text>
-          </View>
+          </View> */}
           <View style={styles.item}>
             <Text style={styles.itemName}>FEES</Text>
             <Text style={styles.itemValue}>
               {`-${fee}  ${preferredBitcoinUnit}`}
             </Text>
           </View>
+
+          <View style={styles.splitter}></View>
+
+          {assetList.length > 0 && (
+            <View style={[styles.item, {flexDirection: 'column'}]}>
+              <Text
+                style={[
+                  styles.itemName,
+                  {marginBottom: 10},
+                ]}>{`ASSETS (${assetList?.length})`}</Text>
+              {assetList.map((asset, index) => (
+                <View
+                  key={index}
+                  style={[
+                    {
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                      marginTop: 20,
+                    },
+                  ]}>
+                  <Text style={styles.itemValue}>{asset.assetName}</Text>
+                  <Text style={styles.itemValue}>
+                    {`${asset.amount}  ${asset.ticker}`}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          )}
+
           <View style={styles.splitter}></View>
 
           <View
@@ -303,6 +357,7 @@ function Detail(props) {
             </View>
           )}
         </View>
+
         <View>
           <TouchableOpacity
             onPress={onBroadcast}

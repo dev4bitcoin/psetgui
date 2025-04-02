@@ -12,9 +12,9 @@ import WalletFactory from '../../wallet/WalletFactory';
 function RecoveryPhrase(props) {
   const [seed, setSeed] = useState([]);
 
-  getSeed = async () => {
+  const getSeed = async () => {
     const mnemonic = await WalletFactory.GetMnemonic();
-    setSeed(mnemonic.split(' '));
+    setSeed(mnemonic?.split(' '));
   };
 
   useEffect(() => {
@@ -32,7 +32,7 @@ function RecoveryPhrase(props) {
   };
 
   return (
-    <Screen>
+    <Screen style={styles.container}>
       <TopBar title="Recovery Phrase" showBackButton={true} />
       <ToastManager
         showCloseIcon={false}
@@ -44,32 +44,40 @@ function RecoveryPhrase(props) {
         duration={1000}
         positionValue={100}
       />
-      <View style={styles.container}>
-        <Text style={styles.warning}>KEEP THIS SEED SAFE.</Text>
-        <Text style={styles.warning1}> DO NOT SHARE.</Text>
-        <View style={styles.seedContainer}>
-          <View style={styles.column}>
-            {seed.slice(0, 6).map((word, index) => (
-              <View key={index + 1} style={styles.wordContainer}>
-                <Text style={styles.index}>#{index + 1}</Text>
-                <Text style={styles.word}>{word}</Text>
+      <View style={styles.content}>
+        {seed?.length > 0 ? (
+          <View>
+            <Text style={styles.warning}>KEEP THIS SEED SAFE.</Text>
+            <Text style={styles.warning1}> DO NOT SHARE.</Text>
+            <View style={styles.seedContainer}>
+              <View style={styles.column}>
+                {seed.slice(0, 6).map((word, index) => (
+                  <View key={index + 1} style={styles.wordContainer}>
+                    <Text style={styles.index}>#{index + 1}</Text>
+                    <Text style={styles.word}>{word}</Text>
+                  </View>
+                ))}
               </View>
-            ))}
-          </View>
-          <View style={[styles.column, {paddingLeft: 20}]}>
-            {seed.slice(6, 12).map((word, index) => (
-              <View key={index + 7} style={styles.wordContainer}>
-                <Text style={styles.index}>#{index + 7}</Text>
-                <Text style={styles.word}>{word}</Text>
+              <View style={[styles.column, {paddingLeft: 20}]}>
+                {seed.slice(6, 12).map((word, index) => (
+                  <View key={index + 7} style={styles.wordContainer}>
+                    <Text style={styles.index}>#{index + 7}</Text>
+                    <Text style={styles.word}>{word}</Text>
+                  </View>
+                ))}
               </View>
-            ))}
+            </View>
+            <View style={styles.copySection}>
+              <TouchableOpacity onPress={onCopy}>
+                <Text style={styles.copyButton}>COPY</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
-        <View style={styles.copySection}>
-          <TouchableOpacity onPress={onCopy}>
-            <Text style={styles.copyButton}>COPY</Text>
-          </TouchableOpacity>
-        </View>
+        ) : (
+          <View style={styles.noSeedContainer}>
+            <Text style={styles.word}>No seed available.</Text>
+          </View>
+        )}
       </View>
     </Screen>
   );
@@ -77,6 +85,9 @@ function RecoveryPhrase(props) {
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+  },
+  content: {
     padding: 20,
     alignItems: 'center',
     justifyContent: 'center',
@@ -138,6 +149,10 @@ const styles = StyleSheet.create({
   },
   toastTextStyle: {
     fontSize: 20,
+  },
+  noSeedContainer: {
+    justifyContent: 'center',
+    height: '100%',
   },
 });
 

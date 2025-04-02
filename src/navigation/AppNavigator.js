@@ -19,6 +19,8 @@ import SignWithMnemonic from '../screens/PSET/SignWithMnemonic';
 import Recipient from '../screens/PSET/Recipient';
 import WalletScreen from '../screens/WalletScreen';
 import AssetListScreen from '../screens/AssetListScreen';
+import ExportPSET from '../screens/PSET/ExportPSET';
+import DescriptorScreen from '../screens/DescriptorScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -123,6 +125,16 @@ const AppNavigator = () => {
       <Stack.Screen
         name="About"
         component={AboutScreen}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="ExportPSET"
+        component={ExportPSET}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="Descriptor"
+        component={DescriptorScreen}
         options={{headerShown: false}}
       />
     </Stack.Navigator>

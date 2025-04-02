@@ -20,7 +20,11 @@ const createWallet = async wallet => {
   await storage.storeItem(WALLETS, wallets);
 };
 
-const deleteWallet = async wallet => {
+const deleteWallet = async assetList => {
+  assetList.forEach(async assetId => {
+    await storage.removeItem(`transactions_${assetId}`);
+    await storage.removeItem(`balance_${assetId}`);
+  });
   await storage.storeItem(WALLETS, []);
 };
 
@@ -46,11 +50,11 @@ const resetWallets = async () => {
   return await storage.storeItem(WALLETS, []);
 };
 
-const storeTransactions = async (walletId, transactions) => {
+const storeTransactions = async (assetId, transactions) => {
   try {
-    if (!walletId) return;
+    if (!assetId) return;
     await storage.storeItem(
-      `transactions_${walletId}`,
+      `transactions_${assetId}`,
       JSON.stringify(transactions),
     );
   } catch (error) {
@@ -58,11 +62,11 @@ const storeTransactions = async (walletId, transactions) => {
   }
 };
 
-const getStoredTransactions = async walletId => {
+const getStoredTransactions = async assetId => {
   try {
-    if (!walletId) return [];
+    if (!assetId) return [];
 
-    const transactions = await storage.getItem(`transactions_${walletId}`);
+    const transactions = await storage.getItem(`transactions_${assetId}`);
     return transactions ? JSON.parse(transactions) : [];
   } catch (error) {
     console.error('Error getting stored transactions:', error);
@@ -70,21 +74,21 @@ const getStoredTransactions = async walletId => {
   }
 };
 
-const storeBalance = async (walletId, balance) => {
+const storeBalance = async (assetId, balance) => {
   try {
-    if (!walletId) return null;
+    if (!assetId) return null;
 
-    await storage.storeItem(`balance_${walletId}`, JSON.stringify(balance));
+    await storage.storeItem(`balance_${assetId}`, JSON.stringify(balance));
   } catch (error) {
     console.error('Error storing balance:', error);
   }
 };
 
-const getStoredBalance = async walletId => {
+const getStoredBalance = async assetId => {
   try {
-    if (!walletId) return null;
+    if (!assetId) return null;
 
-    const balance = await storage.getItem(`balance_${walletId}`);
+    const balance = await storage.getItem(`balance_${assetId}`);
     return balance ? JSON.parse(balance) : 0;
   } catch (error) {
     console.error('Error getting stored balance:', error);

@@ -1,12 +1,17 @@
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {View, StyleSheet, FlatList, Text, TouchableOpacity} from 'react-native';
 import Screen from './Screen';
 import TopBar from '../components/TopBar';
 import WalletFactory from '../wallet/WalletFactory';
 import AssetFinder from '../helpers/assetFinder';
 import Colors from '../config/Colors';
+import Constants from '../config/Constants';
+import {AppContext} from '../context/AppContext';
+import UnitConverter from '../helpers/UnitConverter';
 
 function AssetListScreen(props) {
+  const {preferredBitcoinUnit} = useContext(AppContext);
+
   const [assets, setAssets] = useState([]);
 
   useEffect(() => {
@@ -21,13 +26,26 @@ function AssetListScreen(props) {
     assets?.forEach((value, key) => {
       console.log('key', key.toString());
       const assetInfo = AssetFinder.findAsset(key.toString());
-      console.log('assetInfo', assetInfo);
       if (assetInfo) {
+        const ticker =
+          key.toString() == Constants.LIQUID_TESTNET_ASSETID
+            ? preferredBitcoinUnit
+            : assetInfo[1] || 'Unknown';
+
+        const amount =
+          key.toString() == Constants.LIQUID_TESTNET_ASSETID
+            ? UnitConverter.displayBalanceInPreferredUnit(
+                Number(value),
+                preferredBitcoinUnit,
+              )
+            : (Number(value) / Math.pow(10, assetInfo[3])).toFixed(
+                assetInfo[3],
+              );
         const asset = {
           assetId: key.toString(),
-          value: Number(value),
+          value: amount,
           entity: assetInfo[0],
-          ticker: assetInfo[1],
+          ticker: ticker,
           name: assetInfo[2],
           precision: assetInfo[3],
         };
@@ -45,21 +63,24 @@ function AssetListScreen(props) {
   return (
     <Screen style={styles.container}>
       <TopBar title="Assets" />
+
       <View style={styles.listContainer}>
         <FlatList
           data={assets}
           keyExtractor={item => item.assetId}
-          renderItem={({item}) => (
+          renderItem={({item, index}) => (
             <TouchableOpacity
-              style={styles.listItem}
+              style={[
+                styles.listItem,
+                {
+                  borderTopColor: index === 0 ? Colors.textGray : 'transparent',
+                  borderTopWidth: index === 0 ? 0.3 : 0,
+                },
+              ]}
               onPress={() => onAssetPress(item)}>
               <Text style={styles.text}>{item.name}</Text>
 
-              <Text style={styles.text}>
-                {`${(item.value / Math.pow(10, item.precision)).toFixed(
-                  item.precision,
-                )} ${item.ticker}`}
-              </Text>
+              <Text style={styles.text}>{`${item.value} ${item.ticker}`}</Text>
             </TouchableOpacity>
           )}
         />
@@ -72,6 +93,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  splitter: {
+    marginTop: 30,
+    marginHorizontal: 20,
+    height: 0.3,
+    backgroundColor: Colors.textGray,
+  },
   listContainer: {
     flex: 1,
     padding: 20,
@@ -81,11 +108,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     padding: 20,
     paddingVertical: 30,
-    borderWidth: 0.5,
-    borderColor: Colors.textGray,
+    borderBottomWidth: 0.3,
+    borderBottomColor: Colors.textGray,
     borderRadius: 5,
     marginBottom: 10,
-    backgroundColor: Colors.cardBackground,
+    //backgroundColor: Colors.cardBackground,
   },
 
   text: {

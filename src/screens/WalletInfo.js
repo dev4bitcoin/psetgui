@@ -25,10 +25,10 @@ function WalletInfo(props) {
   const setWalletData = async () => {
     setLoading(true);
     const wallet = await WalletFactory.GetWolletInfo();
-    setDescriptor(wallet.descriptorString);
-    setBip49(wallet.bip49Xpub);
-    setBip84(wallet.bip84Xpub);
-    setBip87(wallet.bip87Xpub);
+    setDescriptor(wallet?.descriptorString || '');
+    setBip49(wallet?.bip49Xpub || '');
+    setBip84(wallet?.bip84Xpub || '');
+    setBip87(wallet?.bip87Xpub || '');
     setLoading(false);
   };
 
@@ -76,26 +76,40 @@ function WalletInfo(props) {
           <Text style={styles.header}>DESCRIPTOR</Text>
           <View style={styles.itemGroup}>{renderItem(descriptor)}</View>
         </View>
+
         <View style={styles.group}>
           <Text style={styles.header}>XPUBS</Text>
-          <View style={styles.subheaderGroup}>
-            <Text style={styles.subheader}>Bip49</Text>
+          {!bip49 && !bip84 && !bip87 && (
             <View style={styles.itemGroup}>
-              <View style={styles.itemGroup}>{renderItem(bip49)}</View>
+              <Text style={[styles.itemText, {minHeight: 50, paddingTop: 15}]}>
+                No xpubs found.
+              </Text>
             </View>
-          </View>
-          <View style={styles.subheaderGroup}>
-            <Text style={styles.subheader}>Bip84</Text>
-            <View style={styles.itemGroup}>
-              <View style={styles.itemGroup}>{renderItem(bip84)}</View>
+          )}
+          {bip49 && (
+            <View style={styles.subheaderGroup}>
+              <Text style={styles.subheader}>Bip49</Text>
+              <View style={styles.itemGroup}>
+                <View style={styles.itemGroup}>{renderItem(bip49)}</View>
+              </View>
             </View>
-          </View>
-          <View style={styles.subheaderGroup}>
-            <Text style={styles.subheader}>Bip87</Text>
-            <View style={styles.itemGroup}>
-              <View style={styles.itemGroup}>{renderItem(bip87)}</View>
+          )}
+          {bip84 && (
+            <View style={styles.subheaderGroup}>
+              <Text style={styles.subheader}>Bip84</Text>
+              <View style={styles.itemGroup}>
+                <View style={styles.itemGroup}>{renderItem(bip84)}</View>
+              </View>
             </View>
-          </View>
+          )}
+          {bip87 && (
+            <View style={styles.subheaderGroup}>
+              <Text style={styles.subheader}>Bip87</Text>
+              <View style={styles.itemGroup}>
+                <View style={styles.itemGroup}>{renderItem(bip87)}</View>
+              </View>
+            </View>
+          )}
         </View>
       </ScrollView>
     </View>
@@ -144,6 +158,8 @@ const styles = StyleSheet.create({
   itemText: {
     fontSize: 16,
     color: Colors.white,
+    alignSelf: 'center',
+    verticalAlign: 'center',
   },
   nameContainer: {
     flexDirection: 'row',

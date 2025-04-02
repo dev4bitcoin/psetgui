@@ -7,10 +7,12 @@ import TopBar from '../components/TopBar';
 import Colors from '../config/Colors';
 
 function SuccessScreen(props) {
-  const {address, amount} = props.route.params;
+  const {address, amount, isPSET = false} = props.route.params;
 
   const onClose = () => {
-    props.navigation.navigate('BottomTabs', {screen: 'Wallet'});
+    props.navigation.navigate('BottomTabs', {
+      screen: isPSET ? 'Home' : 'Wallet',
+    });
   };
 
   return (
