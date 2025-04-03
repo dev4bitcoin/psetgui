@@ -85,6 +85,13 @@ function PSETScreen(props) {
               <Text style={styles.buttonText}>Paste</Text>
             </TouchableOpacity>
           </View>
+          <View style={styles.warning}>
+            <Text style={styles.warningText}>
+              Ensure you have provided the correct mnemonic or descriptor to
+              obtain accurate PSET analysis details. Incorrect input may result
+              in inaccurate analysis.
+            </Text>
+          </View>
           <View style={styles.flexSpacer} />
           <View style={styles.bottomButtonContainer}>
             <TouchableOpacity
@@ -189,6 +196,20 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: Colors.white,
     textAlign: 'center',
+  },
+  warning: {
+    margin: 25,
+    marginTop: 50,
+    marginBottom: 0,
+    padding: 15,
+    backgroundColor: Colors.lightGray,
+    borderWidth: 0.3,
+    borderColor: Colors.textGray,
+  },
+  warningText: {
+    fontSize: 16,
+    color: Colors.white,
+    textAlign: 'justify',
   },
 });
 
