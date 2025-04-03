@@ -17,12 +17,13 @@ import Screen from './Screen';
 import TopBar from '../components/TopBar';
 import Colors from '../config/Colors';
 import WalletFactory from '../wallet/WalletFactory';
+import LoadingScreen from './LoadingScreen';
 
 function DescriptorScreen(props) {
   const textInputRef = useRef(null);
   const [descriptor, setDescriptor] = useState('');
   const [showErrorMessage, setShowErrorMessage] = useState(false);
-
+  const [loading, setLoading] = useState(false);
   useEffect(() => {
     const timer = setTimeout(() => {
       textInputRef.current?.focus();
@@ -38,13 +39,18 @@ function DescriptorScreen(props) {
 
   const onNext = async () => {
     try {
+      setLoading(true);
+      await new Promise(resolve => setTimeout(resolve, 500));
+
       const isValid = WalletFactory.ValidateDescriptor(descriptor);
       setShowErrorMessage(!isValid);
       if (isValid) {
         await WalletFactory.initWithDescriptor(descriptor);
+        setLoading(false);
         props.navigation.navigate('BottomTabs', {screen: 'Home'});
       }
     } catch (error) {
+      setLoading(false);
       setShowErrorMessage(true);
       console.error(error);
     }
@@ -52,7 +58,9 @@ function DescriptorScreen(props) {
 
   return (
     <Screen style={styles.container}>
-      <TopBar title="Descriptor" showBackButton={false} />
+      <TopBar title="Descriptor" showBackButton={true} />
+      {loading && <LoadingScreen text="Loading wallet" />}
+
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <KeyboardAvoidingView
           style={styles.container}

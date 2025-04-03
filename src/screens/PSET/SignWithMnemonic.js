@@ -27,8 +27,18 @@ function SignWithMnemonic(props) {
   const [activeInputIndex, setActiveInputIndex] = useState(null);
   const [mnemonicSaved, setMnemonicSaved] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [loadingText, setLoadingText] = useState('Please wait...');
+  const [loadingText, setLoadingText] = useState('Setting up the wallet...');
   useEffect(() => {
+    // // For testing purposes, you can set a default mnemonic here
+    // const mnemonic =
+    //   'room thought hello final antenna rude ugly symptom weather wave top eternal';
+    // // const mnemonic =
+    // //   'aim rare pipe shift front torch core vague kiss symptom helmet grace wedding assault system company tiger pet fat mean hair genre gather scissors';
+    // const mnemonicLength = mnemonic.split(' ').length;
+    // setLengthSelection(mnemonicLength.toString());
+    // setInputValues(mnemonic.split(' '));
+    // //----------------
+
     const keyboardListeners = [
       Keyboard.addListener('keyboardWillHide', () => {
         setSuggestions([]);
@@ -46,7 +56,6 @@ function SignWithMnemonic(props) {
 
   const OnSign = async () => {
     setLoading(true);
-
     const selectedLength = parseInt(lengthSelection, 10); // Convert lengthSelection to a number
     const enteredWords = Object.values(inputValues).filter(
       word => word.trim() !== '',
@@ -55,9 +64,6 @@ function SignWithMnemonic(props) {
     if (enteredWords.length === selectedLength) {
       const mnemonic = enteredWords.join(' ');
       await WalletFactory.init(mnemonic);
-      // await WalletFactory.init(
-      //   'room thought hello final antenna rude ugly symptom weather wave top eternal',
-      // );
       await WalletFactory.CreateWallet(mnemonicSaved);
       setLoading(false);
       props.navigation.navigate('BottomTabs');
@@ -164,6 +170,8 @@ function SignWithMnemonic(props) {
             renderTextInput(index + 1),
           )}
         </View>
+      </ScrollView>
+      <View>
         <View style={styles.saveMnemonicContainer}>
           <Text style={styles.itemText}>Save Mnemonic</Text>
           <TouchableOpacity onPress={onToggleSaveMnemonicSwitch}>
@@ -180,7 +188,7 @@ function SignWithMnemonic(props) {
         <TouchableOpacity onPress={OnSign} style={styles.bottomButtonContainer}>
           <Text style={styles.bottomButtonText}>Next</Text>
         </TouchableOpacity>
-      </ScrollView>
+      </View>
       {/* {suggestions.length > 0 && (
         <View style={styles.suggestionsContainer}>
           <FlatList
@@ -259,7 +267,7 @@ const styles = StyleSheet.create({
   inputContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    margin: 10,
+    margin: 5,
   },
   index: {
     fontSize: 18,
@@ -273,11 +281,11 @@ const styles = StyleSheet.create({
     borderColor: Colors.textGray,
     borderWidth: 1,
     borderRadius: 5,
-    width: 120,
-    height: 40,
+    width: 75,
+    height: 35,
     color: Colors.white,
-    fontSize: 18,
-    paddingLeft: 10,
+    fontSize: 13,
+    paddingLeft: 5,
   },
   suggestionsContainer: {
     backgroundColor: Colors.darkGray,
@@ -307,6 +315,7 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 50,
     margin: 40,
+    marginTop: 30,
   },
   bottomButtonText: {
     fontSize: 18,
@@ -319,7 +328,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     margin: 20,
-    marginHorizontal: 50,
+    //marginHorizontal: 50,
+    paddingTop: 10,
+    marginBottom: 10,
+    borderTopWidth: 0.3,
+    borderTopColor: Colors.textGray,
   },
   itemText: {
     fontSize: 18,

@@ -13,6 +13,7 @@ import Clipboard from '@react-native-clipboard/clipboard';
 import colors from '../config/Colors';
 import Screen from './Screen';
 import WalletFactory from '../wallet/WalletFactory';
+import TopBar from '../components/TopBar';
 
 function SendToAddress({navigation, route}) {
   const {amount} = route.params;
@@ -54,6 +55,7 @@ function SendToAddress({navigation, route}) {
 
   return (
     <Screen style={styles.screen}>
+      <TopBar showBackButton={true} />
       <KeyboardAvoidingView
         style={styles.container}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}

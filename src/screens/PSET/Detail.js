@@ -117,7 +117,7 @@ function Detail(props) {
 
       // Recipients
       const recipientsList = [];
-      // Iterate through the recipients and store the latest entry for each address
+      // Iterate through the recipients
       extractedPSET?.recipients?.forEach(recipient => {
         recipientsList.push({
           address: recipient?.address()?.toString(),
@@ -357,25 +357,29 @@ function Detail(props) {
             </View>
           )}
         </View>
-
-        <View>
-          <TouchableOpacity
-            onPress={onBroadcast}
-            style={[
-              styles.bottomButtonContainer,
-              hasSignaturesMissing ? styles.buttonDisabled : null,
-            ]}
-            disabled={hasSignaturesMissing}>
-            <Text
-              style={[
-                styles.bottomButtonText,
-                {color: hasSignaturesMissing ? Colors.black : Colors.black},
-              ]}>
-              Broadcast
-            </Text>
-          </TouchableOpacity>
-        </View>
       </ScrollView>
+
+      {WalletFactory.signerInstance ? (
+        <TouchableOpacity
+          onPress={onBroadcast}
+          style={[
+            styles.bottomButtonContainer,
+            hasSignaturesMissing ? styles.buttonDisabled : null,
+          ]}
+          disabled={hasSignaturesMissing}>
+          <Text
+            style={[
+              styles.bottomButtonText,
+              {color: hasSignaturesMissing ? Colors.black : Colors.black},
+            ]}>
+            Broadcast
+          </Text>
+        </TouchableOpacity>
+      ) : (
+        <Text style={styles.seedNotAvailableText}>
+          Mnemonic(Seed) needed to sign & broadcast the transaction.
+        </Text>
+      )}
     </Screen>
   );
 }
@@ -510,6 +514,14 @@ const styles = StyleSheet.create({
     paddingRight: 5,
     textTransform: 'uppercase',
     textAlign: 'justify',
+  },
+  seedNotAvailableText: {
+    fontSize: 16,
+    color: Colors.priceRed,
+    textAlign: 'center',
+    marginTop: 20,
+    paddingHorizontal: 20,
+    marginBottom: 10,
   },
 });
 

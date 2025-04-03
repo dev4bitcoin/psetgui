@@ -135,7 +135,7 @@ const AppNavigator = () => {
       <Stack.Screen
         name="Descriptor"
         component={DescriptorScreen}
-        options={{headerShown: false, gestureEnabled: false}}
+        options={{headerShown: false}}
       />
     </Stack.Navigator>
   );

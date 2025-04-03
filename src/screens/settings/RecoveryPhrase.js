@@ -31,6 +31,11 @@ function RecoveryPhrase(props) {
     Toast.info('Copied to clipboard!', 'bottom');
   };
 
+  const firstSlice = seed.length > 11 ? seed.slice(0, 12) : seed.slice(0, 6);
+  const secondSlice =
+    seed.length > 11 ? seed.slice(12, seed.length) : seed.slice(6, 12);
+  const secondSliceIndexStart = seed.length > 11 ? 13 : 7;
+
   return (
     <Screen style={styles.container}>
       <TopBar title="Recovery Phrase" showBackButton={true} />
@@ -51,7 +56,7 @@ function RecoveryPhrase(props) {
             <Text style={styles.warning1}> DO NOT SHARE.</Text>
             <View style={styles.seedContainer}>
               <View style={styles.column}>
-                {seed.slice(0, 6).map((word, index) => (
+                {firstSlice.map((word, index) => (
                   <View key={index + 1} style={styles.wordContainer}>
                     <Text style={styles.index}>#{index + 1}</Text>
                     <Text style={styles.word}>{word}</Text>
@@ -59,9 +64,13 @@ function RecoveryPhrase(props) {
                 ))}
               </View>
               <View style={[styles.column, {paddingLeft: 20}]}>
-                {seed.slice(6, 12).map((word, index) => (
-                  <View key={index + 7} style={styles.wordContainer}>
-                    <Text style={styles.index}>#{index + 7}</Text>
+                {secondSlice.map((word, index) => (
+                  <View
+                    key={index + secondSliceIndexStart}
+                    style={styles.wordContainer}>
+                    <Text style={styles.index}>
+                      #{index + secondSliceIndexStart}
+                    </Text>
                     <Text style={styles.word}>{word}</Text>
                   </View>
                 ))}
@@ -130,7 +139,7 @@ const styles = StyleSheet.create({
     width: 35,
   },
   copySection: {
-    marginTop: 100,
+    marginTop: 60,
     alignItems: 'center',
   },
   copyButton: {

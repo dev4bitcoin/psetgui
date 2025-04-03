@@ -47,6 +47,10 @@ function SettingsScreen(props) {
     );
   };
 
+  const onLogout = async () => {
+    RNRestart.restart(); // Restart the app
+  };
+
   const renderItem = (name, icon) => {
     return (
       <TouchableOpacity onPress={() => onSelect(name)}>
@@ -82,6 +86,12 @@ function SettingsScreen(props) {
           </View>
         </View>
       </View>
+
+      <TouchableOpacity
+        style={[styles.buttonContainer, {backgroundColor: Colors.white}]}
+        onPress={onLogout}>
+        <Text style={[styles.buttonText, {color: Colors.black}]}>Logout</Text>
+      </TouchableOpacity>
 
       {WalletFactory.signerInstance && (
         <TouchableOpacity style={[styles.buttonContainer]} onPress={onDelete}>
