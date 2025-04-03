@@ -41,7 +41,7 @@ function SignerSelection(props) {
 
   return (
     <Screen style={styles.container}>
-      <TopBar title="Select Signer" showBackButton={false} />
+      <TopBar title="Select Signing Option" showBackButton={false} />
       {loading && <LoadingScreen text="Loading Wallet..." />}
 
       <View style={styles.content}>
