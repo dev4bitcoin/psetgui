@@ -31,11 +31,6 @@ function RecoveryPhrase(props) {
     Toast.info('Copied to clipboard!', 'bottom');
   };
 
-  const firstSlice = seed.length > 11 ? seed.slice(0, 12) : seed.slice(0, 6);
-  const secondSlice =
-    seed.length > 11 ? seed.slice(12, seed.length) : seed.slice(6, 12);
-  const secondSliceIndexStart = seed.length > 11 ? 13 : 7;
-
   return (
     <Screen style={styles.container}>
       <TopBar title="Recovery Phrase" showBackButton={true} />
@@ -56,21 +51,9 @@ function RecoveryPhrase(props) {
             <Text style={styles.warning1}> DO NOT SHARE.</Text>
             <View style={styles.seedContainer}>
               <View style={styles.column}>
-                {firstSlice.map((word, index) => (
+                {seed.map((word, index) => (
                   <View key={index + 1} style={styles.wordContainer}>
                     <Text style={styles.index}>#{index + 1}</Text>
-                    <Text style={styles.word}>{word}</Text>
-                  </View>
-                ))}
-              </View>
-              <View style={[styles.column, {paddingLeft: 20}]}>
-                {secondSlice.map((word, index) => (
-                  <View
-                    key={index + secondSliceIndexStart}
-                    style={styles.wordContainer}>
-                    <Text style={styles.index}>
-                      #{index + secondSliceIndexStart}
-                    </Text>
                     <Text style={styles.word}>{word}</Text>
                   </View>
                 ))}
@@ -117,17 +100,18 @@ const styles = StyleSheet.create({
     paddingTop: 5,
   },
   seedContainer: {
-    flexDirection: 'row',
     marginTop: 20,
-    justifyContent: 'center',
   },
   wordContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
     margin: 5,
+    width: 120,
   },
   column: {
     paddingRight: 10,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
   },
   word: {
     color: Colors.white,

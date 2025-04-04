@@ -37,7 +37,7 @@ function SignWithMnemonic(props) {
     // const mnemonicLength = mnemonic.split(' ').length;
     // setLengthSelection(mnemonicLength.toString());
     // setInputValues(mnemonic.split(' '));
-    // //----------------
+    //----------------
 
     const keyboardListeners = [
       Keyboard.addListener('keyboardWillHide', () => {
@@ -328,9 +328,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     margin: 20,
-    //marginHorizontal: 50,
-    paddingTop: 10,
-    marginBottom: 10,
+    paddingTop: 25,
+    marginBottom: 0,
     borderTopWidth: 0.3,
     borderTopColor: Colors.textGray,
   },

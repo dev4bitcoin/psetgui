@@ -1,4 +1,4 @@
-import React, {useContext, useState} from 'react';
+import React, {useState} from 'react';
 import {
   View,
   StyleSheet,
@@ -16,14 +16,11 @@ import Screen from './Screen';
 import TopBar from '../components/TopBar';
 import Colors from '../config/Colors';
 import LoadingScreen from './LoadingScreen';
-import {AppContext} from '../context/AppContext';
 import WalletFactory from '../wallet/WalletFactory';
 import BottomModal from '../components/BottomModal';
 
 function SendTransactionReview({navigation, route}) {
-  const {preferredBitcoinUnit} = useContext(AppContext);
-
-  const {amount, address} = route.params;
+  const {amount, address, ticker} = route.params;
   const [signedPset, setSignedPset] = useState('');
   const [loading, setLoading] = useState(false);
   const [isModalVisible, setModalVisible] = useState(false);
@@ -145,7 +142,7 @@ function SendTransactionReview({navigation, route}) {
         <ScrollView>
           <View style={[styles.borderContainer, {borderBottomWidth: 0}]}>
             <Text style={styles.amount}>{amount} </Text>
-            <Text style={styles.denomination}>{preferredBitcoinUnit}</Text>
+            <Text style={styles.denomination}>{ticker}</Text>
             <Text style={styles.label}>AMOUNT</Text>
           </View>
           <View style={[styles.borderContainer, {borderBottomWidth: 0}]}>

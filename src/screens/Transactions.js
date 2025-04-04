@@ -10,7 +10,6 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {useNavigation} from '@react-navigation/native';
 
 import colors from '../config/Colors';
-import UnitConverter from '../helpers/UnitConverter';
 
 function Transactions({transactions, denomination}) {
   const navigation = useNavigation();
@@ -112,16 +111,10 @@ function Transactions({transactions, denomination}) {
   };
 
   const renderTransaction = ({item}) => {
-    const balance = Object.values(item.balance)[0];
-    const balanceInPreferredDenomination =
-      UnitConverter.convertToPreferredBTCDenominator(balance, denomination);
-
     return (
       <View style={styles.transaction}>
         <TouchableOpacity
-          onPress={() =>
-            onTransactionDetail(item, balanceInPreferredDenomination)
-          }>
+          onPress={() => onTransactionDetail(item, item?.balance)}>
           <View style={styles.transactionDetails}>
             <View style={styles.transactionIdContainer}>
               <View style={styles.incomingTextContainer}>
@@ -152,7 +145,7 @@ function Transactions({transactions, denomination}) {
                   styles.balance,
                   item.type === 'incoming' ? styles.green : styles.red,
                 ]}>
-                {balanceInPreferredDenomination}
+                {item?.balance}
               </Text>
               <Text style={styles.denomination}>{denomination}</Text>
             </View>

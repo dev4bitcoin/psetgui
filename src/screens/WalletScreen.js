@@ -15,7 +15,6 @@ import TransactionButtons from '../components/TransactionButtons';
 import TopBar from '../components/TopBar';
 import Transactions from './Transactions';
 
-import Transaction from '../models/Transaction';
 import UnitConverter from '../helpers/UnitConverter';
 import Constants from '../config/Constants';
 import {AppContext} from '../context/AppContext';
@@ -25,8 +24,7 @@ import LoadingScreen from './LoadingScreen';
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 function WalletScreen({route, navigation}) {
-  const {assetId} = route.params?.asset;
-  const [balance, setBalance] = useState(0);
+  const {assetId, value: balance, ticker, precision} = route.params?.asset;
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(false);
   const {preferredBitcoinUnit} = useContext(AppContext);
@@ -35,21 +33,16 @@ function WalletScreen({route, navigation}) {
   const getTransactions = async () => {
     try {
       const transactionsData = await WalletFactory.GetTransactions(assetId);
-      const mappedTransactions = transactionsData.map(
-        tx => new Transaction(tx),
-      );
+      const mappedTransactions = transactionsData.map(tx => {
+        tx.balance = amountInPreferredDenomination(
+          Object.values(tx.balance)[0],
+        );
+        console.log('tx,amount', tx.amount);
+        tx.fee = amountInPreferredDenomination(tx.fee);
+        return tx;
+      });
 
       setTransactions(mappedTransactions);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  const getBalance = async () => {
-    try {
-      const totalBalance = await WalletFactory.GetBalance(assetId);
-
-      setBalance(totalBalance);
     } catch (error) {
       console.error(error);
     }
@@ -60,7 +53,6 @@ function WalletScreen({route, navigation}) {
     await sleep(2000);
 
     try {
-      await getBalance();
       await getTransactions();
     } catch (error) {
       console.error(error);
@@ -69,14 +61,30 @@ function WalletScreen({route, navigation}) {
     }
   };
 
+  const amountInPreferredDenomination = amount => {
+    return assetId.toString() == Constants.LIQUID_TESTNET_ASSETID
+      ? UnitConverter.displayBalanceInPreferredUnit(
+          Number(amount),
+          preferredBitcoinUnit,
+        )
+      : (Number(amount) / Math.pow(10, precision)).toFixed(precision);
+  };
+
   const loadStoredData = async () => {
     try {
       const storedTransactions = await WalletFactory.GetSavedTransactions(
         assetId,
       );
-      const storedBalance = await WalletFactory.GetSavedBalance(assetId);
-      setTransactions(storedTransactions);
-      setBalance(storedBalance);
+      const mappedStoredTransactions = storedTransactions.map(tx => {
+        tx.balance = amountInPreferredDenomination(
+          Object.values(tx.balance)[0],
+        );
+        console.log('tx,amount', tx.amount);
+
+        tx.fee = amountInPreferredDenomination(tx.fee);
+        return tx;
+      });
+      setTransactions(mappedStoredTransactions);
     } catch (error) {
       console.error('Failed to load stored data', error);
     }
@@ -85,8 +93,11 @@ function WalletScreen({route, navigation}) {
   const loadData = async () => {
     try {
       setLoading(true);
-      await loadStoredData();
-      await getBalance();
+      await sleep(2000);
+
+      if (WalletFactory.shouldSaveToStorage) await loadStoredData();
+
+      //await getBalance();
       await getTransactions();
     } catch (error) {
       console.error(error);
@@ -101,7 +112,8 @@ function WalletScreen({route, navigation}) {
 
   const onSend = async () => {
     navigation.navigate('SendScreen', {
-      balance: displayBalanceInPreferredUnit(),
+      balance: balance,
+      ticker: ticker,
     });
   };
 
@@ -112,15 +124,6 @@ function WalletScreen({route, navigation}) {
 
   const onTransactionDetails = transaction => {
     navigation.navigate('TransactionDetails', {transaction});
-  };
-
-  const displayBalanceInPreferredUnit = () => {
-    const convertedDenominationAmount =
-      UnitConverter.convertToPreferredBTCDenominator(
-        balance,
-        preferredBitcoinUnit,
-      );
-    return convertedDenominationAmount;
   };
 
   return (
@@ -151,10 +154,8 @@ function WalletScreen({route, navigation}) {
         }>
         <View style={[styles.headerRow]}>
           <View style={[styles.balanceContainer]}>
-            <Text style={styles.balance}>
-              {displayBalanceInPreferredUnit() || '0'}
-            </Text>
-            <Text style={styles.denomination}>{preferredBitcoinUnit}</Text>
+            <Text style={styles.balance}>{balance || '0'}</Text>
+            <Text style={styles.denomination}>{ticker}</Text>
           </View>
         </View>
         <View style={styles.placeholder}>
@@ -169,7 +170,7 @@ function WalletScreen({route, navigation}) {
           transactions={transactions}
           onTransactionDetail={onTransactionDetails}
           onRefresh={onRefresh}
-          denomination={preferredBitcoinUnit}
+          denomination={ticker}
         />
       </ScrollView>
     </View>

@@ -28,6 +28,7 @@ export default class WalletFactory {
   static wolletInstance = null;
   static clientInstance = null;
   static defaultWallet = null;
+  static shouldSaveToStorage = false;
 
   static async init(seed = null) {
     const network = Network.testnet();
@@ -44,6 +45,7 @@ export default class WalletFactory {
       const desc = new WolletDescriptor(descriptor);
       this.wolletInstance = new Wollet(network, desc, undefined);
       await this.updateWallet();
+      this.shouldSaveToStorage = true;
     } else {
       if (seed) {
         this.signerInstance = new Signer(new Mnemonic(seed), network);
@@ -186,29 +188,32 @@ export default class WalletFactory {
       }
     });
 
-    // Retrieve existing transactions from AsyncStorage
-    const storedTransactions = await getStoredTransactions(assetId);
+    let updatedTransactions = [];
+    if (this.shouldSaveToStorage) {
+      // Retrieve existing transactions from AsyncStorage
+      const storedTransactions = await getStoredTransactions(assetId);
 
-    // Filter out new transactions
-    const existingTransactionIds = storedTransactions?.map(tx => tx.txid);
+      // Filter out new transactions
+      const existingTransactionIds = storedTransactions?.map(tx => tx.txid);
 
-    const uniqueNewTransactions =
-      existingTransactionIds?.length > 0
-        ? newTransactions?.filter(
-            tx => !existingTransactionIds.includes(tx?.txid),
-          )
-        : newTransactions;
+      const uniqueNewTransactions =
+        existingTransactionIds?.length > 0
+          ? newTransactions?.filter(
+              tx => !existingTransactionIds.includes(tx?.txid),
+            )
+          : newTransactions;
 
-    // Combine existing and new transactions
-    const updatedTransactions = [
-      ...storedTransactions,
-      ...uniqueNewTransactions,
-    ];
+      // Combine existing and new transactions
+      updatedTransactions = [...storedTransactions, ...uniqueNewTransactions];
 
-    // Store the updated transactions back to AsyncStorage
-    await storeTransactions(assetId, updatedTransactions);
+      // Store the updated transactions back to AsyncStorage
+      await storeTransactions(assetId, updatedTransactions);
+    }
 
-    return updatedTransactions?.filter(tx => tx != null);
+    const result = this.shouldSaveToStorage
+      ? updatedTransactions?.filter(tx => tx != null)
+      : newTransactions?.filter(tx => tx != null);
+    return result;
   }
 
   static async GetBalance(assetId) {
@@ -222,7 +227,9 @@ export default class WalletFactory {
       }
     });
 
-    await storeBalance(assetId, balance);
+    if (this.shouldSaveToStorage) {
+      await storeBalance(assetId, balance);
+    }
     return balance;
   }
 

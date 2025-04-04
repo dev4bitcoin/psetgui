@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useContext} from 'react';
+import React, {useState, useEffect} from 'react';
 import {View, StyleSheet, TouchableOpacity, Text} from 'react-native';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 
@@ -7,12 +7,9 @@ import colors from '../config/Colors';
 import Screen from './Screen';
 import Numpad from '../components/Numpad';
 import TopBar from '../components/TopBar';
-import {AppContext} from '../context/AppContext';
 
 function SendScreen(props) {
-  const {preferredBitcoinUnit} = useContext(AppContext);
-
-  const {balance} = props.route.params;
+  const {balance, ticker} = props.route.params;
   const [amount, setAmount] = useState('0');
   const [fontSize, setFontSize] = useState(32);
   const [showErrorMessage, setShowErrorMessage] = useState(false);
@@ -96,9 +93,10 @@ function SendScreen(props) {
     });
   };
 
-  const onChooseRecipient = () => {
-    props.navigation.navigate('SelectRecipient', {
+  const onContinue = () => {
+    props.navigation.navigate('SendToAddress', {
       amount: amount,
+      ticker: ticker,
     });
   };
 
@@ -122,7 +120,7 @@ function SendScreen(props) {
           <Text style={[styles.balance, {fontSize}]} numberOfLines={1}>
             {amount ? amount : '0'}
           </Text>
-          <Text style={styles.denomination}>{preferredBitcoinUnit}</Text>
+          <Text style={styles.denomination}>{ticker}</Text>
         </View>
         {showErrorMessage && (
           <View style={styles.errorPanel}>
@@ -134,14 +132,14 @@ function SendScreen(props) {
         </View>
         <View style={styles.buttonContainer}>
           <TouchableOpacity
-            onPress={onChooseRecipient}
+            onPress={onContinue}
             style={[
               styles.button,
               (showErrorMessage || !isAmountGreaterThanZero || balance === 0) &&
                 styles.buttonDisabled,
             ]}
             disabled={showErrorMessage || !isAmountGreaterThanZero}>
-            <Text style={styles.buttonText}>Choose Recipient</Text>
+            <Text style={styles.buttonText}>Continue</Text>
           </TouchableOpacity>
         </View>
       </View>

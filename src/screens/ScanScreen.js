@@ -16,7 +16,7 @@ const {width, height} = Dimensions.get('window');
 const cameraHeight = height; // 70% of the screen height
 
 function ScanScreen({navigation, route}) {
-  const {amount} = route.params;
+  const {amount, ticker} = route.params;
   const device = useCameraDevice('back');
   const {hasPermission, requestPermission} = useCameraPermission();
   const [scanned, setScanned] = useState(false);
@@ -28,7 +28,7 @@ function ScanScreen({navigation, route}) {
   }, [hasPermission, requestPermission]);
 
   const isAddressValid = async address => {
-    const isValid = WalletFactory.ValidateAddress(address);
+    const isValid = WalletFactory.ValidateAddress(address?.trim());
     if (!isValid) {
       Alert.alert('Invalid address', 'The invoice contains am invalid address');
       return false;
@@ -59,7 +59,8 @@ function ScanScreen({navigation, route}) {
           //route.params.onScanFinished(codes);
           navigation.navigate('SendTransactionReview', {
             address: qrValue,
-            amount: amount,
+            amount: amount?.trim(),
+            ticker: ticker,
           });
         } else {
           navigation.goBack();

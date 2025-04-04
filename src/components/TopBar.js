@@ -13,7 +13,14 @@ import Localize from '../config/Localize';
 import colors from '../config/Colors';
 import AppText from './Text';
 
-function TopBar({title, showBackButton = false, showBackButtonText = false}) {
+function TopBar({
+  title,
+  showBackButton = false,
+  showBackButtonText = false,
+  showSecondaryButton = false,
+  secondaryIcon,
+  onSecondaryButtonPress,
+}) {
   const navigation = useNavigation();
 
   return (
@@ -30,15 +37,13 @@ function TopBar({title, showBackButton = false, showBackButtonText = false}) {
           )}
         </View>
         <AppText style={styles.text}>{title}</AppText>
-        {/* <View style={styles.rightIcon}>
-          {showRefreshButton && (
-            <TouchableOpacity onPress={onRefresh}>
-              <Animated.View style={{transform: [{rotate: rotation}]}}>
-                <Icon name="autorenew" size={30} color={colors.white} />
-              </Animated.View>
+        <View style={styles.rightIcon}>
+          {showSecondaryButton && (
+            <TouchableOpacity onPress={onSecondaryButtonPress}>
+              <Icon name={secondaryIcon} size={30} color={colors.white} />
             </TouchableOpacity>
           )}
-        </View> */}
+        </View>
       </View>
     </View>
   );

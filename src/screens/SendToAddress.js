@@ -16,7 +16,7 @@ import WalletFactory from '../wallet/WalletFactory';
 import TopBar from '../components/TopBar';
 
 function SendToAddress({navigation, route}) {
-  const {amount} = route.params;
+  const {amount, ticker} = route.params;
   const [address, setAddress] = useState('');
   const textInputRef = useRef(null);
 
@@ -26,7 +26,7 @@ function SendToAddress({navigation, route}) {
 
   const onPasteFromClipboard = async () => {
     const text = await Clipboard.getString();
-    const isValid = WalletFactory.ValidateAddress(text);
+    const isValid = WalletFactory.ValidateAddress(text?.trim());
     if (!isValid) {
       console.log('Invalid address');
       Alert.alert('Invalid address', 'The invoice contains an invalid address');
@@ -37,7 +37,7 @@ function SendToAddress({navigation, route}) {
   };
 
   const onConfirm = async () => {
-    const isValid = WalletFactory.ValidateAddress(address);
+    const isValid = WalletFactory.ValidateAddress(address?.trim());
     if (!isValid) {
       console.log('Invalid address');
       Alert.alert('Invalid address', 'The invoice contains an invalid address');
@@ -46,6 +46,7 @@ function SendToAddress({navigation, route}) {
     navigation.navigate('SendTransactionReview', {
       address: address,
       amount: amount,
+      ticker: ticker,
     });
   };
 
@@ -53,9 +54,21 @@ function SendToAddress({navigation, route}) {
     navigation.goBack();
   };
 
+  const onSecondaryButtonPress = () => {
+    navigation.navigate('ScanScreen', {
+      amount: amount,
+      ticker: ticker,
+    });
+  };
+
   return (
     <Screen style={styles.screen}>
-      <TopBar showBackButton={true} />
+      <TopBar
+        showBackButton={true}
+        showSecondaryButton={true}
+        onSecondaryButtonPress={onSecondaryButtonPress}
+        secondaryIcon="qrcode"
+      />
       <KeyboardAvoidingView
         style={styles.container}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -82,18 +95,17 @@ function SendToAddress({navigation, route}) {
         <View style={styles.bottomButtonContainer}>
           {address.length > 0 && (
             <TouchableOpacity onPress={onConfirm}>
-              <View style={styles.bottomButton}>
-                <View style={styles.buttonWrapper}>
-                  <Text style={styles.sendButtonText}>Confirm</Text>
-                </View>
+              <View
+                style={[styles.bottomButton, {backgroundColor: colors.white}]}>
+                <Text style={[styles.sendButtonText, {color: colors.black}]}>
+                  Confirm
+                </Text>
               </View>
             </TouchableOpacity>
           )}
           <TouchableOpacity onPress={onCancel}>
             <View style={styles.bottomButton}>
-              <View style={styles.buttonWrapper}>
-                <Text style={styles.sendButtonText}>Cancel</Text>
-              </View>
+              <Text style={styles.sendButtonText}>Cancel</Text>
             </View>
           </TouchableOpacity>
         </View>
@@ -148,8 +160,6 @@ const styles = StyleSheet.create({
   },
   sendButtonText: {
     fontSize: 20,
-    //marginTop: 3,
-    //marginRight: 10,
     fontWeight: 'bold',
     color: colors.white,
     textAlign: 'center',
@@ -182,9 +192,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     marginTop: 10,
   },
-  buttonWrapper: {
-    alignItems: 'center',
-  },
+
   buttonText: {
     fontSize: 18,
     fontWeight: 'bold',

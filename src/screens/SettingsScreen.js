@@ -93,7 +93,7 @@ function SettingsScreen(props) {
         <Text style={[styles.buttonText, {color: Colors.black}]}>Logout</Text>
       </TouchableOpacity>
 
-      {WalletFactory.signerInstance && (
+      {WalletFactory.signerInstance && WalletFactory.shouldSaveToStorage && (
         <TouchableOpacity style={[styles.buttonContainer]} onPress={onDelete}>
           <Text style={styles.buttonText}>Delete</Text>
         </TouchableOpacity>

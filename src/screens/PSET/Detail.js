@@ -53,6 +53,29 @@ function Detail(props) {
     return convertedDenominationAmount;
   };
 
+  const amountInPreferredAssetDenomination = (assetId, amount, precision) => {
+    return assetId.toString() == Constants.LIQUID_TESTNET_ASSETID
+      ? UnitConverter.displayBalanceInPreferredUnit(
+          Number(amount),
+          preferredBitcoinUnit,
+        )
+      : (Number(amount) / Math.pow(10, precision)).toFixed(precision);
+  };
+
+  const getAssetTickerAndPrecision = assetId => {
+    const assetInfo = assetFinder.findAsset(assetId);
+    if (assetInfo) {
+      return {
+        ticker:
+          assetId == Constants.LIQUID_TESTNET_ASSETID
+            ? preferredBitcoinUnit
+            : assetInfo[1] || 'Unknown',
+        precision: assetInfo[3],
+      };
+    }
+    return 'Unknown';
+  };
+
   const setupData = async psetToParse => {
     try {
       setLoading(true);
@@ -69,10 +92,7 @@ function Detail(props) {
         const assetInfo = assetFinder.findAsset(assetId);
 
         const assetName = assetInfo[2] || 'Unknown';
-        const ticker =
-          assetId == Constants.LIQUID_TESTNET_ASSETID
-            ? preferredBitcoinUnit
-            : assetInfo[1] || 'Unknown';
+        const {ticker} = getAssetTickerAndPrecision(assetId);
 
         assets.push({
           assetId,
@@ -119,9 +139,15 @@ function Detail(props) {
       const recipientsList = [];
       // Iterate through the recipients
       extractedPSET?.recipients?.forEach(recipient => {
+        const assetInfo = getAssetTickerAndPrecision(
+          recipient?.asset()?.toString(),
+        );
         recipientsList.push({
           address: recipient?.address()?.toString(),
           amount: recipient?.value(),
+          ticker: assetInfo?.ticker,
+          precision: assetInfo?.precision,
+          assetId: recipient?.asset()?.toString(),
         });
       });
 
@@ -293,17 +319,21 @@ function Detail(props) {
                       style={styles.recipientItem}
                       onPress={() =>
                         onRecipient({
-                          amount: `${displayBalanceInPreferredUnit(
+                          amount: `${amountInPreferredAssetDenomination(
+                            item?.assetId,
                             item?.amount,
-                          )} ${preferredBitcoinUnit}`,
+                            item?.precision,
+                          )} ${item?.ticker}`,
                           address: item?.address,
                         })
                       }>
                       <View style={styles.recipientAmountContainer}>
                         <Text style={styles.recipientAmount}>
-                          {`${displayBalanceInPreferredUnit(
+                          {`${amountInPreferredAssetDenomination(
+                            item?.assetId,
                             item?.amount,
-                          )} ${preferredBitcoinUnit}`}
+                            item?.precision,
+                          )} ${item?.ticker}`}
                         </Text>
                         <Text style={styles.itemValue}>{`#${index + 1}`}</Text>
                       </View>
