@@ -1,5 +1,6 @@
 import React, {useContext, useEffect, useState} from 'react';
 import {View, StyleSheet, FlatList, Text, TouchableOpacity} from 'react-native';
+
 import Screen from './Screen';
 import TopBar from '../components/TopBar';
 import WalletFactory from '../wallet/WalletFactory';
@@ -16,7 +17,7 @@ function AssetListScreen(props) {
 
   useEffect(() => {
     parseData();
-  }, []);
+  }, [preferredBitcoinUnit]);
 
   const parseData = async () => {
     const assets = await WalletFactory.GetAssets();
