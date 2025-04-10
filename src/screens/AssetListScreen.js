@@ -9,10 +9,12 @@ import Colors from '../config/Colors';
 import Constants from '../config/Constants';
 import {AppContext} from '../context/AppContext';
 import UnitConverter from '../helpers/UnitConverter';
+import LoadingScreen from './LoadingScreen';
 
 function AssetListScreen(props) {
   const {preferredBitcoinUnit} = useContext(AppContext);
 
+  const [loading, setLoading] = useState(true);
   const [assets, setAssets] = useState([]);
 
   useEffect(() => {
@@ -20,6 +22,7 @@ function AssetListScreen(props) {
   }, [preferredBitcoinUnit]);
 
   const parseData = async () => {
+    setLoading(true);
     await new Promise(resolve => setTimeout(resolve, 1000));
 
     const assets = await WalletFactory.GetAssets();
@@ -57,6 +60,7 @@ function AssetListScreen(props) {
       }
     });
     setAssets(assetList);
+    setLoading(false);
   };
 
   const onAssetPress = asset => {
@@ -66,7 +70,7 @@ function AssetListScreen(props) {
   return (
     <Screen style={styles.container}>
       <TopBar title="Assets" />
-
+      {loading && <LoadingScreen />}
       <View style={styles.listContainer}>
         <FlatList
           data={assets}
