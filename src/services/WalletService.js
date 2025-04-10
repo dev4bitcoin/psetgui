@@ -74,25 +74,22 @@ const getStoredTransactions = async assetId => {
   }
 };
 
-const storeBalance = async (assetId, balance) => {
+const storeAssets = async assets => {
   try {
-    if (!assetId) return null;
+    if (!assets) return null;
 
-    await storage.storeItem(`balance_${assetId}`, JSON.stringify(balance));
+    await storage.storeItem(`assets`, JSON.stringify(assets));
   } catch (error) {
-    console.error('Error storing balance:', error);
+    console.error('Error storing assets:', error);
   }
 };
-
-const getStoredBalance = async assetId => {
+const getStoredAssets = async () => {
   try {
-    if (!assetId) return null;
-
-    const balance = await storage.getItem(`balance_${assetId}`);
-    return balance ? JSON.parse(balance) : 0;
+    const assets = await storage.getItem(`assets`);
+    return assets ? JSON.parse(assets) : [];
   } catch (error) {
-    console.error('Error getting stored balance:', error);
-    return 0;
+    console.error('Error getting stored assets:', error);
+    return [];
   }
 };
 
@@ -106,6 +103,6 @@ export {
   resetWallets,
   storeTransactions,
   getStoredTransactions,
-  storeBalance,
-  getStoredBalance,
+  storeAssets,
+  getStoredAssets,
 };

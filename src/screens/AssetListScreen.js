@@ -31,36 +31,38 @@ function AssetListScreen(props) {
 
   const init = async () => {
     setLoading(true);
-    await parseData();
+    await new Promise(resolve => setTimeout(resolve, 200));
+
+    // const assets = await WalletFactory.GetStoredAssets();
+    // if (assets?.length > 0) await parseData(assets);
+
+    const updatedAssets = await WalletFactory.GetAssets();
+    await parseData(updatedAssets || []);
     setLoading(false);
   };
 
-  const parseData = async () => {
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    const assets = await WalletFactory.GetAssets();
-
+  const parseData = async assets => {
     let assetList = [];
 
-    assets?.forEach((value, key) => {
-      const assetInfo = AssetFinder.findAsset(key.toString());
+    assets?.forEach(item => {
+      const assetInfo = AssetFinder.findAsset(item?.assetId);
       if (assetInfo) {
         const ticker =
-          key.toString() == Constants.LIQUID_TESTNET_ASSETID
+          item?.assetId == Constants.LIQUID_TESTNET_ASSETID
             ? preferredBitcoinUnit
             : assetInfo[1] || 'Unknown';
 
         const amount =
-          key.toString() == Constants.LIQUID_TESTNET_ASSETID
+          item?.assetId == Constants.LIQUID_TESTNET_ASSETID
             ? UnitConverter.displayBalanceInPreferredUnit(
-                Number(value),
+                Number(item?.value),
                 preferredBitcoinUnit,
               )
-            : (Number(value) / Math.pow(10, assetInfo[3])).toFixed(
+            : (Number(item?.value) / Math.pow(10, assetInfo[3])).toFixed(
                 assetInfo[3],
               );
         const asset = {
-          assetId: key.toString(),
+          assetId: item?.assetId,
           value: amount,
           entity: assetInfo[0],
           ticker: ticker,
@@ -80,7 +82,8 @@ function AssetListScreen(props) {
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await parseData();
+    const updatedAssets = await WalletFactory.GetAssets();
+    await parseData(updatedAssets || []);
     setRefreshing(false);
   };
 

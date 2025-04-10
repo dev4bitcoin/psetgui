@@ -92,7 +92,6 @@ function WalletScreen({route, navigation}) {
   const init = async () => {
     try {
       setLoading(true);
-      await sleep(2000);
 
       if (WalletFactory.shouldSaveToStorage) await loadStoredData();
 

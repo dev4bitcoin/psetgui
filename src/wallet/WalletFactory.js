@@ -14,12 +14,11 @@ import Constants from '../config/Constants';
 import {
   createWallet,
   getDefaultWallet,
-  isWalletExist,
   resetWallets,
   getStoredTransactions,
   storeTransactions,
-  storeBalance,
-  getStoredBalance,
+  getStoredAssets,
+  storeAssets,
 } from '../services/WalletService';
 import Transaction from '../models/Transaction';
 
@@ -82,19 +81,6 @@ export default class WalletFactory {
     return transactions;
   }
 
-  static async GetSavedBalance(assetId) {
-    console.log('GetSavedBalance');
-    if (!assetId) return null;
-
-    const balance = await getStoredBalance(assetId);
-    const totalBalance = Object.values(balance).reduce(
-      (sum, balance) => sum + balance,
-      0,
-    );
-
-    return totalBalance;
-  }
-
   static async CreateWallet(shouldStoreMnemonic) {
     try {
       console.log('CreateWallet');
@@ -143,11 +129,34 @@ export default class WalletFactory {
     return txt;
   }
 
+  static async GetStoredAssets() {
+    console.log('GetStoredAssets');
+
+    const assets = await getStoredAssets();
+    return assets;
+  }
+
+  static async StoreAssets(assets) {
+    console.log('StoreAssets');
+
+    if (!assets) return null;
+    await storeAssets(assets);
+  }
+
   static async GetAssets() {
     console.log('GetAssets');
     await this.updateWallet(this.wolletInstance);
     const assets = await this.wolletInstance.balance();
-    return assets;
+
+    var assetList = [];
+    assets?.forEach((value, key) => {
+      assetList.push({
+        assetId: key.toString(),
+        value: Number(value),
+      });
+    });
+    // if (this.shouldSaveToStorage) await storeAssets(assetList);
+    return assetList;
   }
 
   static async GetTransactions(assetId) {
