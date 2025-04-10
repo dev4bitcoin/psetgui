@@ -1,5 +1,12 @@
 import React, {useContext, useEffect, useState} from 'react';
-import {View, StyleSheet, FlatList, Text, TouchableOpacity} from 'react-native';
+import {
+  View,
+  StyleSheet,
+  FlatList,
+  Text,
+  TouchableOpacity,
+  RefreshControl,
+} from 'react-native';
 
 import Screen from './Screen';
 import TopBar from '../components/TopBar';
@@ -15,14 +22,20 @@ function AssetListScreen(props) {
   const {preferredBitcoinUnit} = useContext(AppContext);
 
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [assets, setAssets] = useState([]);
 
   useEffect(() => {
-    parseData();
+    init();
   }, [preferredBitcoinUnit]);
 
-  const parseData = async () => {
+  const init = async () => {
     setLoading(true);
+    await parseData();
+    setLoading(false);
+  };
+
+  const parseData = async () => {
     await new Promise(resolve => setTimeout(resolve, 1000));
 
     const assets = await WalletFactory.GetAssets();
@@ -30,7 +43,6 @@ function AssetListScreen(props) {
     let assetList = [];
 
     assets?.forEach((value, key) => {
-      console.log('key', key.toString());
       const assetInfo = AssetFinder.findAsset(key.toString());
       if (assetInfo) {
         const ticker =
@@ -60,11 +72,16 @@ function AssetListScreen(props) {
       }
     });
     setAssets(assetList);
-    setLoading(false);
   };
 
   const onAssetPress = asset => {
     props.navigation.navigate('Wallet', {asset: asset});
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await parseData();
+    setRefreshing(false);
   };
 
   return (
@@ -75,6 +92,13 @@ function AssetListScreen(props) {
         <FlatList
           data={assets}
           keyExtractor={item => item.assetId}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={Colors.white}
+            />
+          }
           renderItem={({item, index}) => (
             <TouchableOpacity
               style={[
@@ -86,7 +110,6 @@ function AssetListScreen(props) {
               ]}
               onPress={() => onAssetPress(item)}>
               <Text style={styles.text}>{item.name}</Text>
-
               <Text style={styles.text}>{`${item.value} ${item.ticker}`}</Text>
             </TouchableOpacity>
           )}
@@ -115,11 +138,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     padding: 20,
     paddingVertical: 30,
-    borderBottomWidth: 0.3,
-    borderBottomColor: Colors.textGray,
-    borderRadius: 5,
+    borderWidth: 0.3,
+    borderColor: Colors.textGray,
+    backgroundColor: Colors.cardBackground,
+    borderRadius: 10,
     marginBottom: 10,
-    //backgroundColor: Colors.cardBackground,
   },
 
   text: {

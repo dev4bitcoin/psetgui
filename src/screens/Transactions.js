@@ -14,7 +14,6 @@ import colors from '../config/Colors';
 function Transactions({transactions, denomination}) {
   const navigation = useNavigation();
 
-  console.log('Transactions:', transactions);
   // Step 1: Sort transactions by timestamp
   const sortedTransactions = transactions.sort(
     (a, b) => b.timestamp - a.timestamp,

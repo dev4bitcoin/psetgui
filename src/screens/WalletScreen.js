@@ -27,6 +27,7 @@ function WalletScreen({route, navigation}) {
   const {assetId, value: balance, ticker, precision} = route.params?.asset;
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const {preferredBitcoinUnit} = useContext(AppContext);
   const isFocused = useIsFocused(); // Check if the screen is focused
 
@@ -37,7 +38,6 @@ function WalletScreen({route, navigation}) {
         tx.balance = amountInPreferredDenomination(
           Object.values(tx.balance)[0],
         );
-        console.log('tx,amount', tx.amount);
         tx.fee = amountInPreferredDenomination(tx.fee);
         return tx;
       });
@@ -49,7 +49,7 @@ function WalletScreen({route, navigation}) {
   };
 
   const onRefresh = async () => {
-    setLoading(true);
+    setRefreshing(true);
     await sleep(2000);
 
     try {
@@ -57,7 +57,7 @@ function WalletScreen({route, navigation}) {
     } catch (error) {
       console.error(error);
     } finally {
-      setLoading(false);
+      setRefreshing(false);
     }
   };
 
@@ -79,7 +79,6 @@ function WalletScreen({route, navigation}) {
         tx.balance = amountInPreferredDenomination(
           Object.values(tx.balance)[0],
         );
-        console.log('tx,amount', tx.amount);
 
         tx.fee = amountInPreferredDenomination(tx.fee);
         return tx;
@@ -90,7 +89,7 @@ function WalletScreen({route, navigation}) {
     }
   };
 
-  const loadData = async () => {
+  const init = async () => {
     try {
       setLoading(true);
       await sleep(2000);
@@ -107,7 +106,7 @@ function WalletScreen({route, navigation}) {
   };
 
   useEffect(() => {
-    loadData();
+    init();
   }, []);
 
   const onSend = async () => {
@@ -147,7 +146,7 @@ function WalletScreen({route, navigation}) {
         contentContainerStyle={styles.scrollViewContent}
         refreshControl={
           <RefreshControl
-            refreshing={loading}
+            refreshing={refreshing}
             onRefresh={onRefresh}
             tintColor={colors.white}
           />
