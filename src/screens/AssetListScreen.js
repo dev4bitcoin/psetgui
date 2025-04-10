@@ -20,6 +20,8 @@ function AssetListScreen(props) {
   }, [preferredBitcoinUnit]);
 
   const parseData = async () => {
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
     const assets = await WalletFactory.GetAssets();
 
     let assetList = [];

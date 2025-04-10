@@ -166,7 +166,7 @@ function Detail(props) {
     const signedPsetToParse = await WalletFactory.SignPSETWithMnemonic(pset);
     setSignedPset(signedPsetToParse);
     await setupData(signedPsetToParse);
-    await new Promise(resolve => setTimeout(resolve, 20000));
+    await new Promise(resolve => setTimeout(resolve, 2000));
 
     setLoading(false);
   };
@@ -174,7 +174,9 @@ function Detail(props) {
   const onBroadcast = async () => {
     setLoading(true);
     setLoadingText('Broadcasting PSET...');
-    const txId = await WalletFactory.BroadcastPSET(signedPset);
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    const psetToBroadcast = hasSignaturesMissing ? signedPset : pset;
+    const txId = await WalletFactory.BroadcastPSET(psetToBroadcast);
     if (!txId) {
       console.error('Transaction failed');
       setLoading(false);

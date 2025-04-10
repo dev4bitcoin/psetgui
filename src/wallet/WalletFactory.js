@@ -44,14 +44,12 @@ export default class WalletFactory {
       this.signerInstance = new Signer(new Mnemonic(mnemonic), network);
       const desc = new WolletDescriptor(descriptor);
       this.wolletInstance = new Wollet(network, desc, undefined);
-      await this.updateWallet();
       this.shouldSaveToStorage = true;
     } else {
       if (seed) {
         this.signerInstance = new Signer(new Mnemonic(seed), network);
         const desc = await this.signerInstance.wpkhSlip77Descriptor();
         this.wolletInstance = new Wollet(network, desc, undefined);
-        await this.updateWallet();
       }
     }
   }
@@ -62,7 +60,6 @@ export default class WalletFactory {
 
     const desc = new WolletDescriptor(descriptor);
     this.wolletInstance = new Wollet(network, desc, undefined);
-    await this.updateWallet();
   }
 
   static ValidateDescriptor(descriptor) {
@@ -107,6 +104,7 @@ export default class WalletFactory {
       const mnemonic = await this.signerInstance.mnemonic();
 
       if (shouldStoreMnemonic) {
+        this.shouldSaveToStorage = true;
         await createWallet(
           JSON.stringify({
             id: uuid.v4(),
@@ -147,7 +145,7 @@ export default class WalletFactory {
 
   static async GetAssets() {
     console.log('GetAssets');
-
+    await this.updateWallet(this.wolletInstance);
     const assets = await this.wolletInstance.balance();
     return assets;
   }

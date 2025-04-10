@@ -29,7 +29,7 @@ function SignWithMnemonic(props) {
   const [loading, setLoading] = useState(false);
   const [loadingText, setLoadingText] = useState('Setting up the wallet...');
   useEffect(() => {
-    // // For testing purposes, you can set a default mnemonic here
+    // For testing purposes, you can set a default mnemonic here
     // const mnemonic =
     //   'room thought hello final antenna rude ugly symptom weather wave top eternal';
     // // const mnemonic =
@@ -133,7 +133,7 @@ function SignWithMnemonic(props) {
   const renderTextInput = textIndex => {
     return (
       <View key={textIndex} style={styles.inputContent}>
-        <Text style={styles.index}>{textIndex}</Text>
+        <Text style={styles.index}>{textIndex + 1}</Text>
         <TextInput
           style={styles.textInputStyle}
           autoCorrect={false}
@@ -167,7 +167,7 @@ function SignWithMnemonic(props) {
         </View>
         <View style={styles.textInputContainer}>
           {Array.from({length: lengthSelection}, (_, index) =>
-            renderTextInput(index + 1),
+            renderTextInput(index),
           )}
         </View>
       </ScrollView>
