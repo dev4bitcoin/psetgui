@@ -40,7 +40,7 @@ function TopBar({
         <View style={styles.rightIcon}>
           {showSecondaryButton && (
             <TouchableOpacity onPress={onSecondaryButtonPress}>
-              <Icon name={secondaryIcon} size={30} color={colors.white} />
+              <Icon name={secondaryIcon} size={27} color={colors.white} />
             </TouchableOpacity>
           )}
         </View>

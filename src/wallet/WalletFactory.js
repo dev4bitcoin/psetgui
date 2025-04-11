@@ -369,7 +369,7 @@ export default class WalletFactory {
       await builder.addLbtcRecipient(outAddress, BigInt(satoshis));
       await builder.feeRate(fee_rate);
 
-      await this.updateWallet(this.wolletInstance);
+      //await this.updateWallet(this.wolletInstance);
       let pset = await builder.finish(this.wolletInstance);
       const psetString = await pset.toString();
 
