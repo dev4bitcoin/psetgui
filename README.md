@@ -1,4 +1,4 @@
-# NOTE: This app is in alpha and only support testnet. DO NOT SEND ANY MAINNET L-BTC.
+## NOTE: This app is in alpha and only support testnet. DO NOT SEND ANY MAINNET L-BTC.
 
 # PSET
 
