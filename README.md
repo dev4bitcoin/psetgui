@@ -6,7 +6,15 @@ The application supports two methods for signing transactions: signing/analyzing
 
 NOTE: Sign by Jade is coming later.
 
-[![Video Title](https://img.youtube.com/vi/EJaFK97HpiI/0.jpg)](https://www.youtube.com/watch?v=EJaFK97HpiI)
+<div style="display: flex; align :center; justify-content: space-around;">
+  <img src="https://github.com/user-attachments/assets/19ba5e75-b87b-46c9-8e9d-f1a930a8e420" alt="Image 2" width="250" />
+  
+  <img src="https://github.com/user-attachments/assets/8a305257-5b4b-4ecc-bfcc-002ffccf02c8" alt="Image 1" width="250" />
+  
+  <img src="https://github.com/user-attachments/assets/5f98f709-5f09-40b5-bd08-15a425d95271" alt="Image 3" width="250" />
+</div>
+
+Video link : https://youtu.be/EJaFK97HpiI
 
 ## Installation
 
