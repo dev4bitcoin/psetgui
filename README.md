@@ -1,3 +1,5 @@
+# NOTE: This app is in alpha and only support testnet. DO NOT SEND ANY MAINNET L-BTC.
+
 # PSET
 
 A React Native application designed for transaction signing and management. This project includes features such as signing transactions, analyzing PSETs (Partially Signed Elements Transactions), exporting PSETs, sharing signed transactions, sending and receiving L-BTC, viewing transaction history, and assets list.
