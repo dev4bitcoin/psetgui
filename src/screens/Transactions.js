@@ -15,16 +15,25 @@ function Transactions({transactions, denomination}) {
   const navigation = useNavigation();
 
   // Step 1: Sort transactions by timestamp
-  const sortedTransactions = transactions.sort(
-    (a, b) => b.timestamp - a.timestamp,
-  );
+  const sortedTransactions = transactions.sort((a, b) => {
+    if (a.timestamp === null && b.timestamp !== null) {
+      return -1; // Place `a` before `b`
+    }
+    if (a.timestamp !== null && b.timestamp === null) {
+      return 1; // Place `b` before `a`
+    }
+    // If both have timestamps, sort by descending timestamp
+    return b.timestamp - a.timestamp;
+  });
 
   // Step 2: Group transactions by date
   const groupedTransactions = sortedTransactions.reduce(
     (groups, transaction) => {
-      const date = new Date(transaction.timestamp * 1000).toLocaleDateString(
-        'en-US',
-      );
+      const date =
+        transaction.timestamp === null
+          ? new Date().toLocaleDateString('en-US') // Use system timezone for null timestamps
+          : new Date(transaction.timestamp * 1000).toLocaleDateString('en-US'); // Use system timezone for valid timestamps
+
       if (!groups[date]) {
         groups[date] = [];
       }
@@ -71,6 +80,10 @@ function Transactions({transactions, denomination}) {
   };
 
   const formatTimestamp = timestamp => {
+    if (timestamp === null) {
+      return 'now'; // Handle null timestamp
+    }
+
     const now = new Date();
     const date = new Date(timestamp * 1000); // Convert to milliseconds
 
@@ -136,6 +149,12 @@ function Transactions({transactions, denomination}) {
               </View>
               <Text style={styles.numberOfDays}>
                 {formatTimestamp(item.timestamp)}
+                {item?.timestamp === null && (
+                  <Text style={[styles.numberOfDays, {color: colors.orange}]}>
+                    {' '}
+                    (Not Confirmed)
+                  </Text>
+                )}
               </Text>
             </View>
             <View style={styles.balanceContainer}>

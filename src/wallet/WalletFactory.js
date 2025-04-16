@@ -9,18 +9,18 @@ import {
   Address,
 } from 'lwk-rn';
 
-import uuid from 'react-native-uuid';
 import Constants from '../config/Constants';
 import {
   createWallet,
-  getDefaultWallet,
   resetWallets,
   getStoredTransactions,
   storeTransactions,
   getStoredAssets,
   storeAssets,
+  getWallet,
 } from '../services/WalletService';
 import Transaction from '../models/Transaction';
+import assetFinder from '../helpers/assetFinder';
 
 export default class WalletFactory {
   static signerInstance = null;
@@ -28,37 +28,36 @@ export default class WalletFactory {
   static clientInstance = null;
   static defaultWallet = null;
   static shouldSaveToStorage = false;
+  static network = null;
 
-  static async init(seed = null) {
-    const network = Network.testnet();
+  static async init(realm, seed = null, useTestnet = false) {
+    this.network = useTestnet ? Network.testnet() : Network.mainnet();
 
-    this.clientInstance = network.defaultElectrumClient();
+    this.clientInstance = this.network.defaultElectrumClient();
 
-    const wallet = await getDefaultWallet();
-    this.defaultWallet = JSON.parse(wallet);
+    this.defaultWallet = await getWallet(realm, useTestnet);
 
     if (this.defaultWallet) {
       const {mnemonic, descriptor} = this.defaultWallet;
 
-      this.signerInstance = new Signer(new Mnemonic(mnemonic), network);
+      this.signerInstance = new Signer(new Mnemonic(mnemonic), this.network);
       const desc = new WolletDescriptor(descriptor);
-      this.wolletInstance = new Wollet(network, desc, undefined);
+      this.wolletInstance = new Wollet(this.network, desc, undefined);
       this.shouldSaveToStorage = true;
     } else {
       if (seed) {
-        this.signerInstance = new Signer(new Mnemonic(seed), network);
+        this.signerInstance = new Signer(new Mnemonic(seed), this.network);
         const desc = await this.signerInstance.wpkhSlip77Descriptor();
-        this.wolletInstance = new Wollet(network, desc, undefined);
+        this.wolletInstance = new Wollet(this.network, desc, undefined);
       }
     }
   }
 
   static async initWithDescriptor(descriptor = null) {
-    const network = Network.testnet();
-    this.clientInstance = network.defaultElectrumClient();
+    this.clientInstance = this.network.defaultElectrumClient();
 
     const desc = new WolletDescriptor(descriptor);
-    this.wolletInstance = new Wollet(network, desc, undefined);
+    this.wolletInstance = new Wollet(this.network, desc, undefined);
   }
 
   static ValidateDescriptor(descriptor) {
@@ -72,16 +71,16 @@ export default class WalletFactory {
     }
   }
 
-  static async GetSavedTransactions(assetId) {
+  static async GetSavedTransactions(realm, assetId) {
     console.log('GetSavedTransactions');
 
     if (!assetId) return [];
 
-    const transactions = await getStoredTransactions(assetId);
+    const transactions = await getStoredTransactions(realm, assetId);
     return transactions;
   }
 
-  static async CreateWallet(shouldStoreMnemonic) {
+  static async CreateWallet(realm, shouldStoreMnemonic) {
     try {
       console.log('CreateWallet');
       const descriptor = await this.signerInstance.wpkhSlip77Descriptor();
@@ -91,13 +90,12 @@ export default class WalletFactory {
 
       if (shouldStoreMnemonic) {
         this.shouldSaveToStorage = true;
-        await createWallet(
-          JSON.stringify({
-            id: uuid.v4(),
-            mnemonic: mnemonic.toString(),
-            descriptor: descriptorString,
-          }),
-        );
+        const wallet = await createWallet(realm, {
+          mnemonic: mnemonic.toString(),
+          descriptor: descriptorString,
+          isTestnet: this.network.isMainnet() ? false : true,
+        });
+        this.defaultWallet = wallet;
       } else {
       }
     } catch (error) {
@@ -129,10 +127,10 @@ export default class WalletFactory {
     return txt;
   }
 
-  static async GetStoredAssets() {
+  static async GetStoredAssets(realm) {
     console.log('GetStoredAssets');
 
-    const assets = await getStoredAssets();
+    const assets = await getStoredAssets(realm, this.defaultWallet?.walletId);
     return assets;
   }
 
@@ -143,36 +141,48 @@ export default class WalletFactory {
     await storeAssets(assets);
   }
 
-  static async GetAssets() {
+  static async GetAssets(realm) {
     console.log('GetAssets');
     await this.updateWallet(this.wolletInstance);
     const assets = await this.wolletInstance.balance();
 
     var assetList = [];
     assets?.forEach((value, key) => {
+      const assetInfo = assetFinder.findAsset(key.toString());
+
       assetList.push({
         assetId: key.toString(),
-        value: Number(value),
+        balance: value.toString(),
+        entity: assetInfo[0],
+        ticker: assetInfo[1],
+        name: assetInfo[2],
+        precision: assetInfo[3],
+        walletId: this.defaultWallet?.walletId,
       });
     });
-    // if (this.shouldSaveToStorage) await storeAssets(assetList);
-    return assetList;
+    if (this.shouldSaveToStorage) await storeAssets(realm, assetList);
+
+    const storedAssets = await getStoredAssets(
+      realm,
+      this.defaultWallet?.walletId,
+    );
+    return storedAssets;
   }
 
-  static async GetTransactions(assetId) {
+  static async GetTransactions(realm, assetId) {
     console.log('GetTransactions');
 
     if (!assetId) return [];
 
     const txs = await this.wolletInstance.transactions();
-    const newTransactions = [];
+    const txsToSave = [];
     txs?.forEach(tx => {
-      var balance = {};
+      var balance = 0;
       tx.balance().forEach((value, key) => {
         if (balance[key.toString()] === undefined) {
-          balance[key.toString()] = 0;
+          balance = 0;
         }
-        balance[key.toString()] += Number(value);
+        balance += Number(value);
       });
 
       const shouldInclude = tx?.outputs()?.some(output => {
@@ -182,45 +192,26 @@ export default class WalletFactory {
 
       if (shouldInclude) {
         const txToInclude = new Transaction({
-          balance: balance,
-          fee: Number(tx.fee()),
-          height: tx.height(),
+          balance: balance?.toString(),
+          fee: tx.fee()?.toString(),
+          height: tx.height()?.toString(),
           type: tx.type(),
           txid: tx.txid().toString(),
-          timestamp: tx.timestamp(),
-          tx: tx.tx().toString(),
+          timestamp: tx.timestamp()?.toString(),
+          assetId: assetId,
+          walletId: this.defaultWallet?.walletId,
         });
 
-        newTransactions.push(txToInclude);
+        txsToSave.push(txToInclude);
       }
     });
 
-    let updatedTransactions = [];
     if (this.shouldSaveToStorage) {
-      // Retrieve existing transactions from AsyncStorage
-      const storedTransactions = await getStoredTransactions(assetId);
-
-      // Filter out new transactions
-      const existingTransactionIds = storedTransactions?.map(tx => tx.txid);
-
-      const uniqueNewTransactions =
-        existingTransactionIds?.length > 0
-          ? newTransactions?.filter(
-              tx => !existingTransactionIds.includes(tx?.txid),
-            )
-          : newTransactions;
-
-      // Combine existing and new transactions
-      updatedTransactions = [...storedTransactions, ...uniqueNewTransactions];
-
-      // Store the updated transactions back to AsyncStorage
-      await storeTransactions(assetId, updatedTransactions);
+      await storeTransactions(realm, txsToSave, assetId);
     }
 
-    const result = this.shouldSaveToStorage
-      ? updatedTransactions?.filter(tx => tx != null)
-      : newTransactions?.filter(tx => tx != null);
-    return result;
+    const transactions = await getStoredTransactions(realm, assetId);
+    return transactions;
   }
 
   static async GetBalance(assetId) {
@@ -364,7 +355,7 @@ export default class WalletFactory {
       const fee_rate = 100; // this is the sat/vB * 100 fee rate. Example 280 would equal a fee rate of .28 sat/vB. 100 would equal .1 sat/vB
 
       const outAddress = new Address(address);
-      const builder = Network.testnet().txBuilder();
+      const builder = this.network.txBuilder();
 
       await builder.addLbtcRecipient(outAddress, BigInt(satoshis));
       await builder.feeRate(fee_rate);

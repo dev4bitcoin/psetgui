@@ -9,6 +9,7 @@ import {
   Platform,
 } from 'react-native';
 import {useIsFocused} from '@react-navigation/native'; // Import the hook
+import {useRealm} from '@realm/react';
 
 import colors from '../config/Colors';
 import TransactionButtons from '../components/TransactionButtons';
@@ -24,21 +25,23 @@ import LoadingScreen from './LoadingScreen';
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 function WalletScreen({route, navigation}) {
-  const {assetId, value: balance, ticker, precision} = route.params?.asset;
+  const {assetId, balance, ticker, precision} = route.params?.asset;
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const {preferredBitcoinUnit} = useContext(AppContext);
   const isFocused = useIsFocused(); // Check if the screen is focused
+  const realm = useRealm();
 
   const getTransactions = async () => {
     try {
-      const transactionsData = await WalletFactory.GetTransactions(assetId);
+      const transactionsData = await WalletFactory.GetTransactions(
+        realm,
+        assetId,
+      );
       const mappedTransactions = transactionsData.map(tx => {
-        tx.balance = amountInPreferredDenomination(
-          Object.values(tx.balance)[0],
-        );
-        tx.fee = amountInPreferredDenomination(tx.fee);
+        tx.balance = amountInPreferredDenomination(Number(tx.balance));
+        tx.fee = amountInPreferredDenomination(Number(tx.fee));
         return tx;
       });
 
@@ -73,14 +76,13 @@ function WalletScreen({route, navigation}) {
   const loadStoredData = async () => {
     try {
       const storedTransactions = await WalletFactory.GetSavedTransactions(
+        realm,
         assetId,
       );
       const mappedStoredTransactions = storedTransactions.map(tx => {
-        tx.balance = amountInPreferredDenomination(
-          Object.values(tx.balance)[0],
-        );
+        tx.balance = amountInPreferredDenomination(Number(tx.balance));
 
-        tx.fee = amountInPreferredDenomination(tx.fee);
+        tx.fee = amountInPreferredDenomination(Number(tx.fee));
         return tx;
       });
       setTransactions(mappedStoredTransactions);
@@ -152,7 +154,9 @@ function WalletScreen({route, navigation}) {
         }>
         <View style={[styles.headerRow]}>
           <View style={[styles.balanceContainer]}>
-            <Text style={styles.balance}>{balance || '0'}</Text>
+            <Text style={styles.balance}>
+              {amountInPreferredDenomination(balance) || '0'}
+            </Text>
             <Text style={styles.denomination}>{ticker}</Text>
           </View>
         </View>

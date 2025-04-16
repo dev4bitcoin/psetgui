@@ -1,4 +1,5 @@
 export default {
+  USE_TESTNET: 'UseTestnet',
   WALLETS: 'Wallets',
   TESTNET_WALLETS: 'TestnetWallets',
   BIOMETRICS_DISPLAY_STATUS: 'BiometricsDisplayStatus',

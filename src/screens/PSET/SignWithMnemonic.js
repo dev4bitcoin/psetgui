@@ -6,21 +6,25 @@ import {
   TouchableOpacity,
   TextInput,
   ScrollView,
-  FlatList,
   KeyboardAvoidingView,
   Keyboard,
   Alert,
   Switch,
 } from 'react-native';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
+import {useRealm} from '@realm/react';
 
 import TopBar from '../../components/TopBar';
 import Colors from '../../config/Colors';
 import wordList from '../../config/WordList';
 import LoadingScreen from '../LoadingScreen';
 import WalletFactory from '../../wallet/WalletFactory';
+import {AppContext} from '../../context/AppContext';
+import Constants from '../../config/Constants';
 
 function SignWithMnemonic(props) {
+  const {useTestnet, setAppSettingByKey} = useContext(AppContext);
+
   const [lengthSelection, setLengthSelection] = useState('12');
   const [inputValues, setInputValues] = useState({});
   const [suggestions, setSuggestions] = useState([]);
@@ -28,6 +32,8 @@ function SignWithMnemonic(props) {
   const [mnemonicSaved, setMnemonicSaved] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loadingText, setLoadingText] = useState('Setting up the wallet...');
+  const realm = useRealm();
+
   useEffect(() => {
     // For testing purposes, you can set a default mnemonic here
     // const mnemonic =
@@ -63,8 +69,9 @@ function SignWithMnemonic(props) {
 
     if (enteredWords.length === selectedLength) {
       const mnemonic = enteredWords.join(' ');
-      await WalletFactory.init(mnemonic);
-      await WalletFactory.CreateWallet(mnemonicSaved);
+      setAppSettingByKey(Constants.SAVE_MNEMONIC, mnemonicSaved?.toString());
+      await WalletFactory.init(realm, mnemonic, useTestnet);
+      await WalletFactory.CreateWallet(realm, mnemonicSaved);
       setLoading(false);
       props.navigation.navigate('BottomTabs');
     } else {

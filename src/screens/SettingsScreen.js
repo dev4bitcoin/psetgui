@@ -1,7 +1,8 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import {View, StyleSheet, Text, TouchableOpacity, Alert} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import RNRestart from 'react-native-restart';
+import {useRealm} from '@realm/react';
 
 import Screen from './Screen';
 import TopBar from '../components/TopBar';
@@ -9,9 +10,13 @@ import Colors from '../config/Colors';
 import {deleteWallet} from '../services/WalletService';
 import LoadingScreen from './LoadingScreen';
 import WalletFactory from '../wallet/WalletFactory';
+import {AppContext} from '../context/AppContext';
 
 function SettingsScreen(props) {
   const [loading, setLoading] = React.useState(false);
+  const {useTestnet} = useContext(AppContext);
+  const realm = useRealm();
+
   const onSelect = name => {
     if (name === 'Denomination') props.navigation.navigate('Denomination');
     if (name === 'App access') props.navigation.navigate('AppAccess');
@@ -32,12 +37,8 @@ function SettingsScreen(props) {
           text: 'Yes',
           onPress: async () => {
             setLoading(true);
-            const assets = await WalletFactory.GetAssets();
-            let assetList = [];
-            assets?.forEach((amount, assetId) => {
-              assetList.push(assetId);
-            });
-            await deleteWallet(assetList);
+
+            deleteWallet(realm, useTestnet);
             setLoading(false);
             RNRestart.restart(); // Restart the app
           },

@@ -1,86 +1,99 @@
 import React, {createContext, useEffect, useState} from 'react';
+import {BSON} from 'realm';
 
 import Constants from '../config/Constants';
-import Storage from '../storage/Storage';
+import {useRealm} from '@realm/react';
 
 // Create the context
 export const AppContext = createContext();
 
 // Create a provider component
 const AppContextProvider = ({children}) => {
+  const realm = useRealm();
   const [preferredBitcoinUnit, setPreferredBitcoinUnit] = useState();
-  const [showBiometrics, setShowBiometrics] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [biometricStatus, setBiometricStatus] = useState(false);
   const [mnemonicSaved, setMnemonicSaved] = useState(false);
+  const [useTestnet, setUseTestnet] = useState(false);
 
   useEffect(() => {
-    const initializeContext = async () => {
-      await getPreferredBitcoinDenomination();
-      await getBiometricsStatus();
-      await getSaveMnemonicStatus();
-      setIsLoading(false);
-    };
-    initializeContext();
+    initSetting();
   }, []);
 
-  const getPreferredBitcoinDenomination = async () => {
-    const preferredUnit = await Storage.getItem(
-      Constants.PREFERRED_BITCOIN_UNIT,
-    );
-    setPreferredBitcoinUnit(preferredUnit || Constants.TEST_SATS);
-    return preferredUnit || Constants.TEST_SATS;
+  const initSetting = async () => {
+    getAppSettingByKey(Constants.USE_TESTNET);
+    getAppSettingByKey(Constants.PREFERRED_BITCOIN_UNIT);
+    getAppSettingByKey(Constants.SAVE_MNEMONIC);
+    getAppSettingByKey(Constants.BIOMETRICS_DISPLAY_STATUS);
   };
 
-  const setPreferredBitcoinDenomination = async unit => {
-    const status = await Storage.storeItem(
-      Constants.PREFERRED_BITCOIN_UNIT,
-      unit,
-    );
-    setPreferredBitcoinUnit(unit);
-  };
+  const getAppSettingByKey = key => {
+    const result = realm.objects('AppSetting').filtered(`key == "${key}"`)[0];
 
-  const setBiometricsStatus = async displayStatus => {
-    setShowBiometrics(displayStatus);
-    return await Storage.storeItem(
-      Constants.BIOMETRICS_DISPLAY_STATUS,
-      displayStatus,
-    );
-  };
-
-  const getBiometricsStatus = async () => {
-    const status = await Storage.getItem(Constants.BIOMETRICS_DISPLAY_STATUS);
-    if (!status) {
-      setShowBiometrics(false);
-      return false;
+    if (result) {
+      setValueForLocalVariable(key, result.value);
+      return result.value;
     }
-    setShowBiometrics(status);
-    return status;
-  };
 
-  const setSaveMnemonicStatus = async saveMnemonic => {
-    setMnemonicSaved(saveMnemonic);
-    return await Storage.storeItem(Constants.SAVE_MNEMONIC, saveMnemonic);
-  };
-
-  const getSaveMnemonicStatus = async () => {
-    const status = await Storage.getItem(Constants.SAVE_MNEMONIC);
-    if (!status) {
-      setMnemonicSaved(false);
-      return false;
+    // Set UseTestnet to true for testing
+    if (key === Constants.USE_TESTNET) {
+      setUseTestnet(true);
+      return true;
     }
-    setMnemonicSaved(status);
-    return status;
+
+    // Set default values for other keys
+    if (key === Constants.PREFERRED_BITCOIN_UNIT) {
+      setPreferredBitcoinUnit(
+        // useTestnet ? Constants.TEST_SATS : Constants.SATS,
+        // For testing purposes, set the preferred bitcoin unit to mSATS
+        Constants.TEST_SATS,
+      );
+      return Constants.SATS;
+    }
+    return null;
+  };
+
+  const setValueForLocalVariable = (key, value) => {
+    if (key === Constants.PREFERRED_BITCOIN_UNIT) {
+      setPreferredBitcoinUnit(value);
+    }
+    if (key === Constants.USE_TESTNET) {
+      setUseTestnet(value);
+    }
+    if (key === Constants.SAVE_MNEMONIC) {
+      setMnemonicSaved(value);
+    }
+    if (key === Constants.BIOMETRICS_DISPLAY_STATUS) {
+      setBiometricStatus(value);
+    }
+  };
+
+  const setAppSettingByKey = (key, value) => {
+    setValueForLocalVariable(key, value);
+
+    const setting = realm.objects('AppSetting').filtered(`key == "${key}"`)[0];
+    if (setting?.key) {
+      realm.write(() => {
+        setting.value = value?.toString();
+      });
+    } else {
+      realm.write(() => {
+        realm.create('AppSetting', {
+          _id: new BSON.ObjectId(),
+          key: key,
+          value: value?.toString(),
+        });
+      });
+    }
   };
 
   return (
     <AppContext.Provider
       value={{
-        setBiometricsStatus,
-        showBiometrics,
-        setPreferredBitcoinDenomination,
+        setAppSettingByKey,
+        biometricStatus,
         preferredBitcoinUnit,
         mnemonicSaved,
-        setSaveMnemonicStatus,
+        useTestnet,
       }}>
       {children}
     </AppContext.Provider>

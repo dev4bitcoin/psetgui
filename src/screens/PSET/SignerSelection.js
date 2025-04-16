@@ -1,22 +1,27 @@
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {View, StyleSheet, TouchableOpacity, Text} from 'react-native';
+import {useRealm} from '@realm/react';
+
 import TopBar from '../../components/TopBar';
 import Screen from '../Screen';
 import Colors from '../../config/Colors';
-import {getDefaultWallet} from '../../services/WalletService';
 import WalletFactory from '../../wallet/WalletFactory';
 import LoadingScreen from '../LoadingScreen';
+import {AppContext} from '../../context/AppContext';
+import {getWallet} from '../../services/WalletService';
 
 function SignerSelection(props) {
-  //const {pset, psetDetails} = props.route.params;
   const [isWalletExist, setIsWalletExist] = useState(false);
   const [loading, setLoading] = useState(false);
+  const {useTestnet} = useContext(AppContext);
+  const realm = useRealm();
+
   useEffect(() => {
     checkWalletAvailability();
   }, []);
 
   const checkWalletAvailability = async () => {
-    const wallet = await getDefaultWallet();
+    const wallet = await getWallet(realm, useTestnet);
     if (wallet) {
       setIsWalletExist(true);
     }
@@ -25,7 +30,7 @@ function SignerSelection(props) {
   const onSignWithMnemonic = async () => {
     setLoading(true);
     if (isWalletExist) {
-      await WalletFactory.init();
+      await WalletFactory.init(realm, null, useTestnet);
       props.navigation.navigate('BottomTabs', {screen: 'Home'});
       return;
     }

@@ -28,6 +28,7 @@ function SendTransactionReview({navigation, route}) {
   const onSend = async () => {
     try {
       setLoading(true);
+      await new Promise(resolve => setTimeout(resolve, 200));
       const txId = await WalletFactory.BroadcastTransaction(address, amount);
       if (!txId) {
         console.error('Transaction failed');

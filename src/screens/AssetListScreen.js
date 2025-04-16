@@ -7,11 +7,11 @@ import {
   TouchableOpacity,
   RefreshControl,
 } from 'react-native';
+import {useRealm} from '@realm/react';
 
 import Screen from './Screen';
 import TopBar from '../components/TopBar';
 import WalletFactory from '../wallet/WalletFactory';
-import AssetFinder from '../helpers/assetFinder';
 import Colors from '../config/Colors';
 import Constants from '../config/Constants';
 import {AppContext} from '../context/AppContext';
@@ -19,6 +19,7 @@ import UnitConverter from '../helpers/UnitConverter';
 import LoadingScreen from './LoadingScreen';
 
 function AssetListScreen(props) {
+  const realm = useRealm();
   const {preferredBitcoinUnit} = useContext(AppContext);
 
   const [loading, setLoading] = useState(true);
@@ -31,59 +32,49 @@ function AssetListScreen(props) {
 
   const init = async () => {
     setLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 200));
-
-    // const assets = await WalletFactory.GetStoredAssets();
-    // if (assets?.length > 0) await parseData(assets);
-
-    const updatedAssets = await WalletFactory.GetAssets();
-    await parseData(updatedAssets || []);
+    await parseData();
     setLoading(false);
   };
 
-  const parseData = async assets => {
-    let assetList = [];
+  const getBalanceByPrecisionAndUnit = (assetId, value, precision) => {
+    return assetId == Constants.LIQUID_TESTNET_ASSETID
+      ? UnitConverter.displayBalanceInPreferredUnit(
+          Number(value),
+          preferredBitcoinUnit,
+        )
+      : (Number(value) / Math.pow(10, precision)).toFixed(precision);
+  };
 
-    assets?.forEach(item => {
-      const assetInfo = AssetFinder.findAsset(item?.assetId);
-      if (assetInfo) {
-        const ticker =
-          item?.assetId == Constants.LIQUID_TESTNET_ASSETID
-            ? preferredBitcoinUnit
-            : assetInfo[1] || 'Unknown';
+  const getTicker = (assetId, ticker) => {
+    return assetId == Constants.LIQUID_TESTNET_ASSETID
+      ? preferredBitcoinUnit
+      : ticker || 'Unknown';
+  };
 
-        const amount =
-          item?.assetId == Constants.LIQUID_TESTNET_ASSETID
-            ? UnitConverter.displayBalanceInPreferredUnit(
-                Number(item?.value),
-                preferredBitcoinUnit,
-              )
-            : (Number(item?.value) / Math.pow(10, assetInfo[3])).toFixed(
-                assetInfo[3],
-              );
-        const asset = {
-          assetId: item?.assetId,
-          value: amount,
-          entity: assetInfo[0],
-          ticker: ticker,
-          name: assetInfo[2],
-          precision: assetInfo[3],
-        };
+  const parseData = async () => {
+    const assets = await WalletFactory.GetStoredAssets(realm);
+    setAssets(assets || []);
 
-        assetList.push(asset);
-      }
-    });
-    setAssets(assetList);
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    const updatedAssets = await WalletFactory.GetAssets(realm);
+    setAssets(updatedAssets || []);
   };
 
   const onAssetPress = asset => {
-    props.navigation.navigate('Wallet', {asset: asset});
+    const assetToPass = {
+      assetId: asset.assetId,
+      balance: asset.balance,
+      ticker: getTicker(asset.assetId, asset.ticker),
+      precision: asset.precision,
+    };
+    props.navigation.navigate('Wallet', {asset: assetToPass});
   };
 
   const onRefresh = async () => {
     setRefreshing(true);
-    const updatedAssets = await WalletFactory.GetAssets();
-    await parseData(updatedAssets || []);
+    const assets = await WalletFactory.GetAssets(realm);
+    setAssets(assets || []);
     setRefreshing(false);
   };
 
@@ -113,7 +104,11 @@ function AssetListScreen(props) {
               ]}
               onPress={() => onAssetPress(item)}>
               <Text style={styles.text}>{item.name}</Text>
-              <Text style={styles.text}>{`${item.value} ${item.ticker}`}</Text>
+              <Text style={styles.text}>{`${getBalanceByPrecisionAndUnit(
+                item?.assetId,
+                item?.balance,
+                item?.precision,
+              )} ${getTicker(item?.assetId, item?.ticker)}`}</Text>
             </TouchableOpacity>
           )}
         />

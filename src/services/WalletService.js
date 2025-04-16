@@ -1,92 +1,187 @@
-import storage from '../storage/Storage';
-import Constants from '../config/Constants';
+import {BSON} from 'realm';
 
-// use testnet or mainnet. enable true for testing
-//global.useTestnet = true;
+const getWallet = async (realm, useTestnet) => {
+  const result = await realm
+    .objects('Wallet')
+    .filtered(`isTestnet == ${useTestnet}`)[0];
 
-// const WALLETS = global.useTestnet
-//   ? Constants.TESTNET_WALLETS
-//   : Constants.WALLETS;
-const WALLETS = Constants.TESTNET_WALLETS;
+  if (!result || !result?.walletId) {
+    return null;
+  }
 
-const getWallets = async () => {
-  const wallets = (await storage.getItem(WALLETS)) || [];
-  return wallets;
+  const wallet = {
+    _id: result._id,
+    walletId: result.walletId,
+    mnemonic: result.mnemonic,
+    descriptor: result.descriptor,
+    isTestnet: result.isTestnet,
+  };
+
+  return wallet;
 };
 
-const createWallet = async wallet => {
-  const wallets = await getWallets();
-  wallets.push(wallet);
-  await storage.storeItem(WALLETS, wallets);
-};
-
-const deleteWallet = async assetList => {
-  assetList.forEach(async assetId => {
-    await storage.removeItem(`transactions_${assetId}`);
-    await storage.removeItem(`balance_${assetId}`);
+const createWallet = async (realm, wallet) => {
+  if (!wallet) return null;
+  const id = new BSON.ObjectId();
+  const newWallet = await realm.write(() => {
+    return realm.create('Wallet', {
+      _id: id,
+      walletId: id.toHexString(),
+      mnemonic: wallet.mnemonic,
+      descriptor: wallet.descriptor,
+      isTestnet: wallet.isTestnet,
+    });
   });
-  await storage.storeItem(WALLETS, []);
+
+  return {
+    _id: newWallet?._id,
+    walletId: newWallet?.walletId,
+    mnemonic: newWallet?.mnemonic,
+    descriptor: newWallet?.descriptor,
+    isTestnet: newWallet?.isTestnet,
+  };
 };
 
-const getDefaultWallet = async () => {
-  const wallets = await getWallets();
+const deleteWallet = (realm, useTestnet) => {
+  const walletToDelete = realm
+    .objects('Wallet')
+    .filtered(`isTestnet == ${useTestnet}`)[0];
 
-  if (wallets.length === 0) return null;
+  if (!walletToDelete) return;
 
-  return wallets[0];
+  const txs = realm
+    .objects('Transaction')
+    .filtered(`walletId == "${walletToDelete.walletId}"`);
+  if (txs?.length > 0) {
+    realm.write(() => {
+      realm.delete(txs);
+    });
+  }
+
+  const assets = realm
+    .objects('Asset')
+    .filtered(`walletId == "${walletToDelete.walletId}"`);
+  if (assets?.length > 0) {
+    realm.write(() => {
+      realm.delete(assets);
+    });
+  }
+
+  realm.write(() => {
+    realm.delete(walletToDelete);
+  });
 };
 
-const getWallet = async id => {
-  const wallets = await getWallets();
-  return wallets.find(w => w.id === id);
-};
-
-const isWalletExist = async xpub => {
-  const wallets = await getWallets();
-  return wallets.some(w => w.xpub === xpub);
-};
-
-const resetWallets = async () => {
-  return await storage.storeItem(WALLETS, []);
-};
-
-const storeTransactions = async (assetId, transactions) => {
+const storeTransactions = async (realm, transactions, assetId) => {
   try {
-    if (!assetId) return;
-    await storage.storeItem(
-      `transactions_${assetId}`,
-      JSON.stringify(transactions),
-    );
+    if (!transactions) return;
+
+    transactions.forEach(tx => {
+      const storedTx = realm
+        .objects('Transaction')
+        .filtered(`assetId == "${assetId}" && txId == "${tx.txid}"`)[0];
+
+      if (!storedTx) {
+        realm.write(() => {
+          realm.create('Transaction', {
+            _id: new BSON.ObjectId(),
+            txId: tx.txid,
+            balance: tx.balance,
+            fee: tx.fee,
+            height: tx.height,
+            type: tx.type,
+            timestamp: tx.timestamp,
+            walletId: tx.walletId,
+            assetId: assetId,
+          });
+        });
+      } else {
+        // Update existing transaction
+        realm.write(() => {
+          storedTx.height = tx.height;
+          storedTx.timestamp = tx.timestamp;
+        });
+      }
+    });
   } catch (error) {
     console.error('Error storing transactions:', error);
   }
 };
 
-const getStoredTransactions = async assetId => {
+const getStoredTransactions = async (realm, assetId) => {
   try {
     if (!assetId) return [];
 
-    const transactions = await storage.getItem(`transactions_${assetId}`);
-    return transactions ? JSON.parse(transactions) : [];
+    const txs = realm
+      .objects('Transaction')
+      .filtered(`assetId == "${assetId}"`);
+
+    const mappedTxs = Array.from(txs).map(tx => ({
+      txid: tx.txId,
+      balance: tx.balance,
+      fee: tx.fee,
+      height: tx.height,
+      type: tx.type,
+      timestamp: tx.timestamp,
+      walletId: tx.walletId,
+      assetId: assetId,
+    }));
+
+    return mappedTxs;
   } catch (error) {
     console.error('Error getting stored transactions:', error);
     return [];
   }
 };
 
-const storeAssets = async assets => {
+const storeAssets = async (realm, assets) => {
   try {
     if (!assets) return null;
 
-    await storage.storeItem(`assets`, JSON.stringify(assets));
+    assets.forEach(asset => {
+      const storedAsset = realm
+        .objects('Asset')
+        .filtered(`assetId == "${asset.assetId}"`)[0];
+
+      if (!storedAsset) {
+        realm.write(() => {
+          realm.create('Asset', {
+            _id: new BSON.ObjectId(),
+            assetId: asset.assetId,
+            balance: asset.balance,
+            entity: asset.entity,
+            ticker: asset.ticker,
+            precision: asset.precision,
+            name: asset.name,
+            walletId: asset.walletId,
+          });
+        });
+      } else {
+        // Update existing asset
+        realm.write(() => {
+          storedAsset.balance = asset.balance;
+        });
+      }
+    });
   } catch (error) {
     console.error('Error storing assets:', error);
   }
 };
-const getStoredAssets = async () => {
+
+const getStoredAssets = async (realm, walletId) => {
   try {
-    const assets = await storage.getItem(`assets`);
-    return assets ? JSON.parse(assets) : [];
+    const assets = realm.objects('Asset').filtered(`walletId == "${walletId}"`);
+
+    const mappedAssets = Array.from(assets).map(asset => ({
+      assetId: asset.assetId,
+      balance: asset.balance,
+      entity: asset.entity,
+      ticker: asset.ticker,
+      precision: asset.precision,
+      name: asset.name,
+      walletId: asset.walletId,
+    }));
+    return mappedAssets;
   } catch (error) {
     console.error('Error getting stored assets:', error);
     return [];
@@ -94,13 +189,9 @@ const getStoredAssets = async () => {
 };
 
 export {
-  getWallets,
+  getWallet,
   createWallet,
   deleteWallet,
-  getWallet,
-  getDefaultWallet,
-  isWalletExist,
-  resetWallets,
   storeTransactions,
   getStoredTransactions,
   storeAssets,

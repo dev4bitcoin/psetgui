@@ -16,11 +16,14 @@ import TopBar from '../../components/TopBar';
 import Colors from '../../config/Colors';
 import Screen from '../Screen';
 import {AppContext} from '../../context/AppContext';
+import Constants from '../../config/Constants';
 
 function AppAccess(props) {
-  const {setBiometricsStatus, showBiometrics} = useContext(AppContext);
+  const {setAppSettingByKey, biometricStatus} = useContext(AppContext);
   const [isTouchIDSupported, setIsTouchIDSupported] = useState(false);
-
+  const [showBiometrics, setShowBiometrics] = useState(
+    biometricStatus === 'true',
+  );
   const hapticOptions = {
     enableVibrateFallback: true,
     ignoreAndroidSystemSettings: false,
@@ -38,7 +41,7 @@ function AppAccess(props) {
       const {success} = resultObject;
       if (success) {
         // successful biometrics provided
-        setBiometricsStatus(false);
+        setAppSettingByKey(Constants.BIOMETRICS_DISPLAY_STATUS, 'false');
       } else {
         // user cancelled biometric prompt
       }
@@ -72,11 +75,11 @@ function AppAccess(props) {
     const isSupported = await isBiometricsSupported();
 
     if (isSupported && isOn === true) {
-      setBiometricsStatus(true);
+      setAppSettingByKey(Constants.BIOMETRICS_DISPLAY_STATUS, 'true');
     } else if (isSupported && isOn === false) {
       await disableBiometrics();
     } else {
-      setBiometricsStatus(false);
+      setAppSettingByKey(Constants.BIOMETRICS_DISPLAY_STATUS, 'false');
       Alert.alert('Biometrics', 'Biometrics is not supported on this device');
     }
   };

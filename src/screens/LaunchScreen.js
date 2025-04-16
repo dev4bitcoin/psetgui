@@ -1,14 +1,15 @@
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {View, Text, ActivityIndicator, StyleSheet} from 'react-native';
 import ReactNativeBiometrics from 'react-native-biometrics';
 
 import colors from '../config/Colors';
-import Storage from '../storage/Storage';
 import Constants from '../config/Constants';
-import {getDefaultWallet} from '../services/WalletService';
-import WalletFactory from '../wallet/WalletFactory';
+import dbInstance from '../services/DbInstance';
+import {AppContext} from '../context/AppContext';
 
 const LaunchScreen = ({navigation}) => {
+  const {biometricStatus} = useContext(AppContext);
+
   const [loading, setLoading] = useState(false);
   const [loadingText, setLoadingText] = useState('Loading...');
 
@@ -34,9 +35,7 @@ const LaunchScreen = ({navigation}) => {
   };
 
   const validateBiometricsIfEnabled = async () => {
-    const status = await Storage.getItem(Constants.BIOMETRICS_DISPLAY_STATUS);
-
-    if (!status) {
+    if (!biometricStatus) {
       await checkWallet();
       return;
     }
@@ -46,20 +45,10 @@ const LaunchScreen = ({navigation}) => {
   const checkWallet = async () => {
     try {
       setLoading(true);
+      await dbInstance.init();
       setLoadingText('Check Wallets...');
 
       navigation.navigate('SignerSelection');
-
-      // delay
-      // await new Promise(resolve => setTimeout(resolve, 1000));
-      // if ((await getDefaultWallet()) === null) {
-      //   await new Promise(resolve => setTimeout(resolve, 1000));
-
-      //   navigation.navigate('SignerSelection');
-      // } else {
-      //   await WalletFactory.init();
-      //   navigation.replace('BottomTabs');
-      // }
     } catch (error) {
       console.error(error);
     } finally {
@@ -69,6 +58,10 @@ const LaunchScreen = ({navigation}) => {
 
   useEffect(() => {
     validateBiometricsIfEnabled();
+
+    return () => {
+      dbInstance.close();
+    };
   }, [navigation]);
 
   return (

@@ -9,10 +9,8 @@ import Constants from '../../config/Constants';
 import {AppContext} from '../../context/AppContext';
 
 function DenominationSelection(props) {
-  const {setPreferredBitcoinDenomination, preferredBitcoinUnit} =
+  const {setAppSettingByKey, preferredBitcoinUnit, useTestnet} =
     useContext(AppContext);
-
-  const [useTestnet, setUseTestnet] = useState(true);
 
   const sats = useTestnet ? Constants.TEST_SATS : Constants.SATS;
   const bits = useTestnet ? Constants.TEST_BITS : Constants.BITS;
@@ -20,7 +18,7 @@ function DenominationSelection(props) {
   const btc = useTestnet ? Constants.TEST_BTC : Constants.BTC;
 
   const onSelect = async name => {
-    setPreferredBitcoinDenomination(name);
+    setAppSettingByKey(Constants.PREFERRED_BITCOIN_UNIT, name);
     props.navigation.goBack();
   };
 

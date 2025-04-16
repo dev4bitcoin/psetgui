@@ -10,6 +10,7 @@ class Transaction {
     tx,
     txid,
     type,
+    walletId,
   }) {
     this.balance = balance;
     this.fee = fee;
@@ -21,6 +22,7 @@ class Transaction {
     this.tx = tx;
     this.txid = txid;
     this.type = type;
+    this.walletId = walletId;
   }
 
   // Add methods as needed
