@@ -138,7 +138,11 @@ const getStoredTransactions = async (realm, assetId) => {
       .objects('Transaction')
       .filtered(`assetId == "${assetId}"`);
 
-    const mappedTxs = Array.from(txs).map(tx => ({
+    if (!txs || txs.length === 0) {
+      return [];
+    }
+
+    const mappedTxs = txs.map(tx => ({
       txid: tx.txId,
       balance: tx.balance,
       fee: tx.fee,
@@ -190,11 +194,14 @@ const storeAssets = async (realm, assets) => {
   }
 };
 
-const getStoredAssets = async (realm, walletId) => {
+const getStoredAssets = (realm, walletId) => {
   try {
     const assets = realm.objects('Asset').filtered(`walletId == "${walletId}"`);
 
-    const mappedAssets = Array.from(assets).map(asset => ({
+    if (!assets || assets.length === 0) {
+      return [];
+    }
+    const mappedAssets = assets.map(asset => ({
       assetId: asset.assetId,
       balance: asset.balance,
       entity: asset.entity,

@@ -33,6 +33,7 @@ function SignerSelection(props) {
   const onSignWithMnemonic = async () => {
     setLoading(true);
     if (isWalletExist) {
+      await WalletFactory.init(realm, null, useTestnet);
       props.navigation.navigate('BottomTabs', {screen: 'Home'});
       return;
     }

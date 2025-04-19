@@ -146,12 +146,12 @@ export default class WalletFactory {
     console.log('GetAssets');
     await this.updateWallet(this.wolletInstance);
     const walletId = this.defaultWallet?.walletId;
-    const network = this.network.isMainnet() ? false : true;
+    const isTestnet = this.network.isMainnet() ? false : true;
 
     const assets = await this.wolletInstance.balance();
     var assetList = [];
     assets?.forEach((value, key) => {
-      const assetInfo = assetFinder.findAsset(key.toString(), network);
+      const assetInfo = assetFinder.findAsset(key.toString(), isTestnet);
 
       assetList.push({
         assetId: key.toString(),
@@ -166,10 +166,9 @@ export default class WalletFactory {
     if (this.shouldSaveToStorage) {
       await storeAssets(realm, assetList);
 
-      const storedAssets = await getStoredAssets(
-        realm,
-        this.defaultWallet?.walletId,
-      );
+      const storedAssets = getStoredAssets(realm, walletId);
+
+      return storedAssets;
     }
 
     return assetList;
