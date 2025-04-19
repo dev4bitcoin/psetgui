@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useContext, useEffect, useRef, useState} from 'react';
 
 import {
   View,
@@ -18,8 +18,11 @@ import TopBar from '../components/TopBar';
 import Colors from '../config/Colors';
 import WalletFactory from '../wallet/WalletFactory';
 import LoadingScreen from './LoadingScreen';
+import {AppContext} from '../context/AppContext';
 
 function DescriptorScreen(props) {
+  const {useTestnet, setAppSettingByKey} = useContext(AppContext);
+
   const textInputRef = useRef(null);
   const [descriptor, setDescriptor] = useState('');
   const [showErrorMessage, setShowErrorMessage] = useState(false);
@@ -45,7 +48,7 @@ function DescriptorScreen(props) {
       const isValid = WalletFactory.ValidateDescriptor(descriptor);
       setShowErrorMessage(!isValid);
       if (isValid) {
-        await WalletFactory.initWithDescriptor(descriptor);
+        await WalletFactory.initWithDescriptor(descriptor, useTestnet);
         setLoading(false);
         props.navigation.navigate('BottomTabs', {screen: 'Home'});
       }
