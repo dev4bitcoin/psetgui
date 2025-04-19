@@ -37,7 +37,7 @@ function TransactionDetail(props) {
         <View style={styles.detailRow}>
           <Text style={styles.title}>Height</Text>
           <Text style={styles.value}>
-            {transaction.height ? transaction.height : 'Not Confirmed'}
+            {transaction.height ? transaction.height : 'Pending Confirmation'}
           </Text>
         </View>
         <View style={styles.detailRow}>
@@ -45,7 +45,7 @@ function TransactionDetail(props) {
           <Text style={styles.value}>
             {transaction.height
               ? new Date(transaction.timestamp * 1000).toLocaleString()
-              : 'Not Confirmed'}
+              : 'Pending Confirmation'}
           </Text>
         </View>
         <View style={styles.detailRow}>

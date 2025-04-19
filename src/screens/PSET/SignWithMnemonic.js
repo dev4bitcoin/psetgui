@@ -36,13 +36,15 @@ function SignWithMnemonic(props) {
 
   useEffect(() => {
     // For testing purposes, you can set a default mnemonic here
-    // const mnemonic =
-    //   'room thought hello final antenna rude ugly symptom weather wave top eternal';
-    // // const mnemonic =
-    // //   'aim rare pipe shift front torch core vague kiss symptom helmet grace wedding assault system company tiger pet fat mean hair genre gather scissors';
-    // const mnemonicLength = mnemonic.split(' ').length;
-    // setLengthSelection(mnemonicLength.toString());
-    // setInputValues(mnemonic.split(' '));
+    // if (useTestnet) {
+    //   const mnemonic =
+    //     'room thought hello final antenna rude ugly symptom weather wave top eternal';
+    //   // const mnemonic =
+    //   //   'aim rare pipe shift front torch core vague kiss symptom helmet grace wedding assault system company tiger pet fat mean hair genre gather scissors';
+    //   const mnemonicLength = mnemonic.split(' ').length;
+    //   setLengthSelection(mnemonicLength.toString());
+    //   setInputValues(mnemonic.split(' '));
+    // }
     //----------------
 
     const keyboardListeners = [
@@ -69,7 +71,10 @@ function SignWithMnemonic(props) {
 
     if (enteredWords.length === selectedLength) {
       const mnemonic = enteredWords.join(' ');
-      setAppSettingByKey(Constants.SAVE_MNEMONIC, mnemonicSaved?.toString());
+      setAppSettingByKey(
+        useTestnet ? Constants.SAVE_MNEMONIC_TESTNET : Constants.SAVE_MNEMONIC,
+        mnemonicSaved?.toString(),
+      );
       await WalletFactory.init(realm, mnemonic, useTestnet);
       await WalletFactory.CreateWallet(realm, mnemonicSaved);
       setLoading(false);

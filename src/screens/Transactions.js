@@ -152,7 +152,7 @@ function Transactions({transactions, denomination}) {
                 {item?.timestamp === null && (
                   <Text style={[styles.numberOfDays, {color: colors.orange}]}>
                     {' '}
-                    (Not Confirmed)
+                    (Pending Confirmation)
                   </Text>
                 )}
               </Text>

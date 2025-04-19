@@ -19,7 +19,8 @@ import {AppContext} from '../../context/AppContext';
 import Constants from '../../config/Constants';
 
 function AppAccess(props) {
-  const {setAppSettingByKey, biometricStatus} = useContext(AppContext);
+  const {useTestnet, setAppSettingByKey, biometricStatus} =
+    useContext(AppContext);
   const [isTouchIDSupported, setIsTouchIDSupported] = useState(false);
   const [showBiometrics, setShowBiometrics] = useState(
     biometricStatus === 'true',
@@ -41,7 +42,12 @@ function AppAccess(props) {
       const {success} = resultObject;
       if (success) {
         // successful biometrics provided
-        setAppSettingByKey(Constants.BIOMETRICS_DISPLAY_STATUS, 'false');
+        setAppSettingByKey(
+          useTestnet
+            ? Constants.BIOMETRICS_DISPLAY_STATUS_TESTNET
+            : Constants.BIOMETRICS_DISPLAY_STATUS,
+          'false',
+        );
       } else {
         // user cancelled biometric prompt
       }
@@ -75,11 +81,21 @@ function AppAccess(props) {
     const isSupported = await isBiometricsSupported();
 
     if (isSupported && isOn === true) {
-      setAppSettingByKey(Constants.BIOMETRICS_DISPLAY_STATUS, 'true');
+      setAppSettingByKey(
+        useTestnet
+          ? Constants.BIOMETRICS_DISPLAY_STATUS_TESTNET
+          : Constants.BIOMETRICS_DISPLAY_STATUS,
+        'true',
+      );
     } else if (isSupported && isOn === false) {
       await disableBiometrics();
     } else {
-      setAppSettingByKey(Constants.BIOMETRICS_DISPLAY_STATUS, 'false');
+      setAppSettingByKey(
+        useTestnet
+          ? Constants.BIOMETRICS_DISPLAY_STATUS_TESTNET
+          : Constants.BIOMETRICS_DISPLAY_STATUS,
+        'false',
+      );
       Alert.alert('Biometrics', 'Biometrics is not supported on this device');
     }
   };

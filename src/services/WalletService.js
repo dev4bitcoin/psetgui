@@ -70,6 +70,28 @@ const deleteWallet = (realm, useTestnet) => {
   realm.write(() => {
     realm.delete(walletToDelete);
   });
+
+  if (!useTestnet) {
+    realm.write(() => {
+      const keysToDelete = realm
+        .objects('AppSetting')
+        .filtered(
+          'key IN {"BIOMETRICS_DISPLAY_STATUS", "PREFERRED_BITCOIN_UNIT", "SAVE_MNEMONIC"}',
+        );
+      realm.delete(keysToDelete);
+    });
+  }
+
+  if (useTestnet) {
+    realm.write(() => {
+      const keysToDelete = realm
+        .objects('AppSetting')
+        .filtered(
+          'key IN {"BIOMETRICS_DISPLAY_STATUS_TESTNET", "PREFERRED_BITCOIN_UNIT_TESTNET", "SAVE_MNEMONIC_TESTNET"}',
+        );
+      realm.delete(keysToDelete);
+    });
+  }
 };
 
 const storeTransactions = async (realm, transactions, assetId) => {

@@ -9,7 +9,6 @@ import {
   Address,
 } from 'lwk-rn';
 
-import Constants from '../config/Constants';
 import {
   createWallet,
   resetWallets,
@@ -53,7 +52,9 @@ export default class WalletFactory {
     }
   }
 
-  static async initWithDescriptor(descriptor = null) {
+  static async initWithDescriptor(descriptor = null, useTestnet = false) {
+    this.network = useTestnet ? Network.testnet() : Network.mainnet();
+
     this.clientInstance = this.network.defaultElectrumClient();
 
     const desc = new WolletDescriptor(descriptor);
@@ -144,35 +145,42 @@ export default class WalletFactory {
   static async GetAssets(realm) {
     console.log('GetAssets');
     await this.updateWallet(this.wolletInstance);
-    const assets = await this.wolletInstance.balance();
+    const walletId = this.defaultWallet?.walletId;
+    const network = this.network.isMainnet() ? false : true;
 
+    const assets = await this.wolletInstance.balance();
     var assetList = [];
     assets?.forEach((value, key) => {
-      const assetInfo = assetFinder.findAsset(key.toString());
+      const assetInfo = assetFinder.findAsset(key.toString(), network);
 
       assetList.push({
         assetId: key.toString(),
         balance: value.toString(),
-        entity: assetInfo[0],
-        ticker: assetInfo[1],
-        name: assetInfo[2],
-        precision: assetInfo[3],
-        walletId: this.defaultWallet?.walletId,
+        entity: assetInfo ? assetInfo[0] : 'Unknown',
+        ticker: assetInfo ? assetInfo[1] : 'Unknown',
+        name: assetInfo ? assetInfo[2] : 'Unknown',
+        precision: assetInfo ? assetInfo[3] : 8,
+        walletId: walletId,
       });
     });
-    if (this.shouldSaveToStorage) await storeAssets(realm, assetList);
+    if (this.shouldSaveToStorage) {
+      await storeAssets(realm, assetList);
 
-    const storedAssets = await getStoredAssets(
-      realm,
-      this.defaultWallet?.walletId,
-    );
-    return storedAssets;
+      const storedAssets = await getStoredAssets(
+        realm,
+        this.defaultWallet?.walletId,
+      );
+    }
+
+    return assetList;
   }
 
   static async GetTransactions(realm, assetId) {
     console.log('GetTransactions');
 
     if (!assetId) return [];
+
+    const walletId = this.defaultWallet?.walletId;
 
     const txs = await this.wolletInstance.transactions();
     const txsToSave = [];
@@ -199,7 +207,7 @@ export default class WalletFactory {
           txid: tx.txid().toString(),
           timestamp: tx.timestamp()?.toString(),
           assetId: assetId,
-          walletId: this.defaultWallet?.walletId,
+          walletId: walletId,
         });
 
         txsToSave.push(txToInclude);
@@ -208,10 +216,11 @@ export default class WalletFactory {
 
     if (this.shouldSaveToStorage) {
       await storeTransactions(realm, txsToSave, assetId);
+      const transactions = await getStoredTransactions(realm, assetId);
+      return transactions;
     }
 
-    const transactions = await getStoredTransactions(realm, assetId);
-    return transactions;
+    return txsToSave;
   }
 
   static async GetBalance(assetId) {

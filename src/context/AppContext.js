@@ -20,10 +20,16 @@ const AppContextProvider = ({children}) => {
   }, []);
 
   const initSetting = async () => {
-    getAppSettingByKey(Constants.USE_TESTNET);
-    getAppSettingByKey(Constants.PREFERRED_BITCOIN_UNIT);
-    getAppSettingByKey(Constants.SAVE_MNEMONIC);
-    getAppSettingByKey(Constants.BIOMETRICS_DISPLAY_STATUS);
+    const result = getAppSettingByKey(Constants.USE_TESTNET);
+    if (!result || result === 'false') {
+      getAppSettingByKey(Constants.PREFERRED_BITCOIN_UNIT);
+      getAppSettingByKey(Constants.SAVE_MNEMONIC);
+      getAppSettingByKey(Constants.BIOMETRICS_DISPLAY_STATUS);
+    } else {
+      getAppSettingByKey(Constants.PREFERRED_BITCOIN_UNIT_TESTNET);
+      getAppSettingByKey(Constants.SAVE_MNEMONIC_TESTNET);
+      getAppSettingByKey(Constants.BIOMETRICS_DISPLAY_STATUS_TESTNET);
+    }
   };
 
   const getAppSettingByKey = key => {
@@ -34,21 +40,13 @@ const AppContextProvider = ({children}) => {
       return result.value;
     }
 
-    // Set UseTestnet to true for testing
-    if (key === Constants.USE_TESTNET) {
-      setUseTestnet(true);
-      return true;
+    if (key === Constants.PREFERRED_BITCOIN_UNIT) {
+      setPreferredBitcoinUnit(Constants.SATS);
+    }
+    if (key === Constants.PREFERRED_BITCOIN_UNIT_TESTNET) {
+      setPreferredBitcoinUnit(Constants.TEST_SATS);
     }
 
-    // Set default values for other keys
-    if (key === Constants.PREFERRED_BITCOIN_UNIT) {
-      setPreferredBitcoinUnit(
-        // useTestnet ? Constants.TEST_SATS : Constants.SATS,
-        // For testing purposes, set the preferred bitcoin unit to mSATS
-        Constants.TEST_SATS,
-      );
-      return Constants.SATS;
-    }
     return null;
   };
 
@@ -56,14 +54,23 @@ const AppContextProvider = ({children}) => {
     if (key === Constants.PREFERRED_BITCOIN_UNIT) {
       setPreferredBitcoinUnit(value);
     }
+    if (key === Constants.PREFERRED_BITCOIN_UNIT_TESTNET) {
+      setPreferredBitcoinUnit(value);
+    }
     if (key === Constants.USE_TESTNET) {
-      setUseTestnet(value);
+      setUseTestnet(value === 'true' ? true : false);
     }
     if (key === Constants.SAVE_MNEMONIC) {
-      setMnemonicSaved(value);
+      setMnemonicSaved(value === 'true' ? true : false);
+    }
+    if (key === Constants.SAVE_MNEMONIC_TESTNET) {
+      setMnemonicSaved(value === 'true' ? true : false);
     }
     if (key === Constants.BIOMETRICS_DISPLAY_STATUS) {
-      setBiometricStatus(value);
+      setBiometricStatus(value === 'true' ? true : false);
+    }
+    if (key === Constants.BIOMETRICS_DISPLAY_STATUS_TESTNET) {
+      setBiometricStatus(value === 'true' ? true : false);
     }
   };
 

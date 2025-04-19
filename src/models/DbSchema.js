@@ -51,7 +51,7 @@ export class Asset extends Realm.Object {
       _id: 'objectId',
       assetId: {type: 'string', indexed: true},
       balance: {type: 'string', indexed: false},
-      entity: {type: 'string', indexed: false},
+      entity: {type: 'string', indexed: false, optional: true},
       ticker: {type: 'string', indexed: false},
       precision: {type: 'int', indexed: false},
       name: {type: 'string', indexed: false},

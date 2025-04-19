@@ -54,7 +54,8 @@ function Detail(props) {
   };
 
   const amountInPreferredAssetDenomination = (assetId, amount, precision) => {
-    return assetId.toString() == Constants.LIQUID_TESTNET_ASSETID
+    return assetId.toString() == Constants.LIQUID_TESTNET_ASSETID ||
+      Constants.LIQUID_MAINNET_ASSETID
       ? UnitConverter.displayBalanceInPreferredUnit(
           Number(amount),
           preferredBitcoinUnit,
@@ -67,7 +68,8 @@ function Detail(props) {
     if (assetInfo) {
       return {
         ticker:
-          assetId == Constants.LIQUID_TESTNET_ASSETID
+          assetId == Constants.LIQUID_TESTNET_ASSETID ||
+          Constants.LIQUID_MAINNET_ASSETID
             ? preferredBitcoinUnit
             : assetInfo[1] || 'Unknown',
         precision: assetInfo[3],

@@ -37,18 +37,25 @@ function AssetListScreen(props) {
   };
 
   const getBalanceByPrecisionAndUnit = (assetId, value, precision) => {
-    return assetId == Constants.LIQUID_TESTNET_ASSETID
-      ? UnitConverter.displayBalanceInPreferredUnit(
-          Number(value),
-          preferredBitcoinUnit,
-        )
-      : (Number(value) / Math.pow(10, precision)).toFixed(precision);
+    const result =
+      assetId == Constants.LIQUID_TESTNET_ASSETID ||
+      assetId == Constants.LIQUID_MAINNET_ASSETID
+        ? UnitConverter.displayBalanceInPreferredUnit(
+            Number(value),
+            preferredBitcoinUnit,
+          )
+        : (Number(value) / Math.pow(10, precision)).toFixed(precision);
+
+    return result;
   };
 
   const getTicker = (assetId, ticker) => {
-    return assetId == Constants.LIQUID_TESTNET_ASSETID
-      ? preferredBitcoinUnit
-      : ticker || 'Unknown';
+    const result =
+      assetId == Constants.LIQUID_TESTNET_ASSETID ||
+      assetId == Constants.LIQUID_MAINNET_ASSETID
+        ? preferredBitcoinUnit
+        : ticker || 'Unknown';
+    return result;
   };
 
   const parseData = async () => {

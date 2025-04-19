@@ -18,7 +18,12 @@ function DenominationSelection(props) {
   const btc = useTestnet ? Constants.TEST_BTC : Constants.BTC;
 
   const onSelect = async name => {
-    setAppSettingByKey(Constants.PREFERRED_BITCOIN_UNIT, name);
+    setAppSettingByKey(
+      useTestnet
+        ? Constants.PREFERRED_BITCOIN_UNIT_TESTNET
+        : Constants.PREFERRED_BITCOIN_UNIT,
+      name,
+    );
     props.navigation.goBack();
   };
 

@@ -65,7 +65,8 @@ function WalletScreen({route, navigation}) {
   };
 
   const amountInPreferredDenomination = amount => {
-    return assetId.toString() == Constants.LIQUID_TESTNET_ASSETID
+    return assetId.toString() == Constants.LIQUID_TESTNET_ASSETID ||
+      assetId.toString() == Constants.LIQUID_MAINNET_ASSETID
       ? UnitConverter.displayBalanceInPreferredUnit(
           Number(amount),
           preferredBitcoinUnit,
