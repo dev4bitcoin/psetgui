@@ -1,6 +1,8 @@
 import React, {useContext, useEffect, useState} from 'react';
 import {View, StyleSheet, TouchableOpacity, Text} from 'react-native';
 import {useRealm} from '@realm/react';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import RNRestart from 'react-native-restart';
 
 import TopBar from '../../components/TopBar';
 import Screen from '../Screen';
@@ -47,6 +49,10 @@ function SignerSelection(props) {
     props.navigation.navigate('Descriptor');
   };
 
+  const onNetworkSwitch = () => {
+    setAppSettingByKey(Constants.USE_TESTNET, !useTestnet);
+    RNRestart.restart();
+  };
   return (
     <Screen style={styles.container}>
       <TopBar title="Select Signing Option" showBackButton={false} />
@@ -70,11 +76,20 @@ function SignerSelection(props) {
         <TouchableOpacity onPress={onViewPSET} style={styles.buttonContainer}>
           <Text style={styles.buttonText}>View PSET with descriptor</Text>
         </TouchableOpacity>
-        <TouchableOpacity
+        {/* <TouchableOpacity
           disabled={true}
           onPress={onSignWithJade}
           style={[styles.buttonContainer, {backgroundColor: Colors.lightGray}]}>
           <Text style={styles.buttonText}>Sign with Jade</Text>
+        </TouchableOpacity> */}
+      </View>
+
+      <View style={styles.bottomButtonContainer}>
+        <Icon name="swap-horizontal" size={30} color={Colors.textGray} />
+        <TouchableOpacity onPress={onNetworkSwitch} style={styles.bottomButton}>
+          <Text style={styles.bottomButtonText}>
+            {useTestnet ? 'Switch to mainnet' : 'Switch to testnet'}
+          </Text>
         </TouchableOpacity>
       </View>
     </Screen>
@@ -115,6 +130,26 @@ const styles = StyleSheet.create({
     color: Colors.white,
     fontSize: 16,
     fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  bottomButtonContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center', // Centers content horizontally
+    borderWidth: 2,
+    borderRadius: 50,
+    width: '100%',
+    textAlign: 'center',
+    bottom: 20,
+  },
+  bottomButton: {
+    padding: 10,
+    borderRadius: 10,
+  },
+  bottomButtonText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: Colors.bottomRowText,
     textAlign: 'center',
   },
 });

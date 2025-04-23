@@ -132,11 +132,11 @@ function SettingsScreen(props) {
           <View style={styles.itemGroup}>
             {renderItem('About', 'information-outline', 'chevron-right')}
             {renderItem('Denomination', 'currency-btc', 'chevron-right')}
-            {renderItem(
+            {/* {renderItem(
               useTestnet ? 'Switch to Mainnet' : 'Switch to Testnet',
               'bitcoin',
               'swap-horizontal',
-            )}
+            )} */}
             {/* {renderSwitchItem('Enable Testnet', 'bitcoin', useTestnet)} */}
           </View>
         </View>
