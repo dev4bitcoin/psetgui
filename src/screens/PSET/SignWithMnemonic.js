@@ -10,6 +10,7 @@ import {
   Keyboard,
   Alert,
   Switch,
+  Platform,
 } from 'react-native';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import {useRealm} from '@realm/react';
@@ -35,18 +36,6 @@ function SignWithMnemonic(props) {
   const realm = useRealm();
 
   useEffect(() => {
-    // For testing purposes, you can set a default mnemonic here
-    // if (useTestnet) {
-    //   const mnemonic =
-    //     'room thought hello final antenna rude ugly symptom weather wave top eternal';
-    //   // const mnemonic =
-    //   //   'aim rare pipe shift front torch core vague kiss symptom helmet grace wedding assault system company tiger pet fat mean hair genre gather scissors';
-    //   const mnemonicLength = mnemonic.split(' ').length;
-    //   setLengthSelection(mnemonicLength.toString());
-    //   setInputValues(mnemonic.split(' '));
-    // }
-    //----------------
-
     const keyboardListeners = [
       Keyboard.addListener('keyboardWillHide', () => {
         setSuggestions([]);
@@ -165,7 +154,7 @@ function SignWithMnemonic(props) {
 
   return (
     <KeyboardAvoidingView
-      style={styles.container}
+      style={[styles.container, {paddingTop: Platform.OS === 'ios' ? 50 : 0}]}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <TopBar showBackButton={true} showBackButtonText={true} />
       {loading && <LoadingScreen text={loadingText} />}
@@ -229,7 +218,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.appBackground,
-    paddingTop: 50,
   },
   content: {
     flex: 1,

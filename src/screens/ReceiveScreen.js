@@ -14,6 +14,7 @@ import ToastManager, {Toast} from 'toastify-react-native';
 
 import TopBar from '../components/TopBar';
 import Colors from '../config/Colors';
+import Screen from './Screen';
 
 function ReceiveScreen(props) {
   const {address} = props.route.params;
@@ -49,7 +50,7 @@ function ReceiveScreen(props) {
   };
 
   return (
-    <View style={styles.container}>
+    <Screen style={styles.container}>
       <TopBar title="Receive" showBackButton={true} />
       <ToastManager
         showCloseIcon={false}
@@ -86,7 +87,7 @@ function ReceiveScreen(props) {
           </TouchableOpacity>
         </View>
       </View>
-    </View>
+    </Screen>
   );
 }
 
@@ -95,7 +96,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     backgroundColor: Colors.appBackground,
-    paddingTop: 70,
+    //paddingTop: 70,
   },
   placeholder: {
     height: 50,

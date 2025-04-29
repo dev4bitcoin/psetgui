@@ -193,16 +193,16 @@ const styles = StyleSheet.create({
   balance: {
     fontSize: 50,
     color: colors.white,
-
     textAlignVertical: 'center',
     textAlign: 'center',
     flex: 1,
     padding: 10,
+    paddingBottom: 0,
   },
   denomination: {
     fontSize: 15,
     color: colors.white,
-    marginTop: 20,
+    paddingTop: 10,
     marginBottom: 20,
   },
   available: {
