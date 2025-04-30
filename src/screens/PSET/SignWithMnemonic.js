@@ -22,6 +22,7 @@ import LoadingScreen from '../LoadingScreen';
 import WalletFactory from '../../wallet/WalletFactory';
 import {AppContext} from '../../context/AppContext';
 import Constants from '../../config/Constants';
+import Screen from '../Screen';
 
 function SignWithMnemonic(props) {
   const {useTestnet, setAppSettingByKey} = useContext(AppContext);
@@ -33,6 +34,7 @@ function SignWithMnemonic(props) {
   const [mnemonicSaved, setMnemonicSaved] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loadingText, setLoadingText] = useState('Setting up the wallet...');
+  const [showBottomContainer, setShowBottomContainer] = useState(true);
   const realm = useRealm();
 
   useEffect(() => {
@@ -145,7 +147,11 @@ function SignWithMnemonic(props) {
           autoCompleteType="off" // Disable autocomplete suggestions (iOS)
           textContentType="none" // Prevents suggestions (iOS)
           onFocus={() => {
+            setShowBottomContainer(false); // Hide bottom container when input is focused
             setActiveInputIndex(textIndex); // Only update if the index changes
+          }}
+          onBlur={() => {
+            setShowBottomContainer(true); // Show bottom container when input is blurred
           }}
         />
       </View>
@@ -153,26 +159,28 @@ function SignWithMnemonic(props) {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={[styles.container, {paddingTop: Platform.OS === 'ios' ? 50 : 0}]}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <Screen style={styles.container}>
       <TopBar showBackButton={true} showBackButtonText={true} />
       {loading && <LoadingScreen text={loadingText} />}
-
-      <ScrollView style={styles.content}>
-        <Text style={styles.header}>Enter your recovery phrase</Text>
-        <View style={styles.passphraseLengthSelection}>
-          {renderlengthSelectionButtons('12')}
-          <View style={styles.splitter} />
-          {renderlengthSelectionButtons('24')}
-        </View>
-        <View style={styles.textInputContainer}>
-          {Array.from({length: lengthSelection}, (_, index) =>
-            renderTextInput(index),
-          )}
-        </View>
-      </ScrollView>
-      <View>
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset="50">
+        <ScrollView style={styles.content}>
+          <Text style={styles.header}>Enter your recovery phrase</Text>
+          <View style={styles.passphraseLengthSelection}>
+            {renderlengthSelectionButtons('12')}
+            <View style={styles.splitter} />
+            {renderlengthSelectionButtons('24')}
+          </View>
+          <View style={styles.textInputContainer}>
+            {Array.from({length: lengthSelection}, (_, index) =>
+              renderTextInput(index),
+            )}
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+      <View style={{height: showBottomContainer ? 200 : 0}}>
         <View style={styles.saveMnemonicContainer}>
           <Text style={styles.itemText}>Save Mnemonic</Text>
           <TouchableOpacity onPress={onToggleSaveMnemonicSwitch}>
@@ -190,6 +198,7 @@ function SignWithMnemonic(props) {
           <Text style={styles.bottomButtonText}>Next</Text>
         </TouchableOpacity>
       </View>
+
       {/* {suggestions.length > 0 && (
         <View style={styles.suggestionsContainer}>
           <FlatList
@@ -210,7 +219,7 @@ function SignWithMnemonic(props) {
           />
         </View>
       )} */}
-    </KeyboardAvoidingView>
+    </Screen>
   );
 }
 

@@ -1,16 +1,22 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import {View, Text, StyleSheet, TouchableOpacity, Linking} from 'react-native';
 import colors from '../config/Colors';
 import TopBar from '../components/TopBar';
 import Screen from './Screen';
+import {AppContext} from '../context/AppContext';
+import Constants from '../config/Constants';
 
 function TransactionDetail(props) {
+  const {useTestnet} = useContext(AppContext);
   const {transaction, balance, unit} = props.route.params;
-
   const isIncoming = transaction.type === 'incoming';
 
   const onViewDetail = () => {
-    const url = `https://blockstream.info/liquidtestnet/tx/${transaction.txid}`;
+    const url = `${
+      useTestnet
+        ? Constants.BLOCKSTREAM_TESTNET_EXPLORER_URL
+        : Constants.BLOCKSTREAM_MAINNET_EXPLORER_URL
+    }${transaction.txid}`;
     Linking.openURL(url);
   };
 
